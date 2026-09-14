@@ -1,0 +1,102 @@
+@import "tailwindcss";
+@import "../../../../packages/ui/src/web/styles/crumza.css";
+
+@layer base {
+  html {
+    scroll-padding-top: 2rem;
+  }
+}
+@layer components {
+  .prose {
+    max-width: 68ch;
+    font-size: 13px;
+    line-height: 1.75;
+  }
+  .prose > :first-child {
+    margin-top: 0;
+  }
+  .prose h1 {
+    font-size: 16px;
+    margin: 0 0 16px;
+  }
+  .prose h2 {
+    font-size: 16px;
+    margin: 28px 0 12px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .prose h3 {
+    font-size: 13px;
+    margin: 18px 0 8px;
+    font-weight: 500;
+  }
+  .prose p,
+  .prose ul,
+  .prose ol {
+    margin: 0 0 14px;
+  }
+  .prose ul {
+    padding-inline-start: 20px;
+    list-style: disc;
+  }
+  .prose ol {
+    padding-inline-start: 20px;
+    list-style: decimal;
+  }
+  .prose li + li {
+    margin-top: 4px;
+  }
+  .prose a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .prose code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: #f3f3f3;
+    border-radius: 4px;
+    padding: 2px 4px;
+  }
+  .prose pre {
+    margin: 0 0 16px;
+    padding: 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    line-height: 1.65;
+    overflow-x: auto;
+  }
+  .prose pre code {
+    background: none;
+    padding: 0;
+  }
+  .prose table {
+    width: 100%;
+    margin: 0 0 16px;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .prose th,
+  .prose td {
+    text-align: start;
+    vertical-align: top;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .prose th {
+    font-weight: 500;
+    color: var(--muted-foreground);
+  }
+  .prose blockquote {
+    margin: 0 0 16px;
+    padding-inline-start: 16px;
+    border-inline-start: 2px solid var(--border);
+    color: var(--muted-foreground);
+  }
+  .astro-code,
+  .astro-code span {
+    color: var(--shiki-light) !important;
+    background-color: var(--shiki-light-bg) !important;
+  }
+}

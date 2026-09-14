@@ -1,0 +1,10 @@
+---
+import Catalog from '../layouts/Catalog.astro';
+import Collection from '../components/Collection';
+import { sidebar } from '../nav';
+---
+<Catalog title="UI components" description="Liquid glass first. Solid and frosted when you need them.">
+  <Collection configurable client:load />
+  <section class="collection-bottom"><h2>The complete library</h2><p>Explore the components and their keyboard behaviour. Scene supplies the backdrop for edge refraction; standalone Lens remains experimental.</p></section>
+  <nav class="catalog-toolbar" aria-label="All components">{sidebar.flatMap(g=>g.items).filter(i=>i.slug.startsWith('components/')).map(item=><a class="filter-button" href={'/docs/'+item.slug}>{item.label}</a>)}</nav>
+</Catalog>

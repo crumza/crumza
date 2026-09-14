@@ -1,0 +1,395 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: Accessibility overrides must win over application utility styles. */
+@layer components {
+  [data-material="solid"] {
+    --material-alpha-base: 1;
+    --material-alpha-range: 0;
+    --material-blur: 0px;
+    --material-saturation: 100%;
+    --material-rim: 0;
+    --material-sheen: 0;
+    --material-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+    --material-bevel: 0;
+    --material-optics: none;
+    --material-filter: none;
+  }
+  [data-material="frosted"] {
+    --material-alpha-base: 0.9;
+    --material-alpha-range: 0.16;
+    --material-blur: 18px;
+    --material-saturation: 120%;
+    --material-rim: 0.22;
+    --material-sheen: 0.02;
+    --material-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
+    --material-bevel: 0.25;
+    --material-optics: none;
+    --material-filter: blur(18px) saturate(120%);
+  }
+  :where(:root),
+  [data-material="liquid"] {
+    --material-alpha-base: 0.7;
+    --material-alpha-range: 0.46;
+    --material-blur: 10px;
+    --material-saturation: 160%;
+    --material-rim: 1;
+    --material-sheen: 0.14;
+    --material-bevel: 0.5;
+    --material-optics: block;
+    --material-shadow: 0 2px 4px rgb(0 0 0 / 0.08), 0 8px 20px -8px rgb(0 0 0 / 0.18);
+    --material-filter: blur(10px) saturate(160%);
+  }
+
+  .glass,
+  .crumza-surface {
+    --_alpha: clamp(
+      var(--glass-min-alpha),
+      calc(
+        var(--material-alpha-base) -
+        var(--material-alpha-range) *
+        clamp(0, var(--glass-intensity), 1)
+      ),
+      1
+    );
+    --_surface: var(--card);
+    --_ink: var(--foreground);
+    position: relative;
+    isolation: isolate;
+    color: var(--_ink);
+    border-radius: var(--radius-surface);
+    border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+    background: var(--_surface);
+    box-shadow: var(--material-shadow);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .glass,
+    .crumza-surface {
+      background:
+        linear-gradient(165deg, rgb(255 255 255 / var(--material-sheen)), transparent 42%),
+        color-mix(in srgb, var(--_surface) calc(var(--_alpha) * 100%), transparent);
+      -webkit-backdrop-filter: var(--material-filter);
+      backdrop-filter: var(--material-filter);
+    }
+  }
+  .glass::before,
+  .crumza-surface::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    opacity: var(--material-rim);
+    background: conic-gradient(
+      from 150deg at 50% 50%,
+      rgb(255 255 255 / 0.9),
+      rgb(255 255 255 / 0.1) 12%,
+      rgb(0 0 0 / 0.22) 22%,
+      rgb(255 255 255 / 0.95) 42%,
+      white 52%,
+      rgb(255 255 255 / 0.08) 67%,
+      rgb(0 0 0 / 0.16) 77%,
+      rgb(255 255 255 / 0.9)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  .glass::after,
+  .crumza-surface::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: var(--material-bevel);
+    box-shadow:
+      inset 1px 2px 2px rgb(255 255 255 / 0.75),
+      inset -1px -2px 3px rgb(0 0 0 / 0.13),
+      inset 0 0 8px rgb(255 255 255 / 0.12);
+  }
+  .surface-optics {
+    display: var(--material-optics);
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    overflow: hidden;
+    clip-path: inset(0 round var(--radius-control));
+    pointer-events: none;
+    z-index: -1;
+  }
+  .glass > .surface-optics {
+    clip-path: inset(0 round var(--radius-surface));
+  }
+  .crumza-button[data-shape="rect"] > .surface-optics {
+    clip-path: inset(0 round var(--radius-field));
+  }
+  .surface-optics-edge,
+  .surface-optics-copy {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    display: block;
+  }
+  .surface-optics-edge {
+    padding: 3px;
+    opacity: 0.55;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+  }
+  .surface-optics-copy {
+    background-repeat: no-repeat;
+  }
+  [data-tone="primary"],
+  .glass-tint {
+    --_surface: var(--primary);
+    --_ink: var(--primary-foreground);
+  }
+  [data-tone="secondary"] {
+    --_surface: var(--secondary);
+    --_ink: var(--secondary-foreground);
+  }
+  [data-tone="destructive"] {
+    --_surface: var(--destructive);
+    --_ink: var(--destructive-foreground);
+  }
+  .crumza-button {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: var(--control-md);
+    padding-inline: 1rem;
+    border-radius: var(--radius-control);
+    font-family: var(--font-sans);
+    font-size: var(--text-ui);
+    font-weight: var(--weight-control);
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      transform 100ms ease-out,
+      background-color 120ms ease-out,
+      border-color 120ms ease-out;
+    user-select: none;
+  }
+  .crumza-surface:is([data-tone="primary"], [data-tone="secondary"], [data-tone="destructive"]) {
+    --_alpha: max(
+      0.84,
+      calc(var(--material-alpha-base) - var(--material-alpha-range) * var(--glass-intensity))
+    );
+  }
+  .crumza-button[data-size="sm"] {
+    height: var(--control-sm);
+    padding-inline: 0.75rem;
+    font-size: var(--text-ui-sm);
+  }
+  .crumza-button[data-size="lg"] {
+    height: var(--control-lg);
+    padding-inline: 1.25rem;
+  }
+  .crumza-button[data-size="icon"] {
+    width: var(--control-md);
+    padding: 0;
+  }
+  .crumza-button[data-shape="capsule"] {
+    border-radius: var(--radius-full);
+  }
+  .crumza-button[data-shape="rect"] {
+    border-radius: var(--radius-field);
+  }
+  .crumza-button:is([data-variant="muted"], [data-variant="secondary"]) {
+    --_surface: var(--muted);
+    color: var(--foreground);
+    border-color: transparent;
+  }
+  .crumza-button:is([data-variant="bordered"], [data-variant="outline"]) {
+    color: var(--foreground);
+    border-color: color-mix(in srgb, var(--foreground) 26%, transparent);
+    box-shadow: none;
+  }
+  .crumza-button:is([data-variant="ghost"], [data-variant="link"]) {
+    background: transparent;
+    color: var(--foreground);
+    border-color: transparent;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .crumza-button:is([data-variant="ghost"], [data-variant="link"])::before {
+    content: none;
+  }
+  .crumza-button:is([data-variant="ghost"], [data-variant="link"])::after {
+    content: none;
+  }
+  .crumza-button:is([data-variant="ghost"], [data-variant="link"]) {
+    --material-optics: none;
+  }
+  .crumza-button[data-variant="link"] {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  @media (hover: hover) {
+    .crumza-button:hover:not(:disabled) {
+      border-color: color-mix(in srgb, var(--foreground) 35%, transparent);
+    }
+    .crumza-button:is(
+        [data-variant="ghost"],
+        [data-variant="bordered"],
+        [data-variant="outline"]
+      ):hover:not(:disabled) {
+      background: color-mix(in srgb, var(--foreground) 6%, transparent);
+    }
+  }
+  .crumza-button:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .crumza-button:focus-visible,
+  .glass:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+  .crumza-button:disabled {
+    --material-optics: none;
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .crumza-button:disabled::before {
+    opacity: 0;
+  }
+  .dialog-content,
+  .menu-content,
+  .popover-content,
+  .toast {
+    --_alpha: max(
+      0.94,
+      calc(
+        var(--material-alpha-base) -
+        var(--material-alpha-range) *
+        clamp(0, var(--glass-intensity), 1)
+      )
+    );
+  }
+  .dialog-content {
+    position: fixed;
+    color: var(--foreground);
+    border-radius: var(--radius-dialog);
+  }
+  .menu-content,
+  .popover-content {
+    position: fixed;
+  }
+
+  /* Avoid opacity-compositing flashes on rounded glass in WebKit. */
+  .dialog-content,
+  .menu-content,
+  .popover-content,
+  .toast {
+    opacity: 1;
+    transition:
+      transform 120ms ease-out,
+      display 120ms allow-discrete,
+      overlay 120ms allow-discrete;
+  }
+  .dialog-content[open],
+  .menu-content:popover-open,
+  .popover-content:popover-open {
+    opacity: 1;
+    transition:
+      transform 120ms ease-out,
+      display 120ms allow-discrete,
+      overlay 120ms allow-discrete;
+    @starting-style {
+      opacity: 1;
+      transform: translateY(3px);
+    }
+  }
+  .toast {
+    @starting-style {
+      opacity: 1;
+      transform: translateY(3px);
+    }
+  }
+  .toast[data-state="closing"] {
+    opacity: 1;
+    transform: translateY(3px);
+  }
+
+  /* Nested controls are fills; top-layer overlays keep their own material. */
+  .glass .crumza-surface:not([popover], dialog),
+  .glass .glass:not([popover], dialog, .lens) {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--_surface);
+    --material-optics: none;
+  }
+  [data-material="solid"].glass,
+  [data-material="solid"].crumza-surface {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  [data-transparency="reduce"] :is(.glass, .crumza-surface) {
+    --material-optics: none;
+    background: var(--_surface) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    .glass,
+    .crumza-surface {
+      --material-optics: none;
+      background: var(--_surface) !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+    }
+  }
+  @media (forced-colors: active) {
+    .glass,
+    .crumza-surface {
+      --material-optics: none;
+      background: Canvas !important;
+      color: CanvasText !important;
+      border: 1px solid ButtonText !important;
+      box-shadow: none !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+    }
+    .glass::before,
+    .crumza-surface::before {
+      display: none;
+    }
+    .crumza-button:disabled {
+      color: GrayText !important;
+      opacity: 1;
+    }
+    .crumza-button:focus-visible {
+      outline-color: Highlight;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .crumza-button,
+    .glass,
+    .popover-content,
+    .menu-content,
+    .dialog-content,
+    .tooltip-content,
+    .toast {
+      transition: none !important;
+      animation: none !important;
+      transform: none !important;
+    }
+  }
+}

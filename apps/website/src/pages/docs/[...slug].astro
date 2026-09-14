@@ -1,0 +1,21 @@
+---
+import { getCollection, render } from 'astro:content';
+import Doc from '../../layouts/Doc.astro';
+import { labelFor } from '../../nav';
+import { Demos, hasDemo } from '../../demos';
+
+export async function getStaticPaths() {
+  const docs = await getCollection('docs');
+  return docs.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+const title = entry.data.title ?? labelFor(entry.id) ?? entry.body?.match(/^# (.+)$/m)?.[1] ?? entry.id;
+const description = entry.body?.split('\n').find((l) => l.trim() && !l.startsWith('#'))?.trim();
+---
+
+<Doc title={title} description={description} slug={entry.id} headings={headings}>
+  {hasDemo(entry.id) && <div slot="demo" class="mb-8"><Demos slug={entry.id} client:load /></div>}
+  <Content />
+</Doc>

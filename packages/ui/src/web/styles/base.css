@@ -1,0 +1,50 @@
+@layer base {
+  :root {
+    color: var(--foreground);
+    background-color: var(--background);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  button,
+  [role="button"] {
+    cursor: pointer;
+  }
+}
+
+/* Focus: one crisp neutral outline with air around it. No glow, no ring. */
+@utility focus-outline {
+  outline: 1.5px solid var(--ring);
+  outline-offset: 3px;
+}
+
+/* The field treatment shared by inputs and textareas: a hairline lifecycle, never a glow. */
+@utility field {
+  border-radius: var(--radius-field);
+  border: 1px solid var(--input);
+  background-color: var(--card);
+  color: var(--foreground);
+  outline: none;
+  transition: border-color var(--duration-fast) var(--ease-snappy);
+  &::placeholder {
+    color: var(--foreground-tertiary);
+  }
+  &:hover {
+    border-color: color-mix(in oklab, var(--foreground) 30%, transparent);
+  }
+  &:focus-visible {
+    border-color: var(--primary);
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  &[aria-invalid="true"] {
+    border-color: var(--destructive);
+  }
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+  @supports (corner-shape: squircle) {
+    corner-shape: squircle;
+  }
+}

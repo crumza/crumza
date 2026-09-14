@@ -1,0 +1,126 @@
+/* Control states, slider and progress. Disabled is a material swap to inert frost. */
+
+@layer components {
+  /* Inert glass: no accent, no rim, a quiet frost, label at 45%. */
+  .control-disabled,
+  .glass:disabled {
+    background-color: color-mix(in oklab, var(--foreground) 6%, transparent);
+    background-image: none;
+    color: color-mix(in oklab, var(--foreground) 45%, transparent);
+    border-color: transparent;
+    box-shadow: inset 0 1px 0 -0.5px color-mix(in oklab, var(--foreground) 8%, transparent);
+    filter: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    cursor: not-allowed;
+  }
+
+  /* Rect-shaped controls get true superellipse corners where the engine can draw them. */
+  @supports (corner-shape: squircle) {
+    .squircle {
+      corner-shape: squircle;
+    }
+  }
+}
+
+@layer components {
+  /* Slider: a hairline track that fills to the value, and a lit thumb. */
+  .slider {
+    --_track: 4px;
+    appearance: none;
+    height: var(--control-sm);
+    background: transparent;
+    cursor: pointer;
+    outline: none;
+  }
+  .slider:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+  .slider::-webkit-slider-runnable-track {
+    height: var(--_track);
+    border-radius: var(--radius-full);
+    background: linear-gradient(
+      to right,
+      var(--primary) var(--slider-fill, 0%),
+      color-mix(in oklab, var(--foreground) 14%, transparent) 0
+    );
+  }
+  .slider::-moz-range-track {
+    height: var(--_track);
+    border-radius: var(--radius-full);
+    background: color-mix(in oklab, var(--foreground) 14%, transparent);
+  }
+  .slider::-moz-range-progress {
+    height: var(--_track);
+    border-radius: var(--radius-full);
+    background: var(--primary);
+  }
+  .slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    margin-top: calc((var(--_track) - 16px) / 2);
+    border-radius: var(--radius-full);
+    background: white;
+    border: var(--hairline) solid rgb(0 0 0 / 0.12);
+    box-shadow:
+      inset 0 1px 0 -0.5px rgb(255 255 255 / 0.9),
+      0 1px 3px rgb(0 0 0 / 0.25);
+    transition: transform var(--duration-fast) var(--ease-snappy);
+  }
+  .slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: var(--radius-full);
+    background: white;
+    border: var(--hairline) solid rgb(0 0 0 / 0.12);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  }
+  .slider:active::-webkit-slider-thumb {
+    transform: scale(1.1);
+  }
+  .slider:focus-visible::-webkit-slider-thumb {
+    outline: 1.5px solid var(--ring);
+    outline-offset: 3px;
+  }
+  .slider:focus-visible::-moz-range-thumb {
+    outline: 1.5px solid var(--ring);
+    outline-offset: 3px;
+  }
+
+  /* Progress: a hairline track and an accent fill. Indeterminate sweeps. */
+  .progress {
+    position: relative;
+    height: 4px;
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    background: color-mix(in oklab, var(--foreground) 12%, transparent);
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--primary);
+    transition: width var(--duration-base) var(--ease-out-cubic);
+  }
+  .progress[data-indeterminate] .progress-fill {
+    width: 40%;
+    animation: progress-sweep 1.4s var(--ease-in-out-cubic, ease-in-out) infinite;
+  }
+  @keyframes progress-sweep {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(250%);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .progress[data-indeterminate] .progress-fill {
+      animation: none;
+      width: 100%;
+      opacity: 0.4;
+    }
+  }
+}

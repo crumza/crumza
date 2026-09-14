@@ -1,0 +1,43 @@
+{
+  "name": "@crumza/blocks",
+  "version": "0.1.0-alpha.0",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": ["**/*.css"],
+  "description": "Composable website blocks built with Crumza UI.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crumza/crumza.git",
+    "directory": "packages/blocks"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    "./styles.css": "./src/styles.css",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "bun build src/index.tsx --outdir dist --target browser --packages external && tsc -p tsconfig.json",
+    "validate": "tsc -p tsconfig.json --noEmit --emitDeclarationOnly false",
+    "prepack": "bun run build"
+  },
+  "peerDependencies": {
+    "react": "^19.2.0",
+    "@crumza/ui": "^0.1.0-alpha.0"
+  },
+  "devDependencies": {
+    "@crumza/ui": "workspace:*",
+    "@types/react": "19.2.18",
+    "typescript": "6.0.3"
+  }
+}

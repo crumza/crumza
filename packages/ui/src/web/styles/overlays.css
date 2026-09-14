@@ -1,0 +1,202 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: Closed native overlays must stay hidden even with display utilities. */
+/*
+ * Overlays ride the engine: `popover` for light dismiss and the top layer, `<dialog>` for
+ * focus trapping and inert pages. Enter and exit are pure CSS through @starting-style and
+ * transition-behavior: allow-discrete, so nothing needs a presence hook. Positioning writes
+ * left/top and --crumza-transform-origin from JS.
+ */
+
+@layer components {
+  /* A consumer's display utility (grid, flex) must never keep a closed overlay laid out and
+     hit-testable. Transitions outrank !important, so the allow-discrete exit still plays. */
+  [popover]:not(:popover-open) {
+    display: none !important;
+  }
+  dialog:not([open]) {
+    display: none !important;
+  }
+
+  /* Only the UA's geometry is reset here; the material owns background, so no shorthand. */
+  [popover] {
+    inset: auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    color: inherit;
+    overflow: visible;
+  }
+
+  .popover-content,
+  .tooltip-content {
+    --_exit: calc(var(--duration-fast) * 0.66);
+    transform-origin: var(--crumza-transform-origin, center);
+    opacity: 0;
+    transform: scale(calc(1 - 0.04 * var(--motion-scale)));
+    transition:
+      opacity var(--_exit) var(--ease-in-cubic),
+      transform var(--_exit) var(--ease-in-cubic),
+      display var(--_exit) allow-discrete,
+      overlay var(--_exit) allow-discrete;
+  }
+  .popover-content:popover-open,
+  .tooltip-content:popover-open {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity var(--duration-fast) var(--ease-out-cubic),
+      transform var(--duration-fast) var(--ease-out-cubic),
+      display var(--duration-fast) allow-discrete,
+      overlay var(--duration-fast) allow-discrete;
+    @starting-style {
+      opacity: 0;
+      transform: scale(calc(1 - 0.04 * var(--motion-scale)));
+    }
+  }
+
+  /* Floating panels are thicker panes than chrome: content behind a menu must not compete
+     with the menu. Intensity still applies; only the base and range move. */
+  .popover-content,
+  .menu-content {
+    --glass-alpha-floor: 0.5;
+  }
+  .dialog-content {
+    --glass-alpha-base: 1;
+    --glass-alpha-floor: 0.55;
+  }
+
+  .popover-content {
+    position: fixed;
+    min-width: 12rem;
+    max-height: var(--crumza-available-height, 80vh);
+    overflow: auto;
+    border-radius: var(--radius-lg);
+    padding: calc(var(--space-unit) * 3);
+  }
+
+  .tooltip-content {
+    position: fixed;
+    max-width: 20rem;
+    border-radius: var(--radius-sm);
+    border: var(--hairline) solid var(--border);
+    background: var(--popover);
+    color: var(--popover-foreground);
+    padding: calc(var(--space-unit) * 1) calc(var(--space-unit) * 2);
+    font-size: var(--text-ui-sm);
+    line-height: 1.4;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.12);
+  }
+
+  .dialog-content {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    padding: calc(var(--space-unit) * 6);
+    width: min(28rem, calc(100vw - 2rem));
+    max-height: calc(100dvh - 2rem);
+    overflow: auto;
+    border-radius: var(--radius-dialog);
+    opacity: 0;
+    transform: scale(calc(1 - 0.03 * var(--motion-scale)));
+    transition:
+      opacity var(--duration-base) var(--ease-out-cubic),
+      transform var(--duration-base) var(--ease-out-cubic),
+      display var(--duration-base) allow-discrete,
+      overlay var(--duration-base) allow-discrete;
+  }
+  .dialog-content[open] {
+    opacity: 1;
+    transform: none;
+    @starting-style {
+      opacity: 0;
+      transform: scale(calc(1 - 0.03 * var(--motion-scale)));
+    }
+  }
+  .dialog-content::backdrop {
+    background: rgb(0 0 0 / 0.4);
+    opacity: 0;
+    transition:
+      opacity var(--duration-base) var(--ease-out-cubic),
+      display var(--duration-base) allow-discrete,
+      overlay var(--duration-base) allow-discrete;
+  }
+  .dialog-content[open]::backdrop {
+    opacity: 1;
+    @starting-style {
+      opacity: 0;
+    }
+  }
+
+  /* The page behind a modal does not scroll. */
+  html:has(dialog:modal) {
+    overflow: hidden;
+  }
+}
+
+@layer components {
+  .menu-content {
+    position: fixed;
+    min-width: 12rem;
+    max-height: var(--crumza-available-height, 80vh);
+    overflow: auto;
+    border-radius: var(--radius-lg);
+    padding: calc(var(--space-unit) * 1);
+    transform-origin: var(--crumza-transform-origin, center);
+    opacity: 0;
+    transform: scale(calc(1 - 0.04 * var(--motion-scale)));
+    transition:
+      opacity var(--duration-fast) var(--ease-out-cubic),
+      transform var(--duration-fast) var(--ease-out-cubic),
+      display var(--duration-fast) allow-discrete,
+      overlay var(--duration-fast) allow-discrete;
+  }
+  .menu-content:popover-open {
+    opacity: 1;
+    transform: none;
+    @starting-style {
+      opacity: 0;
+      transform: scale(calc(1 - 0.04 * var(--motion-scale)));
+    }
+  }
+}
+
+@layer components {
+  /* Toasts: a top-layer region in the bottom-right corner; each toast is a floating pane. */
+  .toaster {
+    position: fixed;
+    inset: auto 1rem 1rem auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: min(22rem, calc(100vw - 2rem));
+    pointer-events: none;
+  }
+  .toast {
+    --glass-alpha-floor: 0.5;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: calc(var(--space-unit) * 3);
+    border-radius: var(--radius-2xl);
+    pointer-events: auto;
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity var(--duration-base) var(--ease-out-cubic),
+      transform var(--duration-base) var(--ease-out-cubic);
+    @starting-style {
+      opacity: 0;
+      transform: translateY(calc(8px * var(--motion-scale)));
+    }
+  }
+  .toast[data-state="closing"] {
+    opacity: 0;
+    transform: translateY(calc(8px * var(--motion-scale)));
+  }
+  .toast[data-variant="success"] {
+    border-color: color-mix(in oklab, var(--primary) 50%, transparent);
+  }
+  .toast[data-variant="error"] {
+    border-color: color-mix(in oklab, var(--destructive) 60%, transparent);
+  }
+}

@@ -1,0 +1,9 @@
+---
+import Catalog from '../layouts/Catalog.astro';
+---
+<Catalog title="Templates" description="Complete starting points. Considered from the first page to the last.">
+  <div class="collection-grid">
+    {[['Studio','For independent practices and creative teams.','tile-sage'],['Product','A focused home for something worth making.','tile-blue'],['Hospitality','A little space to welcome people in.','tile-clay']].map(([name,description,background])=><article><div class={'preview-tile '+background}><div class="preview-stack"><span>{name}</span><h2>{description}</h2><span>Concept · In development</span></div></div><div class="tile-label"><strong>{name}</strong><span>Planned Astro template</span></div></article>)}
+  </div>
+  <section class="collection-bottom"><h2>Not available for download yet.</h2><p>These are directions for the future collection, not finished templates. The open-source UI and blocks are available to explore locally today.</p></section>
+</Catalog>

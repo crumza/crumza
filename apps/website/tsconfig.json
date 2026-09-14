@@ -1,0 +1,26 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist", "node_modules"],
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "exactOptionalPropertyTypes": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "paths": {
+      "@crumza/ui": ["../../packages/ui/src/index.ts"],
+      "@crumza/ui/web": ["../../packages/ui/src/web/index.ts"],
+      "@crumza/ui/tokens": ["../../packages/ui/src/tokens/index.ts"],
+      "@crumza/ui/core": ["../../packages/ui/src/core/index.ts"],
+      "@crumza/blocks": ["../../packages/blocks/src/index.tsx"]
+    }
+  }
+}

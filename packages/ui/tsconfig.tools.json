@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM"],
+    "types": ["bun"],
+    "skipLibCheck": true,
+    "isolatedDeclarations": false,
+    "declaration": false
+  },
+  "include": ["scripts/**/*", "tests/**/*", "e2e/**/*", "src/**/*"]
+}

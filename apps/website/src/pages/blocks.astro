@@ -1,0 +1,9 @@
+---
+import Catalog from '../layouts/Catalog.astro';
+import BlockCollection from '../components/BlockCollection';
+import '../../../../packages/blocks/src/styles.css';
+---
+<Catalog title="Blocks" description="Small, complete compositions. Open source and ready to make your own.">
+  <BlockCollection />
+  <pre class="code-preview"><code>{`import { HeroBlock, FeatureGrid, PricingBlock, FAQBlock } from '@crumza/blocks';\nimport '@crumza/blocks/styles.css';`}</code></pre>
+</Catalog>

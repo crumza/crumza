@@ -1,0 +1,79 @@
+@layer components {
+  .crumza-block {
+    font-family: var(--font-sans);
+    color: var(--foreground);
+    padding: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-surface);
+  }
+  .crumza-block h2 {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.4;
+    margin: 0 0 12px;
+  }
+  .crumza-block h3 {
+    font-size: 13px;
+    font-weight: 500;
+    margin: 0 0 8px;
+  }
+  .crumza-block p {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--muted-foreground);
+    margin: 0;
+    max-width: 60ch;
+  }
+  .crumza-block .crumza-eyebrow {
+    font-size: 12px;
+    margin-bottom: 20px;
+  }
+  .crumza-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .crumza-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+    gap: 24px;
+    margin-top: 24px;
+  }
+  .crumza-pricing ul {
+    list-style: disc;
+    padding-inline-start: 18px;
+    margin-block: 20px;
+    font-size: 13px;
+  }
+  .crumza-pricing li + li {
+    margin-top: 8px;
+  }
+  .crumza-block .crumza-price {
+    font-size: 16px;
+    color: var(--foreground);
+  }
+  .crumza-price span {
+    font-size: 12px;
+    color: var(--muted-foreground);
+  }
+  .crumza-faq details {
+    border-bottom: 1px solid var(--border);
+    padding: 14px 0;
+  }
+  .crumza-faq summary {
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .crumza-faq details > div {
+    font-size: 13px;
+    color: var(--muted-foreground);
+    padding-top: 12px;
+    line-height: 1.65;
+  }
+  .crumza-faq summary:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 4px;
+  }
+}

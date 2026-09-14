@@ -1,0 +1,70 @@
+/* Experimental owned-backdrop lens. The default material lives in appearance.css. */
+@layer components {
+  .scene {
+    position: relative;
+    background-repeat: repeat;
+    background-position: var(--pan-x, 0px) var(--pan-y, 0px);
+  }
+  .lens.glass {
+    --_tint: var(--glass-tint-color);
+    --_alpha-hi: 0.25;
+    --_alpha-lo: 0.15;
+    overflow: hidden;
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .lens-svg,
+  .glass-refract-svg {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+  .lens-clone {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-repeat: repeat;
+    background-size: var(--scene-w, 100%) var(--scene-h, 100%);
+    background-position: calc(var(--pan-x, 0px) - var(--lens-x, 0px))
+      calc(var(--pan-y, 0px) - var(--lens-y, 0px));
+  }
+  .lens-tint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--_tint) 25%, transparent),
+      color-mix(in oklab, var(--_tint) 15%, transparent)
+    );
+  }
+  .lens-content {
+    display: contents;
+  }
+  .lens-clone,
+  .lens-tint {
+    z-index: -1;
+  }
+  .lens-rim {
+    padding: var(--lens-band, 30px);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    .lens-clone,
+    .lens-tint {
+      display: none;
+    }
+    .lens.glass {
+      background: var(--card);
+    }
+  }
+}

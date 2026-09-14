@@ -1,0 +1,20 @@
+---
+import Catalog from './Catalog.astro';
+import { sidebar, prevNext } from '../nav';
+interface Props { title: string; description?: string | undefined; slug: string; headings: {depth:number;slug:string;text:string}[]; }
+const { title, description, slug } = Astro.props;
+const { prev, next } = prevNext(slug);
+---
+<Catalog title={title} description={description} docs>
+  <div class="docs-grid">
+    <aside class="docs-sidebar"><nav aria-label="Documentation">{sidebar.map(group => <section><p>{group.title}</p>{group.items.map(item => <a href={'/docs/' + item.slug} aria-current={item.slug === slug ? 'page' : undefined}>{item.label}</a>)}</section>)}</nav></aside>
+    <div class="docs-body">
+      <div class="docs-demo"><slot name="demo" /></div>
+      <article class="prose"><slot /></article>
+      <nav class="docs-pagination" aria-label="Previous and next documentation">
+        {prev ? <a href={'/docs/' + prev.slug}>Previous: {prev.label}</a> : <span />}
+        {next ? <a href={'/docs/' + next.slug}>Next: {next.label}</a> : <span />}
+      </nav>
+    </div>
+  </div>
+</Catalog>

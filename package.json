@@ -1,0 +1,15 @@
+{
+  "name": "crumza-workspace",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "dev": "bun --cwd apps/website dev",
+    "build": "bun --cwd packages/ui build && bun --cwd packages/blocks build && bun --cwd apps/website build && bun scripts/check-site.ts",
+    "validate": "bun --cwd packages/ui validate && bun --cwd packages/blocks validate && bun run test:website && bun --cwd apps/website check && bun run build",
+    "test": "bun --cwd packages/ui test && bun run test:website",
+    "test:website": "bun test scripts/website-cache.test.ts",
+    "playground": "bun --cwd apps/playground dev"
+  },
+  "engines": { "bun": ">=1.3.0", "node": ">=22.12.0" }
+}

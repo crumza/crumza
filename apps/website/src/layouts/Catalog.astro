@@ -1,0 +1,79 @@
+---
+import '@fontsource-variable/inter';
+import '../styles/global.css';
+import '../styles/catalog.css';
+interface Props { title?: string; description?: string | undefined; docs?: boolean; }
+const { title = 'Discover', description = 'Considered components, blocks and starting points for the web.', docs = false } = Astro.props;
+const current = Astro.url.pathname.replace(/\/$/, '') || '/';
+const items = [['/', 'Discover'], ['/ui', 'UI components'], ['/blocks', 'Blocks'], ['/templates', 'Templates']];
+---
+<!doctype html>
+<html lang="en" data-theme="light" data-density="comfortable" data-material="liquid">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title} · Crumza</title>
+    <meta property="og:title" content={title + ' · Crumza'} />
+    <meta property="og:description" content={description} />
+  </head>
+  <body class="catalog-body">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <aside class="site-sidebar">
+      <a href="/" class="site-name">Crumza</a>
+      <p class="sidebar-label">Collection</p>
+      <nav aria-label="Main navigation">{items.map(([href, label]) => <a class="sidebar-link" href={href} aria-current={current === href ? 'page' : undefined}>{label}</a>)}</nav>
+      <p class="sidebar-label">Resources</p>
+      <nav aria-label="Resources">
+        <a class="sidebar-link" href="/docs/getting-started" aria-current={docs ? 'page' : undefined}>Documentation</a>
+        <a class="sidebar-link" href="/pro" aria-current={current === '/pro' ? 'page' : undefined}>Crumza Pro</a>
+        <a class="sidebar-link" href="https://github.com/crumza/crumza">GitHub</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <button type="button" id="sound-toggle" aria-pressed="false">Sound off</button>
+        <p>Independent by design.</p><span>© {new Date().getFullYear()} · Early preview</span>
+      </div>
+    </aside>
+    <div class="site-content">
+      <header class="page-heading"><div>{docs ? <p class="page-title">Documentation</p> : <h1>{title}</h1>}<p>{docs ? title : description}</p></div><a href="/docs/getting-started" class="quiet-link">React + Tailwind</a></header>
+      <main id="main"><slot /></main>
+      <footer class="site-footer"><span>Designed by people. Ready for their agents.</span><a href="/pro">What we're building</a></footer>
+    </div>
+    <script>
+      // A short synthesized cue, only after an explicit opt-in and a click.
+      const soundButton = document.querySelector<HTMLButtonElement>('#sound-toggle');
+      let enabled = false;
+      let audio: AudioContext | undefined;
+      function tick() {
+        if (!enabled) return;
+        try {
+          audio ??= new AudioContext();
+          void audio.resume().then(() => {
+            if (!audio || !enabled) return;
+            const oscillator = audio.createOscillator();
+            const gain = audio.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(640, audio.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(420, audio.currentTime + .035);
+            gain.gain.setValueAtTime(.018, audio.currentTime);
+            gain.gain.exponentialRampToValueAtTime(.0001, audio.currentTime + .045);
+            oscillator.connect(gain).connect(audio.destination);
+            oscillator.start();
+            oscillator.stop(audio.currentTime + .05);
+            oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
+          }).catch(() => {});
+        } catch { /* Sound is enhancement only. */ }
+      }
+      soundButton?.addEventListener('click', () => {
+        enabled = !enabled;
+        soundButton.textContent = enabled ? 'Sound on' : 'Sound off';
+        soundButton.setAttribute('aria-pressed', String(enabled));
+      });
+      document.addEventListener('click', event => {
+        if (event.target instanceof Element && event.target.closest('button, a, input[type=checkbox]')) tick();
+      });
+      window.addEventListener('pagehide', () => { void audio?.close(); });
+    </script>
+  </body>
+</html>
