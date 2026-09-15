@@ -6,10 +6,10 @@ export interface LiquidSceneImage {
   readonly src: string;
 }
 export const liquidScenes: readonly LiquidSceneImage[] = [
+  { label: 'Ambience', src: '/liquid/ambience.svg' },
   { label: 'Ridge', src: '/liquid/ridge.jpg' },
   { label: 'Bloom', src: '/liquid/bloom.png' },
   { label: 'Duotone', src: '/liquid/duotone.png' },
-  { label: 'Ambience', src: '/liquid/ambience.svg' },
 ];
 
 /** The gallery's slides. The site owns the assets; the component only receives URLs. */
