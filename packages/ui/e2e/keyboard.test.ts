@@ -517,15 +517,69 @@ test('liquid tab indicator: a press selects the tab and the indicator settles un
   expect(await blurLayer.evaluate((el) => getComputedStyle(el).backdropFilter)).toBe('none');
 });
 
-test('liquid search: typing opens the glass results and clearing closes them', async () => {
+test('liquid search: a round button grows into the field, and folds back when empty', async () => {
   const search = page.locator('[data-slot="liquid-search"]');
   await search.scrollIntoViewIfNeeded();
+  const fieldWidth = (): Promise<number> =>
+    page.evaluate(
+      () =>
+        document
+          .querySelector('[data-slot="liquid-search"] .lqc-search-field')
+          ?.getBoundingClientRect().width ?? 0,
+    );
+  const focusedTag = (): Promise<string | undefined> =>
+    page.evaluate(() => document.activeElement?.tagName);
+  // Folded: a 52px round button, the field disabled behind it.
+  expect(await fieldWidth()).toBeCloseTo(52, 0);
+  expect(await search.getByRole('textbox', { name: 'Search' }).isDisabled()).toBe(true);
+  await search.getByRole('button', { name: 'Search' }).click();
+  // The grow is a width transition; it lands on the full bar with the field focused.
+  await page.waitForFunction(
+    () =>
+      Math.abs(
+        (document
+          .querySelector('[data-slot="liquid-search"] .lqc-search-field')
+          ?.getBoundingClientRect().width ?? 0) - 296,
+      ) < 1,
+  );
+  expect(await focusedTag()).toBe('INPUT');
   await search.getByRole('textbox', { name: 'Search' }).fill('ra');
   const list = search.getByRole('listbox');
   await visible(list);
   expect(await list.getByRole('option').count()).toBe(2);
   expect(await list.getByRole('option').first().textContent()).toBe('Refraction map');
+  // Clearing keeps the bar open and the field focused; Escape folds it back to the button.
   await search.getByRole('button', { name: 'Clear' }).click();
   await gone(list);
   expect(await search.getByRole('textbox', { name: 'Search' }).inputValue()).toBe('');
+  expect(await focusedTag()).toBe('INPUT');
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(
+    () =>
+      (document
+        .querySelector('[data-slot="liquid-search"] .lqc-search-field')
+        ?.getBoundingClientRect().width ?? 0) < 53,
+  );
+  expect(await focusedTag()).toBe('BUTTON');
+});
+
+test('liquid notifications: the deck fans out on hover and the cross dismisses its card', async () => {
+  const stack = page.locator('[data-slot="liquid-notification-stack"]');
+  await stack.scrollIntoViewIfNeeded();
+  expect(await stack.getByRole('status').count()).toBe(3);
+  await stack.locator('.lqc-notif-deck').hover();
+  await page.waitForFunction(() =>
+    document
+      .querySelector('[data-slot="liquid-notification-stack"] .lqc-notif-deck')
+      ?.hasAttribute('data-expanded'),
+  );
+  // The card captures the pointer for swipes; a press on the cross must stay a click.
+  await stack.getByRole('button', { name: 'Dismiss Map rebuilt' }).click();
+  await page.waitForFunction(
+    () =>
+      document.querySelectorAll('[data-slot="liquid-notification-stack"] [role="status"]')
+        .length === 2,
+  );
+  expect(await stack.getByText('Map rebuilt').count()).toBe(0);
+  await page.mouse.move(2, 2);
 });

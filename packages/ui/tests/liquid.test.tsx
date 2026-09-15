@@ -188,10 +188,11 @@ describe('liquid component contracts', () => {
     expect(html.match(/aria-selected="true"/g)).toHaveLength(1);
     expect(html).toContain('class="lqc-indicator-blob" aria-hidden="true"');
   });
-  test('search: a labelled field and no results panel until something is typed', () => {
+  test('search: a round button holding a folded, disabled field and no results panel', () => {
     const html = scene(<LiquidSearch />);
-    expect(html).toContain('aria-label="Search"');
-    expect(html).toContain('placeholder="Search the material"');
+    expect(html).toContain('class="lqc-search-toggle" aria-label="Search" aria-expanded="false"');
+    expect(html).toContain('placeholder="Search the material" aria-label="Search" disabled=""');
+    expect(html).not.toContain('data-open');
     expect(html).not.toContain('role="listbox"');
   });
   test('header: three closed expanders and no menu', () => {

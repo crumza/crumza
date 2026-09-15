@@ -96,6 +96,10 @@ export function LiquidNotificationStack({
      re-render at all. */
   const onCardDown = (id: number) => (e: PointerEvent<HTMLElement>) => {
     if (!expanded) return; // collapsed cards are a deck, not individual targets
+    // A press on the dismiss button is a click, not a swipe. Capturing the
+    // pointer here would retarget the pointerup to the card and the click
+    // would never reach the button.
+    if (e.target instanceof Element && e.target.closest('.lqc-notif-close')) return;
     const el = e.currentTarget;
     swipe.current = { id, startX: e.clientX, dx: 0, el };
     el.setPointerCapture(e.pointerId);

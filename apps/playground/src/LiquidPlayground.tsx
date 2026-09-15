@@ -1,4 +1,10 @@
-import { LiquidScene, LiquidSearch, LiquidStepper, LiquidTabIndicator } from '@crumza/ui/liquid';
+import {
+  LiquidNotificationStack,
+  LiquidScene,
+  LiquidSearch,
+  LiquidStepper,
+  LiquidTabIndicator,
+} from '@crumza/ui/liquid';
 import type { ReactElement } from 'react';
 
 /* A self-contained scene image, so the harness carries no binary asset. Broad
@@ -12,12 +18,12 @@ const SCENE = `data:image/svg+xml,${encodeURIComponent(
     '</svg>',
 )}`;
 
-/** Three liquid surfaces on their own stages, for the keyboard and engine e2e. */
+/** Four liquid surfaces on their own stages, for the keyboard and engine e2e. */
 export function LiquidPlayground(): ReactElement {
   return (
     <section aria-label="Liquid glass" className="grid gap-4">
       <span className="font-mono text-ui-sm uppercase tracking-[0.1em] text-muted-foreground">
-        liquid glass: one engine, three surfaces
+        liquid glass: one engine, four surfaces
       </span>
       <div className="grid gap-4 md:grid-cols-2">
         <LiquidScene background={SCENE} className="h-72 rounded-2xl">
@@ -28,6 +34,9 @@ export function LiquidPlayground(): ReactElement {
         </LiquidScene>
         <LiquidScene background={SCENE} className="h-80 rounded-2xl md:col-span-2">
           <LiquidSearch />
+        </LiquidScene>
+        <LiquidScene background={SCENE} className="h-[440px] rounded-2xl md:col-span-2">
+          <LiquidNotificationStack />
         </LiquidScene>
       </div>
     </section>
