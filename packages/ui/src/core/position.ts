@@ -25,6 +25,8 @@ export interface PositionInput {
   readonly offset: number;
   /** Minimum distance from the boundary edges. */
   readonly padding: number;
+  /** Width of the arrow along the cross axis, kept clear of both corners. 0 for no arrow. */
+  readonly arrowSize?: number | undefined;
   readonly rtl?: boolean | undefined;
 }
 
@@ -36,6 +38,8 @@ export interface Position {
   readonly align: Align;
   /** CSS transform-origin that makes a scale-in feel attached to the anchor. */
   readonly transformOrigin: string;
+  /** Cross-axis distance from the floating box's leading edge to the centre of the arrow. */
+  readonly arrow: number;
   readonly availableWidth: number;
   readonly availableHeight: number;
 }
@@ -110,6 +114,18 @@ export function computePosition(input: PositionInput): Position {
     y = clamp(y, boundary.y + padding, boundary.y + boundary.height - floating.height - padding);
   }
 
+  /* An arrow points at the anchor, not at the middle of the box that carries it: alignment and
+     the clamp above both slide the box along its cross axis while the anchor stays where it is.
+     Measured from the box's leading edge on that axis and held arrowSize clear of each corner,
+     so a tooltip pushed along the edge of the screen still points at its own trigger. */
+  const crossExtent = isVertical(side) ? floating.width : floating.height;
+  const anchorCentre = isVertical(side)
+    ? anchor.x + anchor.width / 2
+    : anchor.y + anchor.height / 2;
+  const middle = crossExtent / 2;
+  const reach = Math.max(0, middle - (input.arrowSize ?? 0));
+  const arrow = middle + clamp(anchorCentre - (isVertical(side) ? x : y) - middle, -reach, reach);
+
   const originX = isVertical(side)
     ? align === 'start'
       ? 'left'
@@ -135,6 +151,7 @@ export function computePosition(input: PositionInput): Position {
     side,
     align: input.align,
     transformOrigin: `${originX} ${originY}`,
+    arrow: Math.round(arrow),
     availableWidth: Math.max(
       0,
       room(isVertical(side) ? 'right' : side, anchor, boundary) - offset - padding,

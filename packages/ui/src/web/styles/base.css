@@ -18,14 +18,20 @@
   outline-offset: 3px;
 }
 
-/* The field treatment shared by inputs and textareas: a hairline lifecycle, never a glow. */
+/* The field treatment shared by inputs and textareas: a hairline lifecycle, never a glow.
+   Focus thickens the field's own edge to two pixels rather than adding a detached outline
+   ring: one accent perimeter, on the control's own shape. --_edge lets an invalid field
+   focus in its own colour instead of contradicting its border. */
 @utility field {
+  --_edge: var(--primary);
   border-radius: var(--radius-field);
   border: 1px solid var(--input);
   background-color: var(--card);
   color: var(--foreground);
   outline: none;
-  transition: border-color var(--duration-fast) var(--ease-snappy);
+  transition:
+    border-color var(--duration-fast) var(--ease-snappy),
+    box-shadow var(--duration-fast) var(--ease-snappy);
   &::placeholder {
     color: var(--foreground-tertiary);
   }
@@ -33,12 +39,19 @@
     border-color: color-mix(in oklab, var(--foreground) 30%, transparent);
   }
   &:focus-visible {
-    border-color: var(--primary);
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
+    border-color: var(--_edge);
+    box-shadow: 0 0 0 1px var(--_edge);
   }
   &[aria-invalid="true"] {
+    --_edge: var(--destructive);
     border-color: var(--destructive);
+  }
+  /* Forced colours drop box-shadow, so focus falls back to a real outline there. */
+  @media (forced-colors: active) {
+    &:focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: 1px;
+    }
   }
   &:disabled {
     cursor: not-allowed;

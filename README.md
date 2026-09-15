@@ -15,7 +15,7 @@ bun run validate
 
 Website: http://127.0.0.1:4325. Routes: /, /ui, /blocks, /templates, /pro and /docs/getting-started.
 
-The website uses Inter with three sizes only: 12, 13 and 16px. No logo mark, decorative icons, oversized hero or autoplay audio. Sounds are opt-in and synthesized locally.
+The website uses Inter with three sizes only: 12, 13 and 16px. No logo mark, oversized hero or autoplay audio. The top bar carries a sound toggle and a light and dark mode toggle; sounds are opt-in and synthesized locally.
 
 ## Layout
 

@@ -2,12 +2,24 @@
 import Catalog from './Catalog.astro';
 import { sidebar, prevNext } from '../nav';
 interface Props { title: string; description?: string | undefined; slug: string; headings: {depth:number;slug:string;text:string}[]; }
-const { title, description, slug } = Astro.props;
+const { title, description, slug, headings = [] } = Astro.props;
 const { prev, next } = prevNext(slug);
+const toc = headings.filter(heading => heading.depth === 2 || heading.depth === 3);
 ---
 <Catalog title={title} description={description} docs>
-  <div class="docs-grid">
-    <aside class="docs-sidebar"><nav aria-label="Documentation">{sidebar.map(group => <section><p>{group.title}</p>{group.items.map(item => <a href={'/docs/' + item.slug} aria-current={item.slug === slug ? 'page' : undefined}>{item.label}</a>)}</section>)}</nav></aside>
+  <div class="docs-grid" data-has-toc={toc.length > 1 ? 'true' : undefined}>
+    <aside class="docs-sidebar">
+      <div class="docs-sidebar-scroll">
+        <nav aria-label="Documentation">
+          {sidebar.map(group => (
+            <section>
+              <p>{group.title}</p>
+              {group.items.map(item => <a href={'/docs/' + item.slug} aria-current={item.slug === slug ? 'page' : undefined}>{item.label}</a>)}
+            </section>
+          ))}
+        </nav>
+      </div>
+    </aside>
     <div class="docs-body">
       <div class="docs-demo"><slot name="demo" /></div>
       <article class="prose"><slot /></article>
@@ -16,5 +28,83 @@ const { prev, next } = prevNext(slug);
         {next ? <a href={'/docs/' + next.slug}>Next: {next.label}</a> : <span />}
       </nav>
     </div>
+    {toc.length > 1 && (
+      <aside class="docs-toc">
+        <nav aria-labelledby="toc-label">
+          <p id="toc-label">On this page</p>
+          {toc.map(heading => <a href={'#' + heading.slug} data-depth={heading.depth}>{heading.text}</a>)}
+        </nav>
+      </aside>
+    )}
   </div>
 </Catalog>
+<script>
+  // The rail fades only at an edge that has more list behind it.
+  const rail = document.querySelector<HTMLElement>('.docs-sidebar-scroll');
+  if (rail) {
+    const fade = () => {
+      const room = rail.scrollHeight - rail.clientHeight;
+      rail.style.setProperty('--fade-top', rail.scrollTop > 2 ? '22px' : '0px');
+      rail.style.setProperty('--fade-bottom', rail.scrollTop < room - 2 ? '22px' : '0px');
+    };
+    rail.addEventListener('scroll', fade, { passive: true });
+    addEventListener('resize', fade, { passive: true });
+    fade();
+    // Open the page you are on already in view, however far down the list it sits.
+    const here = rail.querySelector<HTMLElement>('[aria-current="page"]');
+    if (here) {
+      const { top, bottom } = here.getBoundingClientRect();
+      const box = rail.getBoundingClientRect();
+      if (top < box.top || bottom > box.bottom) {
+        // Scrolling the rail directly; scrollIntoView would drag the page with it.
+        rail.scrollTop += top - box.top - (box.height - here.offsetHeight) / 2;
+        fade();
+      }
+    }
+  }
+
+  // Highlights the section the reader is actually looking at, not just the one they clicked.
+  const toc = document.querySelector<HTMLElement>('.docs-toc');
+  const links = toc ? [...toc.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')] : [];
+  const targets = links
+    .map(link => document.getElementById(decodeURIComponent(link.hash.slice(1))))
+    .filter((heading): heading is HTMLElement => heading !== null);
+
+  if (toc && targets.length === links.length && targets.length > 0) {
+    let current: HTMLAnchorElement | undefined;
+    const mark = (link: HTMLAnchorElement | undefined) => {
+      if (link === current) return;
+      current?.removeAttribute('aria-current');
+      link?.setAttribute('aria-current', 'true');
+      current = link;
+      // Keep the active entry in view when the list is long enough to scroll.
+      if (link && toc.scrollHeight > toc.clientHeight + 4) {
+        const { top, bottom } = link.getBoundingClientRect();
+        const box = toc.getBoundingClientRect();
+        // Scrolling the list directly; scrollIntoView would drag the page with it.
+        if (top < box.top) toc.scrollTop += top - box.top;
+        else if (bottom > box.bottom) toc.scrollTop += bottom - box.bottom;
+      }
+    };
+
+    // The offset clears the sticky site bar, so a heading counts as read once it reaches it.
+    const offset = 110;
+    const update = () => {
+      const atBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 2;
+      if (atBottom) return mark(links[links.length - 1]);
+      let index = targets.findIndex(heading => heading.getBoundingClientRect().top > offset);
+      if (index === -1) index = targets.length;
+      mark(links[Math.max(0, index - 1)]);
+    };
+
+    let queued = false;
+    const schedule = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => { queued = false; update(); });
+    };
+    addEventListener('scroll', schedule, { passive: true });
+    addEventListener('resize', schedule, { passive: true });
+    update();
+  }
+</script>
