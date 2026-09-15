@@ -40,7 +40,9 @@ export function LiquidDraggable({ children, className }: LiquidDraggableProps): 
     fieldToBlur: null as HTMLElement | null,
   });
 
-  // centre on mount, before the browser paints (no flash at 0,0)
+  // Centre on mount, before the browser paints. The stylesheet already centres
+  // the wrapper with a transform, so server-rendered markup sits in the middle
+  // from its first paint; this swaps that for a pixel position the drag can move.
   useLayoutEffect(() => {
     const el = ref.current;
     const parent = el?.parentElement;
@@ -51,6 +53,7 @@ export function LiquidDraggable({ children, className }: LiquidDraggableProps): 
     st.current.y = y;
     el.style.left = `${x}px`;
     el.style.top = `${y}px`;
+    el.dataset['placed'] = '';
     requestPaint();
   }, [requestPaint]);
 

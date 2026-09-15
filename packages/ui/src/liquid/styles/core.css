@@ -143,12 +143,19 @@ button.lq-lens {
 
 /* draggable positioner, one per component instance */
 
+/* Centred by CSS until the script places it, so server-rendered markup paints
+   in the middle of the stage instead of flashing at the corner before hydration.
+   Once placed, position is plain left/top in px and the transform comes off. */
 .lq-drag {
   position: absolute;
-  left: 0;
-  top: 0;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   cursor: grab;
   touch-action: none;
+}
+.lq-drag[data-placed] {
+  transform: none;
 }
 .lq-drag[data-dragging] {
   cursor: grabbing;

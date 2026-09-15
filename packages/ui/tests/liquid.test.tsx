@@ -88,6 +88,12 @@ describe('liquid scene and surface contracts', () => {
     expect(scene(null).indexOf('lq-scene')).toBeLessThan(scene(null).indexOf('lq-layer'));
     expect(renderToStaticMarkup(<LiquidScene frosted />)).toContain('data-frosted=""');
   });
+  test('a draggable renders centred by the stylesheet until the script places it', () => {
+    const html = scene(<LiquidStepper />);
+    expect(html).toContain('data-slot="liquid-draggable" class="lq-drag"');
+    expect(html).not.toContain('data-placed');
+    expect(html).not.toContain('left:0');
+  });
   test('a surface outside a scene fails loudly instead of rendering flat', () => {
     expect(() => renderToStaticMarkup(<LiquidSurface />)).toThrow('<LiquidScene>');
   });
@@ -99,8 +105,24 @@ describe('liquid scene and surface contracts', () => {
       expect(html.match(new RegExp(`class="${layer}"`, 'g'))).toHaveLength(1);
     }
     expect(html).toContain('<span class="lq-content">Glass</span>');
+    // the optics are in the markup, so they paint with the HTML rather than on hydration
+    expect(html).toContain(
+      'class="lq-blur" style="-webkit-backdrop-filter:blur(2.5px);backdrop-filter:blur(2.5px)"',
+    );
+    expect(html).toContain('class="lq-tint" style="background:#000000;opacity:0.2"');
+    expect(html).toContain('class="lq-glint" style="opacity:1"');
     expect(html).toContain('class="lq-housing" aria-hidden="true"');
     expect(html).not.toContain('<canvas');
+  });
+  test('the server markup follows the scene options it was rendered with', () => {
+    const html = renderToStaticMarkup(
+      <LiquidScene frosted blur={0} glint={40} tint={0.5} tintColor="#ff6600">
+        <LiquidSurface />
+      </LiquidScene>,
+    );
+    expect(html).toContain('<div class="lq-blur"><div class="lq-refraction"></div></div>');
+    expect(html).toContain('class="lq-tint" style="background:#ff6600;opacity:0.5"');
+    expect(html).toContain('class="lq-glint" style="opacity:0.4"');
   });
   test('as="button" is a native non-submit button', () => {
     const html = scene(

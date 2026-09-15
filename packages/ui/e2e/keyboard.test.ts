@@ -463,6 +463,16 @@ test('dialog: dense readable material, centered geometry and reduced motion', as
 test('liquid stepper: the buttons hold the bounds and the value announces itself', async () => {
   const stepper = page.locator('[data-slot="liquid-stepper"]');
   await stepper.scrollIntoViewIfNeeded();
+  // Placed by the script in the middle of its stage, where the stylesheet already had it.
+  const wrapper = stepper.locator('xpath=ancestor::*[@data-slot="liquid-draggable"]');
+  expect(await wrapper.getAttribute('data-placed')).toBe('');
+  const [box, stage] = await Promise.all([
+    wrapper.boundingBox(),
+    stepper.locator('xpath=ancestor::*[@data-slot="liquid-scene"]').boundingBox(),
+  ]);
+  if (!box || !stage) throw new Error('nothing to measure');
+  expect(Math.abs(box.x + box.width / 2 - (stage.x + stage.width / 2))).toBeLessThan(2);
+  expect(Math.abs(box.y + box.height / 2 - (stage.y + stage.height / 2))).toBeLessThan(2);
   const value = stepper.locator('[aria-live="polite"]');
   const decrease = stepper.getByRole('button', { name: 'Decrease' });
   const increase = stepper.getByRole('button', { name: 'Increase' });
@@ -501,9 +511,10 @@ test('liquid tab indicator: a press selects the tab and the indicator settles un
   // A frosted scene marks itself, and its glass carries the interior blur.
   const stage = bar.locator('xpath=ancestor::*[@data-slot="liquid-scene"]');
   expect(await stage.getAttribute('data-frosted')).toBe('');
-  expect(await bar.locator('.lq-blur').evaluate((el) => getComputedStyle(el).filter)).toContain(
-    'blur(5px)',
-  );
+  const blurLayer = bar.locator('.lq-blur');
+  expect(await blurLayer.evaluate((el) => getComputedStyle(el).filter)).toContain('blur(5px)');
+  // The backdrop blur only stands in before the engine's first paint; the clone carries it now.
+  expect(await blurLayer.evaluate((el) => getComputedStyle(el).backdropFilter)).toBe('none');
 });
 
 test('liquid search: typing opens the glass results and clearing closes them', async () => {

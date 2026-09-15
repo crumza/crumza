@@ -251,6 +251,12 @@ export function LiquidSurface({
   ...rest
 }: LiquidSurfaceProps): ReactElement {
   const scene = useLiquidScene();
+  // The optics the markup is born with. Server rendering and the first client
+  // render both read these, so the HTML already carries blur, tint and glint and
+  // hydration finds nothing to change. After mount the engine writes the live
+  // values straight to the DOM; this object never changes, so React never
+  // overwrites them on a re-render.
+  const initial = useRef(scene.paramsRef.current).current;
 
   const lensRef = useRef<HTMLElement | null>(null);
   const clipRef = useRef<HTMLDivElement | null>(null);
@@ -273,6 +279,8 @@ export function LiquidSurface({
     lastBuild: 0,
     lastW: 0,
     lastH: 0,
+    // true once the refracted clone is painted and the stand-in backdrop blur can go
+    primed: false,
   });
 
   // A radius change alters the clips and the map SDF but not the element's box,
@@ -436,6 +444,13 @@ export function LiquidSurface({
       }
 
       if (!L.mapUrl) return;
+      if (!L.primed) {
+        // Until now a backdrop blur stood in for the clone (see the markup below).
+        // The clone covers the whole lens from here on, so the stand-in is retired.
+        L.primed = true;
+        blurWrap.style.setProperty('backdrop-filter', 'none');
+        blurWrap.style.setProperty('-webkit-backdrop-filter', 'none');
+      }
       lensFilter.update({
         mapUrl: L.mapUrl,
         mapW: g.mapW,
@@ -493,12 +508,33 @@ export function LiquidSurface({
       {...(rest as HTMLAttributes<HTMLDivElement>)}
     >
       <div ref={clipRef} className="lq-clip">
-        {/* blur wrapper: separate layer so the CSS blur is not chained on url() */}
-        <div ref={blurRef} className="lq-blur">
+        {/* blur wrapper: separate layer so the CSS blur is not chained on url().
+            Before the engine paints there is no clone to blur, so the same blur
+            is applied to the real scene behind the lens as a backdrop filter. */}
+        <div
+          ref={blurRef}
+          className="lq-blur"
+          style={
+            initial.blur > 0
+              ? {
+                  WebkitBackdropFilter: `blur(${initial.blur}px)`,
+                  backdropFilter: `blur(${initial.blur}px)`,
+                }
+              : undefined
+          }
+        >
           <div ref={refractionRef} className="lq-refraction" />
         </div>
-        <div ref={tintRef} className="lq-tint" />
-        <div ref={glintRef} className="lq-glint" />
+        <div
+          ref={tintRef}
+          className="lq-tint"
+          style={{ background: initial.tintColor, opacity: initial.tint }}
+        />
+        <div
+          ref={glintRef}
+          className="lq-glint"
+          style={{ opacity: Math.min(1, initial.glint / 100) }}
+        />
       </div>
       <span className={contentClassName ? `lq-content ${contentClassName}` : 'lq-content'}>
         {children}
