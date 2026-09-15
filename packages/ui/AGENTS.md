@@ -7,6 +7,7 @@
 - CSS glass has directional edge highlights and a bevel. Button/Glass inside Scene use owned-background edge refraction. Do not claim arbitrary DOM refraction, native Apple rendering or automatic backdrop-luminance adaptation. Standalone Lens remains experimental.
 - Prefer native platform semantics. No Radix, Base UI or motion runtime dependency. Do not invent a second theme/state framework.
 - Label every input; use DialogTitle and DialogDescription with DialogContent. Use render={<Button />} on trigger/close parts to style a native button.
+- The liquid glass set lives in src/liquid (core engine, components, styles) and is exported as @crumza/ui/liquid. It exposes only frosted, blur, glint, tint and radius; do not add optics knobs. Components keep their exact stylesheets in src/liquid/styles.
 - Tokens are authored in src/tokens/index.ts. Regenerate tokens.css with bun run tokens. Never hand-edit generated CSS.
 - Preserve strict TS including exact optional properties, checked index access and isolated declarations. Core must compile without DOM types.
 - Public APIs need docs and tests. Run bun run validate from the monorepo root.

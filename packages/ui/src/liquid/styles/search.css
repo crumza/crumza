@@ -1,0 +1,128 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component transitions. */
+/* LiquidSearch: geometry and motion only; the material is .lq-lens (core) */
+
+.lqc-search {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 296px;
+}
+
+.lqc-search-field {
+  height: 52px;
+}
+.lqc-search-field-content {
+  gap: 10px;
+  padding: 0 16px;
+}
+
+.lqc-search-icon {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.lqc-search-field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #fff;
+  font: 500 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  caret-color: #fff;
+}
+.lqc-search-field input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.lqc-search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  appearance: none;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+.lqc-search-clear svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2.5;
+}
+.lqc-search-clear:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+/* the results panel changes height as matches come and go: the resize is the
+   whole point of the demo, and why the component pumps the scene */
+.lqc-search-results {
+  width: 100%;
+  transform-origin: top center;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.99);
+  transition:
+    opacity 180ms var(--lq-ease),
+    transform 220ms var(--lq-ease);
+}
+.lqc-search-results.is-shown {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 240ms var(--lq-ease),
+    transform 320ms var(--lq-ease);
+}
+
+.lqc-search-list {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.lqc-search-item {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.84);
+  font: 500 13.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  text-align: left;
+  padding: 11px 13px;
+  border-radius: var(--lq-inner-r, 16px);
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+.lqc-search-item:hover {
+  background: rgba(255, 255, 255, 0.11);
+  color: #fff;
+}
+.lqc-search-item mark {
+  background: transparent;
+  color: #fff;
+  font-weight: 700;
+}
+
+.lqc-search-empty {
+  padding: 13px;
+  font: 400 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: rgba(255, 255, 255, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lqc-search-results,
+  .lqc-search-item {
+    transition: none !important;
+  }
+  .lqc-search-results {
+    opacity: 1;
+    transform: none;
+  }
+}

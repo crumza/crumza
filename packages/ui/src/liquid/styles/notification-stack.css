@@ -1,0 +1,160 @@
+/* LiquidNotificationStack: geometry and motion only; the material is .lq-lens (core)
+
+   Fills the stage and lays its own pieces out inside it. */
+
+.lqc-notif-field {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.lqc-notif-push {
+  width: 176px;
+  height: 52px;
+  font: 600 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  letter-spacing: -0.008em;
+  flex: 0 0 auto;
+}
+.lqc-notif-push:active {
+  transform: scale(0.972);
+}
+
+/* Fixed height, absolutely positioned children: collapsing and expanding the
+   deck is then pure transform on each card, and no card ever changes SIZE, so
+   all four share one cached displacement map however they are arranged. */
+.lqc-notif-deck {
+  position: relative;
+  width: 296px;
+  height: 316px;
+  flex: 0 0 auto;
+}
+
+.lqc-notif-slot {
+  --deck-y: 0px;
+  --deck-scale: 1;
+  --deck-z: 1;
+  --deck-fade: 1;
+  --open-y: 0px;
+  --swipe: 0px;
+  --swipe-fade: 1;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: var(--deck-z);
+  transform: translate(var(--swipe), var(--deck-y)) scale(var(--deck-scale));
+  opacity: calc(var(--deck-fade) * var(--swipe-fade));
+  transition:
+    transform 380ms var(--lq-ease),
+    opacity 300ms var(--lq-ease);
+}
+.lqc-notif-deck[data-expanded] .lqc-notif-slot {
+  transform: translate(var(--swipe), var(--open-y)) scale(1);
+  opacity: var(--swipe-fade);
+}
+/* the cards past the visible three, while the deck is closed */
+.lqc-notif-slot[data-buried] {
+  opacity: 0;
+  pointer-events: none;
+}
+.lqc-notif-slot.is-leaving {
+  opacity: 0;
+  transform: translate(var(--swipe), var(--open-y)) scale(0.94);
+}
+
+.lqc-notif {
+  height: 68px; /* keep in step with DECK_ROW (68 + 8 gap) in NotificationStack.tsx */
+  width: 100%;
+  /* Every card is transparent glass over the same image, so an offset alone
+     does not separate them: a soft edge shadow is what makes the layering legible. */
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.14),
+    0 10px 22px -12px rgba(0, 0, 0, 0.55);
+}
+.lqc-notif-content {
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 12px 0 16px;
+  text-align: left;
+}
+.lqc-notif-deck[data-expanded] .lqc-notif {
+  cursor: grab;
+}
+
+.lqc-notif-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.lqc-notif-text strong {
+  font: 600 13.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
+}
+.lqc-notif-text span {
+  font: 400 12px / 1.35 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.lqc-notif-close {
+  appearance: none;
+  border: 0;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    opacity 180ms ease;
+}
+.lqc-notif-deck[data-expanded] .lqc-notif-close {
+  opacity: 1;
+}
+.lqc-notif-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+.lqc-notif-close svg {
+  width: 12px;
+  height: 12px;
+}
+
+.lqc-notif-count {
+  position: absolute;
+  left: 50%;
+  top: 104px;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(10, 11, 15, 0.5);
+  color: rgba(255, 255, 255, 0.72);
+  font: 500 11px / 1 var(--font-mono, ui-monospace, monospace);
+  pointer-events: none;
+}
+
+.lqc-notif-empty {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 24px;
+  text-align: center;
+  font: 400 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lqc-notif-slot {
+    transition-duration: 1ms;
+  }
+}

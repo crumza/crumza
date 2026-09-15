@@ -1,0 +1,184 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component transitions. */
+/* Liquid core: engine layer styles and the draggable positioner.
+
+   Companion to scene.tsx and draggable.tsx. Geometry (sizes, offsets, clips,
+   blur, tint, glint) is written by the engine at paint time; everything
+   structural lives here. Component-specific styling never does: each
+   component ships its own stylesheet. */
+
+:root {
+  /* one shared curve: short, damped, never applied to the material's optics */
+  --lq-ease: cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.lq-stage {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  user-select: none;
+  -webkit-user-select: none;
+  background: #0a0b0f;
+}
+
+/* the refracted subject */
+.lq-scene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.lq-scene-bg,
+.lq-refraction-scene .lq-scene-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* interactive layer: glass surfaces live here, never inside .lq-scene */
+.lq-layer {
+  position: absolute;
+  inset: 0;
+}
+
+/* the cloned scene held inside each surface; positioned (never transformed) so
+   it lines up pixel-for-pixel with the real scene behind the surface */
+.lq-refraction-scene {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+}
+
+/* the glass surface itself */
+
+.lq-lens {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate; /* contain the tint blend mode to the surface contents */
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #fff;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button.lq-lens {
+  cursor: pointer;
+}
+
+/* Composited inner layers (a filtered subtree, a blended layer) escape the
+   parent's overflow+border-radius clip in WebKit and show square corners.
+   clip-path on this wrapper clips them reliably, and unlike clipping .lq-lens
+   directly, it leaves the outer shadow intact. */
+.lq-clip {
+  position: absolute;
+  inset: 0;
+}
+
+/* standalone blur, deliberately NOT chained onto the url() filter, which
+   Safari over-blurs */
+.lq-blur {
+  position: absolute;
+  inset: 0;
+  will-change: filter;
+}
+
+.lq-refraction {
+  position: absolute;
+  transform-origin: top left;
+  pointer-events: none; /* a visual clone; input passes through to the surface */
+  will-change: filter;
+}
+
+/* glass tint, blended over the refraction, beneath the glint */
+.lq-tint {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+/* specular bevel: a composited layer rather than an SVG pass; the glint
+   control drives intensity through opacity */
+.lq-glint {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 1px 1px 2.5px rgba(255, 255, 255, 0.55),
+    inset -1.5px -1.5px 4px rgba(0, 0, 0, 0.22);
+}
+
+.lq-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+/* interactive content (menu items, links) opts back in */
+.lq-content-interactive {
+  pointer-events: auto;
+}
+
+.lq-housing {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* draggable positioner, one per component instance */
+
+.lq-drag {
+  position: absolute;
+  left: 0;
+  top: 0;
+  cursor: grab;
+  touch-action: none;
+}
+.lq-drag[data-dragging] {
+  cursor: grabbing;
+}
+.lq-drag .lq-lens {
+  transition:
+    box-shadow 220ms var(--lq-ease),
+    transform 220ms var(--lq-ease);
+}
+.lq-drag[data-dragging] .lq-lens {
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.18),
+    0 6px 16px -8px rgba(0, 0, 0, 0.4);
+}
+.lq-drag button {
+  cursor: inherit;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .lq-blur,
+  .lq-refraction {
+    display: none;
+  }
+  .lq-lens {
+    background: rgba(28, 28, 30, 0.9);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lq-drag .lq-lens {
+    transition: none !important;
+  }
+}

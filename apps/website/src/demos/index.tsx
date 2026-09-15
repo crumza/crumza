@@ -66,6 +66,18 @@ import {
   Tooltip,
   toast,
 } from '@crumza/ui/web';
+import {
+  LiquidColorPicker,
+  LiquidContextMenu,
+  LiquidGallery,
+  LiquidHeader,
+  LiquidNotificationStack,
+  LiquidPricingCard,
+  LiquidSearch,
+  LiquidStepper,
+  LiquidTabIndicator,
+  LiquidTestimonials,
+} from '@crumza/ui/liquid';
 import type { ComponentType, ReactElement } from 'react';
 import { useState } from 'react';
 import { Frame } from './Frame';
@@ -79,6 +91,8 @@ import {
   LiquixToastDemo,
 } from './LiquixControlDemos';
 import { LiquixTabsDemo } from './LiquixTabsDemo';
+import { liquidGalleryImages } from './liquid';
+import { LiquidFrame } from './LiquidFrame';
 
 function ButtonDemo(): ReactElement {
   return (
@@ -825,6 +839,40 @@ function LiquixCircleDemo(): ReactElement {
   return <LiquixFrame shape="circle" title="A liquix circle over a scrolling backdrop" />;
 }
 
+/* Liquid glass: every demo is one component on a refracting stage, with the five knobs above. */
+function LiquidHeaderDemo(): ReactElement {
+  return <LiquidFrame>{(r) => <LiquidHeader radius={r} />}</LiquidFrame>;
+}
+function LiquidPricingCardDemo(): ReactElement {
+  return <LiquidFrame height={520}>{(r) => <LiquidPricingCard radius={r} />}</LiquidFrame>;
+}
+function LiquidTestimonialsDemo(): ReactElement {
+  return <LiquidFrame height={480}>{(r) => <LiquidTestimonials radius={r} />}</LiquidFrame>;
+}
+function LiquidTabIndicatorDemo(): ReactElement {
+  return <LiquidFrame height={360}>{(r) => <LiquidTabIndicator radius={r} />}</LiquidFrame>;
+}
+function LiquidSearchDemo(): ReactElement {
+  return <LiquidFrame>{(r) => <LiquidSearch radius={r} />}</LiquidFrame>;
+}
+function LiquidStepperDemo(): ReactElement {
+  return <LiquidFrame height={320}>{(r) => <LiquidStepper radius={r} />}</LiquidFrame>;
+}
+function LiquidColorPickerDemo(): ReactElement {
+  return <LiquidFrame height={480}>{(r) => <LiquidColorPicker radius={r} />}</LiquidFrame>;
+}
+function LiquidNotificationStackDemo(): ReactElement {
+  return <LiquidFrame height={480}>{(r) => <LiquidNotificationStack radius={r} />}</LiquidFrame>;
+}
+function LiquidContextMenuDemo(): ReactElement {
+  return <LiquidFrame>{(r) => <LiquidContextMenu radius={r} />}</LiquidFrame>;
+}
+function LiquidGalleryDemo(): ReactElement {
+  return (
+    <LiquidFrame>{(r) => <LiquidGallery radius={r} images={liquidGalleryImages} />}</LiquidFrame>
+  );
+}
+
 /** Which live demo sits above which docs page. Slugs match the docs/ file paths. */
 const demos: Record<string, ComponentType> = {
   'components/button': ButtonDemo,
@@ -873,6 +921,17 @@ const demos: Record<string, ComponentType> = {
   'components/skeleton': SkeletonDemo,
   'components/separator': FactsDemo,
   material: GlassDemo,
+  liquid: LiquidHeaderDemo,
+  'components/liquid-pricing-card': LiquidPricingCardDemo,
+  'components/liquid-testimonials': LiquidTestimonialsDemo,
+  'components/liquid-header': LiquidHeaderDemo,
+  'components/liquid-tab-indicator': LiquidTabIndicatorDemo,
+  'components/liquid-search': LiquidSearchDemo,
+  'components/liquid-stepper': LiquidStepperDemo,
+  'components/liquid-color-picker': LiquidColorPickerDemo,
+  'components/liquid-notification-stack': LiquidNotificationStackDemo,
+  'components/liquid-context-menu': LiquidContextMenuDemo,
+  'components/liquid-gallery': LiquidGalleryDemo,
 };
 
 export function hasDemo(slug: string): boolean {

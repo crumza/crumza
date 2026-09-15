@@ -18,6 +18,7 @@
     "paths": {
       "@crumza/ui": ["../../packages/ui/src/index.ts"],
       "@crumza/ui/web": ["../../packages/ui/src/web/index.ts"],
+      "@crumza/ui/liquid": ["../../packages/ui/src/liquid/index.ts"],
       "@crumza/ui/tokens": ["../../packages/ui/src/tokens/index.ts"],
       "@crumza/ui/core": ["../../packages/ui/src/core/index.ts"],
       "@crumza/blocks": ["../../packages/blocks/src/index.tsx"]

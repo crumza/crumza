@@ -3,6 +3,7 @@
 A small, considered React design system and Astro catalogue. Public packages:
 
 - @crumza/ui: native React components, solid/frosted/liquid materials, scoped brand colors and radius.
+- @crumza/ui/liquid: a refracting LiquidScene and ten liquid glass components with frosted, blur, glint, tint and radius controls.
 - @crumza/blocks: four open-source starter compositions.
 
 ## Local development

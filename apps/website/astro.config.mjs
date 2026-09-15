@@ -26,6 +26,7 @@ export default defineConfig({
     resolve: {
       alias: [
         { find: '@crumza/ui/web', replacement: src('../../packages/ui/src/web/index.ts') },
+        { find: '@crumza/ui/liquid', replacement: src('../../packages/ui/src/liquid/index.ts') },
         { find: '@crumza/ui/tokens', replacement: src('../../packages/ui/src/tokens/index.ts') },
         { find: '@crumza/ui/core', replacement: src('../../packages/ui/src/core/index.ts') },
         { find: '@crumza/ui', replacement: src('../../packages/ui/src/index.ts') },

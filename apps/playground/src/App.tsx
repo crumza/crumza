@@ -62,6 +62,7 @@ import {
 } from '@crumza/ui/web';
 import { type ReactElement, type ReactNode, useEffect, useState } from 'react';
 import { LensDemo } from './LensDemo';
+import { LiquidPlayground } from './LiquidPlayground';
 
 type Theme = 'system' | 'light' | 'dark';
 type Density = 'compact' | 'comfortable';
@@ -190,6 +191,8 @@ export function App(): ReactElement {
         </Row>
 
         <LensDemo />
+
+        <LiquidPlayground />
 
         <Row label="overlays: engine-native popover and dialog">
           <Popover>

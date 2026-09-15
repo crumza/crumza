@@ -1,0 +1,136 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component transitions. */
+/* LiquidHeader: geometry and motion only; the material is .lq-lens (core) */
+
+.lqc-header {
+  position: relative;
+  display: flex;
+}
+
+.lqc-header-bar {
+  height: 56px;
+}
+.lqc-header-content {
+  gap: 2px;
+  padding: 0 8px;
+}
+
+.lqc-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 16px;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  border-radius: var(--lq-inner-r, 18px);
+  color: rgba(255, 255, 255, 0.82);
+  font: 500 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 200ms var(--lq-ease),
+    color 200ms var(--lq-ease);
+}
+.lqc-header-nav:hover,
+.lqc-header-nav[data-open] {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.lqc-header-chevron {
+  width: 15px;
+  height: 15px;
+  opacity: 0.75;
+  transition:
+    transform 320ms var(--lq-ease),
+    opacity 200ms ease;
+}
+.lqc-header-chevron[data-open] {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+/* The slot carries the horizontal move between items: a transform on a plain
+   div, so switching menus never resizes the glass or rebuilds its map. */
+.lqc-header-slot {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 184px;
+  transition: transform 420ms var(--lq-ease);
+}
+
+.lqc-header-menu {
+  width: 100%;
+  transform-origin: top center;
+  opacity: 0;
+  transform: translateY(-10px) scale(0.985);
+  transition:
+    opacity 200ms var(--lq-ease),
+    transform 240ms var(--lq-ease);
+}
+.lqc-header-menu.is-shown {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 260ms var(--lq-ease),
+    transform 360ms var(--lq-ease);
+  transition-delay: 60ms;
+}
+
+.lqc-header-menu-content {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+}
+
+/* Rows are replaced when the panel slides to another item, so give them a short
+   fade: the content arrives with the move instead of snapping to the new menu. */
+.lqc-header-item {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.86);
+  font: 500 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: var(--lq-inner-r, 16px);
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+  animation: lqc-header-row-in 220ms var(--lq-ease) both;
+}
+.lqc-header-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+@keyframes lqc-header-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lqc-header-slot,
+  .lqc-header-nav,
+  .lqc-header-chevron,
+  .lqc-header-menu,
+  .lqc-header-item {
+    transition: none !important;
+  }
+  .lqc-header-menu {
+    opacity: 1;
+    transform: none;
+  }
+  .lqc-header-item {
+    animation: none;
+  }
+}

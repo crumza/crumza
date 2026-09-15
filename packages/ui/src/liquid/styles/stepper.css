@@ -1,0 +1,59 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component transitions. */
+/* LiquidStepper: geometry and motion only; the material is .lq-lens (core) */
+
+.lqc-stepper {
+  width: 156px;
+  height: 44px;
+}
+.lqc-stepper-content {
+  justify-content: space-between;
+  padding: 0 6px;
+}
+
+.lqc-stepper-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  border-radius: var(--lq-inner-r, 16px);
+  color: rgba(255, 255, 255, 0.86);
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    opacity 180ms ease;
+}
+.lqc-stepper-btn svg {
+  width: 15px;
+  height: 15px;
+}
+.lqc-stepper-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+.lqc-stepper-btn:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+}
+.lqc-stepper-btn:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+
+.lqc-stepper-value {
+  font: 500 15px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  /* fixed box: 9 to 10 must not shove the buttons either side */
+  min-width: 28px;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lqc-stepper-btn {
+    transition: none !important;
+  }
+}

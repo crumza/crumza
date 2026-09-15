@@ -6,6 +6,7 @@
 @import "./liquix.css";
 @import "./appearance.css";
 @import "./material.css";
+@import "../../liquid/styles/liquid.css";
 
 /* Let the consumer's Tailwind build see the classes our components use. */
 @source "../components";

@@ -1,0 +1,154 @@
+/* LiquidContextMenu: geometry and motion only; the material is .lq-lens (core)
+
+   Fills the stage: the menu is positioned relative to the SCENE, wherever it
+   was summoned. */
+
+.lqc-ctx-field {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.lqc-ctx-hint {
+  padding: 9px 15px;
+  border-radius: 999px;
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  background: rgba(10, 11, 15, 0.28);
+  color: rgba(255, 255, 255, 0.6);
+  font: 500 12px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  pointer-events: none;
+}
+
+.lqc-ctx-slot {
+  position: absolute;
+}
+
+/* opens from its top-left corner, which is where the pointer was */
+.lqc-ctx-menu {
+  transform-origin: top left;
+  opacity: 0;
+  transform: scale(0.94);
+  transition:
+    opacity 140ms var(--lq-ease),
+    transform 180ms var(--lq-ease);
+}
+.lqc-ctx-menu.is-shown {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 170ms var(--lq-ease),
+    transform 260ms var(--lq-ease);
+}
+
+.lqc-ctx-content {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 1px;
+}
+
+.lqc-ctx-row-wrap {
+  position: relative;
+}
+
+.lqc-ctx-row {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--lq-inner-r, 14px);
+  color: rgba(255, 255, 255, 0.88);
+  font: 500 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+.lqc-ctx-row:hover,
+.lqc-ctx-row.is-open {
+  background: rgba(255, 255, 255, 0.13);
+  color: #fff;
+}
+.lqc-ctx-row.is-danger {
+  color: rgba(255, 138, 128, 0.92);
+}
+.lqc-ctx-row.is-danger:hover {
+  background: rgba(255, 92, 78, 0.16);
+  color: #ff9d92;
+}
+
+.lqc-ctx-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  opacity: 0.7;
+}
+
+.lqc-ctx-label {
+  flex: 1 1 auto;
+}
+
+.lqc-ctx-shortcut {
+  font: 500 11px / 1 var(--font-mono, ui-monospace, monospace);
+  color: rgba(255, 255, 255, 0.42);
+  letter-spacing: 0.02em;
+}
+
+.lqc-ctx-caret {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  opacity: 0.55;
+}
+
+.lqc-ctx-divider {
+  border: 0;
+  height: 1px;
+  margin: 4px 8px;
+  background: rgba(255, 255, 255, 0.13);
+}
+
+/* the submenu overlaps its parent's padding by a couple of px, so travelling
+   between the two never crosses a gap that would close it */
+.lqc-ctx-sub {
+  position: absolute;
+  top: -6px;
+  left: calc(100% + 2px);
+  z-index: 2;
+}
+.lqc-ctx-sub.is-flipped {
+  left: auto;
+  right: calc(100% + 2px);
+}
+
+.lqc-ctx-submenu {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity 140ms var(--lq-ease),
+    transform 180ms var(--lq-ease);
+}
+.lqc-ctx-submenu.is-shown {
+  opacity: 1;
+  transform: translateX(0);
+}
+.lqc-ctx-sub.is-flipped .lqc-ctx-submenu {
+  transform: translateX(4px);
+}
+.lqc-ctx-sub.is-flipped .lqc-ctx-submenu.is-shown {
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lqc-ctx-menu,
+  .lqc-ctx-submenu {
+    transition-duration: 1ms;
+  }
+}

@@ -1,0 +1,144 @@
+/* LiquidGallery: geometry and motion only; the material is .lq-lens (core) */
+
+.lqc-gallery {
+  width: 344px;
+}
+.lqc-gallery-content {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 10px;
+}
+.lqc-gallery:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+/* A constant box that every slide is absolutely positioned inside, so changing
+   image never resizes the frame, and never rebuilds its displacement map. */
+.lqc-gallery-stage {
+  position: relative;
+  height: 208px;
+  border-radius: var(--lq-inner-r, 14px);
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.lqc-gallery-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transform: scale(1.035);
+  transition:
+    opacity 420ms var(--lq-ease),
+    transform 620ms var(--lq-ease);
+}
+/* the incoming image settles out of a slight push-in, which reads as a camera
+   coming to rest rather than a hard cut */
+.lqc-gallery-slide[data-shown] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.lqc-gallery-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 26px 14px 12px;
+  /* its own scrim: the caption has to survive a bright frame underneath */
+  background: linear-gradient(transparent, rgba(6, 7, 10, 0.72));
+  text-align: left;
+  pointer-events: none;
+}
+.lqc-gallery-caption strong {
+  font: 600 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
+}
+.lqc-gallery-caption span {
+  font: 500 10.5px / 1 var(--font-mono, ui-monospace, monospace);
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.lqc-gallery-nav {
+  appearance: none;
+  border: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(8, 9, 12, 0.45);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 200ms ease,
+    background 160ms ease,
+    transform 160ms var(--lq-ease);
+}
+.lqc-gallery-nav.is-prev {
+  left: 8px;
+}
+.lqc-gallery-nav.is-next {
+  right: 8px;
+}
+.lqc-gallery-stage:hover .lqc-gallery-nav,
+.lqc-gallery-nav:focus-visible {
+  opacity: 1;
+}
+.lqc-gallery-nav:hover {
+  background: rgba(8, 9, 12, 0.72);
+}
+.lqc-gallery-nav:active {
+  transform: translateY(-50%) scale(0.9);
+}
+.lqc-gallery-nav svg {
+  width: 16px;
+  height: 16px;
+}
+
+.lqc-gallery-rail {
+  display: flex;
+  gap: 6px;
+}
+
+.lqc-gallery-thumb {
+  appearance: none;
+  border: 0;
+  flex: 1 1 0;
+  height: 46px;
+  border-radius: calc(var(--lq-inner-r, 14px) * 0.6);
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  opacity: 0.5;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  transition:
+    opacity 200ms ease,
+    box-shadow 200ms ease;
+}
+.lqc-gallery-thumb:hover {
+  opacity: 0.82;
+}
+.lqc-gallery-thumb.is-active {
+  opacity: 1;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lqc-gallery-slide,
+  .lqc-gallery-nav {
+    transition-duration: 1ms;
+  }
+}

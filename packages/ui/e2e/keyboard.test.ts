@@ -459,3 +459,62 @@ test('dialog: dense readable material, centered geometry and reduced motion', as
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.evaluate(() => document.documentElement.setAttribute('data-material', 'solid'));
 });
+
+test('liquid stepper: the buttons hold the bounds and the value announces itself', async () => {
+  const stepper = page.locator('[data-slot="liquid-stepper"]');
+  await stepper.scrollIntoViewIfNeeded();
+  const value = stepper.locator('[aria-live="polite"]');
+  const decrease = stepper.getByRole('button', { name: 'Decrease' });
+  const increase = stepper.getByRole('button', { name: 'Increase' });
+  expect(await value.textContent()).toBe('3');
+  for (let i = 0; i < 3; i++) await decrease.click();
+  expect(await value.textContent()).toBe('0');
+  expect(await decrease.isDisabled()).toBe(true);
+  await increase.click();
+  expect(await value.textContent()).toBe('1');
+  expect(await decrease.isDisabled()).toBe(false);
+  // The engine painted: the surface's filter is fed a displacement map built on a canvas.
+  await stepper.locator('feImage').first().waitFor({ state: 'attached' });
+  expect(await stepper.locator('feImage').first().getAttribute('href')).toStartWith(
+    'data:image/png',
+  );
+});
+
+test('liquid tab indicator: a press selects the tab and the indicator settles under it', async () => {
+  const bar = page.locator('[data-slot="liquid-tab-indicator"]');
+  await bar.scrollIntoViewIfNeeded();
+  await bar.getByRole('tab', { name: 'Sheen' }).click();
+  expect(await bar.getByRole('tab', { name: 'Sheen' }).getAttribute('aria-selected')).toBe('true');
+  expect(await bar.getByRole('tab', { name: 'Optics' }).getAttribute('aria-selected')).toBe(
+    'false',
+  );
+  // The blob is moved by the scene's frame driver, not React, so wait for it to land.
+  await page.waitForFunction(() => {
+    const root = document.querySelector('[data-slot="liquid-tab-indicator"]');
+    const blob = root?.querySelector('.lqc-indicator-blob');
+    const tab = root?.querySelector('[role="tab"][aria-selected="true"]');
+    if (!blob || !tab) return false;
+    const a = blob.getBoundingClientRect();
+    const b = tab.getBoundingClientRect();
+    return Math.abs(a.left - b.left) < 1.5 && Math.abs(a.width - b.width) < 1.5;
+  });
+  // A frosted scene marks itself, and its glass carries the interior blur.
+  const stage = bar.locator('xpath=ancestor::*[@data-slot="liquid-scene"]');
+  expect(await stage.getAttribute('data-frosted')).toBe('');
+  expect(await bar.locator('.lq-blur').evaluate((el) => getComputedStyle(el).filter)).toContain(
+    'blur(5px)',
+  );
+});
+
+test('liquid search: typing opens the glass results and clearing closes them', async () => {
+  const search = page.locator('[data-slot="liquid-search"]');
+  await search.scrollIntoViewIfNeeded();
+  await search.getByRole('textbox', { name: 'Search' }).fill('ra');
+  const list = search.getByRole('listbox');
+  await visible(list);
+  expect(await list.getByRole('option').count()).toBe(2);
+  expect(await list.getByRole('option').first().textContent()).toBe('Refraction map');
+  await search.getByRole('button', { name: 'Clear' }).click();
+  await gone(list);
+  expect(await search.getByRole('textbox', { name: 'Search' }).inputValue()).toBe('');
+});

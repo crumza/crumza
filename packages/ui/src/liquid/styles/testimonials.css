@@ -1,0 +1,206 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component transitions. */
+/* LiquidTestimonials: geometry and motion only; the material is .lq-lens (core) */
+
+.lqc-testimonials {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 700px;
+  max-width: calc(100vw - 48px);
+}
+
+.lqc-testimonials-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.lqc-testimonials-kicker {
+  height: 40px;
+  padding: 0 16px 0 13px;
+  font: 500 12.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+}
+.lqc-testimonials-kicker .lq-content {
+  gap: 7px;
+}
+.lqc-testimonials-kicker svg {
+  width: 13px;
+  height: 13px;
+  fill: #fff;
+  stroke: #fff;
+}
+.lqc-testimonials-nav {
+  display: flex;
+  gap: 6px;
+}
+.lqc-testimonials-arrow {
+  width: 40px;
+  height: 40px;
+  transition: transform 140ms var(--lq-ease);
+}
+.lqc-testimonials-arrow:active {
+  transform: scale(0.94);
+}
+.lqc-testimonials-arrow svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.25;
+}
+
+.lqc-testimonials-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+/* one card is the subject: it lifts, the other two recede a touch */
+.lqc-quote {
+  min-height: 196px;
+  transition:
+    transform 420ms var(--lq-ease),
+    opacity 320ms ease,
+    box-shadow 420ms var(--lq-ease);
+}
+.lqc-quote:not(.is-active) {
+  opacity: 0.78;
+  transform: scale(0.98);
+}
+.lqc-quote.is-active {
+  transform: translateY(-6px);
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.22),
+    0 24px 44px -24px rgba(0, 0, 0, 0.6);
+}
+.lqc-quote-content {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 18px 18px 16px;
+  text-align: left;
+}
+
+.lqc-quote-stars {
+  display: inline-flex;
+  gap: 2px;
+}
+.lqc-quote-stars svg {
+  width: 12px;
+  height: 12px;
+  stroke: rgba(255, 255, 255, 0.5);
+  stroke-width: 1.75;
+}
+.lqc-quote-stars svg.is-filled {
+  fill: #fff;
+  stroke: #fff;
+}
+
+.lqc-quote-text {
+  flex: 1;
+  margin: 12px 0 0;
+  font: 400 13px / 1.5 var(--font-sans, -apple-system, system-ui, sans-serif);
+  letter-spacing: -0.005em;
+  color: rgba(255, 255, 255, 0.9);
+}
+.lqc-quote-text::before {
+  content: "\201C";
+  margin-right: 1px;
+  color: rgba(255, 255, 255, 0.55);
+}
+.lqc-quote-text::after {
+  content: "\201D";
+  margin-left: 1px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.lqc-quote-who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 0.5px solid rgba(255, 255, 255, 0.18);
+}
+/* initials disc: one gradient recipe, coloured by --avatar-hue */
+.lqc-quote-avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.55), transparent 55%),
+    hsl(var(--avatar-hue, 200) 62% 48%);
+  box-shadow:
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.35),
+    0 1px 3px rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font: 600 11.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+.lqc-quote-who > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.lqc-quote-who strong {
+  font: 600 12.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lqc-quote-who small {
+  font: 400 11px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lqc-testimonials-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.lqc-testimonials-dot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  appearance: none;
+  border: 0;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition:
+    width 320ms var(--lq-ease),
+    background 200ms ease;
+}
+.lqc-testimonials-dot.is-active {
+  width: 18px;
+  background: #fff;
+}
+
+@media (max-width: 760px) {
+  .lqc-testimonials-row {
+    grid-template-columns: 1fr;
+  }
+  .lqc-quote:not(.is-active) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lqc-quote,
+  .lqc-testimonials-arrow,
+  .lqc-testimonials-dot {
+    transition: none !important;
+  }
+  .lqc-quote.is-active,
+  .lqc-quote:not(.is-active) {
+    transform: none;
+  }
+}

@@ -6,9 +6,13 @@ const outdir = fileURLToPath(new URL('dist/', packageRoot));
 // Only this package's generated output is removed; never source or checkout paths.
 await rm(outdir, { recursive: true, force: true });
 const result = await Bun.build({
-  entrypoints: ['src/index.ts', 'src/web/index.ts', 'src/core/index.ts', 'src/tokens/index.ts'].map(
-    (path) => fileURLToPath(new URL(path, packageRoot)),
-  ),
+  entrypoints: [
+    'src/index.ts',
+    'src/web/index.ts',
+    'src/liquid/index.ts',
+    'src/core/index.ts',
+    'src/tokens/index.ts',
+  ].map((path) => fileURLToPath(new URL(path, packageRoot))),
   outdir,
   root: fileURLToPath(new URL('src/', packageRoot)),
   target: 'browser',

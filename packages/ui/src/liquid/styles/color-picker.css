@@ -1,0 +1,151 @@
+/* LiquidColorPicker: geometry and motion only; the material is .lq-lens (core) */
+
+.lqc-color {
+  width: 264px;
+}
+.lqc-color-content {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 12px;
+}
+
+/* Three stacked ramps over the hue wash: white to transparent across (that is
+   saturation) and transparent to black down (that is value). */
+.lqc-color-pad {
+  position: relative;
+  height: 138px;
+  border-radius: var(--lq-inner-r, 12px);
+  cursor: crosshair;
+  touch-action: none;
+  background:
+    linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent),
+    hsl(var(--hue) 100% 50%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+.lqc-color-pad:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+    0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.lqc-color-knob {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.lqc-color-hue {
+  position: relative;
+  height: 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  touch-action: none;
+  background: linear-gradient(
+    to right,
+    #f00 0%,
+    #ff0 17%,
+    #0f0 33%,
+    #0ff 50%,
+    #00f 67%,
+    #f0f 83%,
+    #f00 100%
+  );
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+.lqc-color-hue:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+    0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.lqc-color-hue-knob {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.lqc-color-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lqc-color-preview {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border-radius: var(--lq-inner-r, 12px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+.lqc-color-preview svg {
+  width: 15px;
+  height: 15px;
+  /* the pipette has to stay legible on any swatch, light or dark */
+  color: rgba(0, 0, 0, 0.45);
+  mix-blend-mode: overlay;
+}
+
+.lqc-color-values {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+}
+.lqc-color-hex {
+  font: 600 13px / 1 var(--font-mono, ui-monospace, monospace);
+  letter-spacing: 0.04em;
+  color: #fff;
+}
+.lqc-color-rgb {
+  font: 400 11px / 1 var(--font-mono, ui-monospace, monospace);
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.lqc-color-swatches {
+  display: flex;
+  gap: 6px;
+}
+
+.lqc-color-swatch {
+  appearance: none;
+  border: 0;
+  flex: 1 1 0;
+  height: 22px;
+  border-radius: 7px;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+  transition:
+    transform 160ms var(--lq-ease),
+    box-shadow 160ms ease;
+}
+.lqc-color-swatch:hover {
+  transform: translateY(-2px);
+}
+.lqc-color-swatch.is-active {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    0 0 0 2px rgba(255, 255, 255, 0.85);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lqc-color-swatch {
+    transition-duration: 1ms;
+  }
+}

@@ -1,0 +1,210 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component transitions. */
+/* LiquidPricingCard: geometry and motion only; the material is .lq-lens (core) */
+
+.lqc-pricing {
+  width: 280px;
+}
+.lqc-pricing-content {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 20px 20px 18px;
+  text-align: left;
+}
+
+.lqc-pricing-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.lqc-pricing-eyebrow {
+  display: block;
+  font: 500 10px / 1 var(--font-mono, ui-monospace, monospace);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.62);
+}
+.lqc-pricing-blurb {
+  display: block;
+  margin-top: 7px;
+  font: 400 12.5px / 1.3 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: rgba(255, 255, 255, 0.72);
+}
+.lqc-pricing-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #14161a;
+  font: 500 11px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  text-shadow: none;
+  white-space: nowrap;
+}
+
+/* fixed height, so a two-digit to two-digit swap can never nudge the box */
+.lqc-pricing-price {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 48px;
+  margin-top: 16px;
+}
+.lqc-pricing-amount {
+  display: inline-flex;
+  align-items: flex-start;
+  font: 600 40px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  animation: lqc-pricing-fade-up 240ms var(--lq-ease) both;
+}
+.lqc-pricing-amount sup {
+  margin-top: 5px;
+  margin-right: 1px;
+  font-size: 18px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.7);
+}
+.lqc-pricing-period {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-bottom: 5px;
+  font: 500 12px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: rgba(255, 255, 255, 0.78);
+}
+.lqc-pricing-period small {
+  font-size: 10.5px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* two-label switch with one knob that slides under the chosen label */
+.lqc-pricing-switch {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 34px;
+  margin-top: 14px;
+  padding: 3px;
+  appearance: none;
+  border: 0;
+  border-radius: var(--period-r, 17px);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.16);
+  cursor: pointer;
+}
+.lqc-pricing-knob {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  border-radius: calc(var(--period-r, 17px) - 3px);
+  background: rgba(255, 255, 255, 0.9);
+  transition: transform 340ms var(--lq-ease);
+}
+.lqc-pricing-switch.is-on .lqc-pricing-knob {
+  transform: translateX(100%);
+}
+.lqc-pricing-side {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font: 500 12px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 220ms ease;
+}
+.lqc-pricing-side em {
+  font: 600 9.5px / 1 var(--font-mono, ui-monospace, monospace);
+  font-style: normal;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: rgba(120, 230, 170, 0.25);
+  color: #c8ffe2;
+}
+/* the label over the knob reads dark; the other stays white on glass */
+.lqc-pricing-switch:not(.is-on) .lqc-pricing-side[data-side="monthly"],
+.lqc-pricing-switch.is-on .lqc-pricing-side[data-side="yearly"] {
+  color: #14161a;
+  text-shadow: none;
+}
+.lqc-pricing-switch.is-on .lqc-pricing-side[data-side="yearly"] em {
+  background: rgba(20, 22, 26, 0.12);
+  color: #14161a;
+}
+
+.lqc-pricing-features {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.lqc-pricing-features li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font: 400 12.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: rgba(255, 255, 255, 0.84);
+}
+.lqc-pricing-features svg {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  padding: 2px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  stroke-width: 3;
+}
+
+.lqc-pricing-cta {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  height: 40px;
+  margin-top: 18px;
+  border-radius: var(--lq-inner-r, 20px);
+  background: rgba(255, 255, 255, 0.9);
+  color: #14161a;
+  font: 600 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  text-shadow: none;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    transform 140ms var(--lq-ease);
+}
+.lqc-pricing-cta:hover {
+  background: #fff;
+}
+.lqc-pricing-cta:active {
+  transform: scale(0.985);
+}
+
+@keyframes lqc-pricing-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lqc-pricing-knob,
+  .lqc-pricing-cta {
+    transition: none !important;
+  }
+  .lqc-pricing-amount {
+    animation: none;
+  }
+}

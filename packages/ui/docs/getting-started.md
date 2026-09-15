@@ -56,7 +56,7 @@ Use the React integration. Add `client:load` to an interactive React island such
 
 ## Distribution
 
-The package builds ESM JavaScript and TypeScript declarations into dist. CSS and component source remain included for Tailwind source detection. Entries: @crumza/ui, @crumza/ui/web, @crumza/ui/core and @crumza/ui/tokens. Tokens and core are separate from browser rendering. Wrap interactive usage in a client boundary in React Server Component applications; that integration is not certified by this alpha.
+The package builds ESM JavaScript and TypeScript declarations into dist. CSS and component source remain included for Tailwind source detection. Entries: @crumza/ui, @crumza/ui/web, @crumza/ui/liquid, @crumza/ui/core and @crumza/ui/tokens. The liquid entry holds the [refracting scene](/docs/liquid) and its components; its stylesheet is part of @crumza/ui/styles.css. Tokens and core are separate from browser rendering. Wrap interactive usage in a client boundary in React Server Component applications; that integration is not certified by this alpha.
 
 ## Accessibility
 

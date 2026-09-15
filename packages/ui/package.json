@@ -41,7 +41,12 @@
       "types": "./dist/web/index.d.ts",
       "import": "./dist/web/index.js"
     },
-    "./styles.css": "./src/web/styles/crumza.css"
+    "./liquid": {
+      "types": "./dist/liquid/index.d.ts",
+      "import": "./dist/liquid/index.js"
+    },
+    "./styles.css": "./src/web/styles/crumza.css",
+    "./liquid.css": "./src/liquid/styles/liquid.css"
   },
   "files": [
     "dist",
