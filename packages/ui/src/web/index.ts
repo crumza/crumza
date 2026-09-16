@@ -66,6 +66,14 @@ export { Kbd } from './components/Kbd';
 export { Label } from './components/Label';
 export type { LensProps, SceneProps } from './components/Lens';
 export { Lens, Scene } from './components/Lens';
+export type { LiquixCapsuleProps } from './components/LiquixCapsule';
+export { LiquixCapsule } from './components/LiquixCapsule';
+export type { LiquixCircleProps } from './components/LiquixCircle';
+export { LiquixCircle } from './components/LiquixCircle';
+export type { LiquixFrame, LiquixStageProps } from './components/LiquixStage';
+export { LiquixStage } from './components/LiquixStage';
+export type { LiquixPanel, LiquixParams, LiquixTint, PanelKind } from './liquix/params';
+export { PANEL_KINDS, defaultLiquixPanels, defaultLiquixParams } from './liquix/params';
 export type {
   MenuCheckboxItemProps,
   MenuContentProps,

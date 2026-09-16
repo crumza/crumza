@@ -1,0 +1,32 @@
+---
+// The liquix stage on a page of its own. The docs pages embed this in an
+// iframe: the stage owns the window and the page scroll, so it needs a window
+// of its own rather than a box inside an article.
+import '../../styles/global.css';
+import { LiquixEmbed } from '../../demos/LiquixEmbed';
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark" data-material="liquid">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Liquix stage · Crumza</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #05060a;
+        color: #f4f4f5;
+      }
+      /* The canvas paints the backdrop, so nothing may paint over it. */
+      body > * {
+        isolation: isolate;
+      }
+    </style>
+  </head>
+  <body>
+    <LiquixEmbed client:only="react" />
+  </body>
+</html>
