@@ -1,14 +1,25 @@
 import {
+  Accordion,
+  AccordionItem,
+  AccordionPanel,
+  AccordionTrigger,
   Badge,
   Button,
   Card,
   Checkbox,
+  DateTimePicker,
   Dialog,
   DialogClose,
   DialogContent,
   DialogDescription,
   DialogTitle,
   DialogTrigger,
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerTitle,
+  DrawerTrigger,
   Field,
   Glass,
   Input,
@@ -22,6 +33,9 @@ import {
   MenuRadioItem,
   MenuSeparator,
   MenuTrigger,
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -39,6 +53,7 @@ import {
   TabPanel,
   Tabs,
   Textarea,
+  TimePicker,
   Toggle,
   Toaster,
   Toolbar,
@@ -212,6 +227,37 @@ export function App(): ReactElement {
               ?
             </Button>
           </Tooltip>
+          <HoverCard>
+            <HoverCardTrigger render={<Button variant="ghost" />}>@crumza</HoverCardTrigger>
+            <HoverCardContent align="start" className="grid gap-2">
+              <strong>Crumza UI</strong>
+              <span className="text-muted-foreground">
+                Tailwind-first React components with solid, frosted and liquid materials.
+              </span>
+              <a href="#outline" className="underline underline-offset-4">
+                Read the docs
+              </a>
+            </HoverCardContent>
+          </HoverCard>
+          <Drawer>
+            <DrawerTrigger render={<Button variant="outline" />}>Document outline</DrawerTrigger>
+            <DrawerContent side="left" className="grid content-start gap-4">
+              <DrawerTitle>Document outline</DrawerTitle>
+              <DrawerDescription>Headings in this document, in order.</DrawerDescription>
+              <DrawerClose render={<Button variant="ghost" shape="rect" />}>Close</DrawerClose>
+            </DrawerContent>
+          </Drawer>
+          <Drawer>
+            <DrawerTrigger render={<Button variant="outline" />}>Style inspector</DrawerTrigger>
+            <DrawerContent className="grid content-start gap-4">
+              <DrawerTitle>Inspector</DrawerTitle>
+              <DrawerDescription>Paragraph styles for the current selection.</DrawerDescription>
+              <Field label="Typeface" htmlFor="drawer-face">
+                <Input id="drawer-face" defaultValue="Inter" />
+              </Field>
+              <DrawerClose render={<Button variant="ghost" shape="rect" />}>Close</DrawerClose>
+            </DrawerContent>
+          </Drawer>
         </Row>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -258,6 +304,40 @@ export function App(): ReactElement {
               </TabPanel>
               <TabPanel value="export" />
             </Tabs>
+            <Field label="Starts at" htmlFor="playground-starts">
+              <DateTimePicker
+                id="playground-starts"
+                defaultValue={new Date(2026, 2, 14, 9, 5)}
+                min={new Date(2026, 2, 2)}
+                locale="en-GB"
+                name="starts"
+              />
+            </Field>
+            <Field label="Meeting at" htmlFor="playground-at">
+              <TimePicker
+                id="playground-at"
+                defaultValue="09:05:30"
+                minuteStep={15}
+                seconds
+                locale="en-GB"
+                name="at"
+              />
+            </Field>
+            <Accordion defaultValue={['material']}>
+              <AccordionItem value="material">
+                <AccordionTrigger>Material</AccordionTrigger>
+                <AccordionPanel>Liquid, frosted or solid, inherited from the Theme.</AccordionPanel>
+              </AccordionItem>
+              <AccordionItem value="radius">
+                <AccordionTrigger>Radius</AccordionTrigger>
+                <AccordionPanel>Corner radius in pixels, set locally or on the Theme.</AccordionPanel>
+              </AccordionItem>
+              {/* One disabled trigger, so the keyboard e2e can prove arrows skip it. */}
+              <AccordionItem value="brand">
+                <AccordionTrigger disabled>Brand colours</AccordionTrigger>
+                <AccordionPanel>Paired background and foreground on the Theme.</AccordionPanel>
+              </AccordionItem>
+            </Accordion>
             <Row label="facts">
               <Badge variant="accent">New</Badge>
               <Badge>Draft</Badge>

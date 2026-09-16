@@ -30,6 +30,12 @@ export interface TooltipProps {
 let lastClosedAt = 0;
 const SKIP_DELAY_WINDOW = 300;
 
+/* The arrow is a 7px square turned 45deg in overlays.css: it reaches about 5px out of the edge
+   and 10px across it. The gap has to clear that reach, or the tip touches the control it is
+   pointing at; ARROW_REACH keeps the tip clear of the rounded corners at the same time. */
+const ANCHOR_OFFSET = 11;
+const ARROW_REACH = 12;
+
 /** A short label on hover or focus. Never interactive, never essential: it repeats what `aria-label` says. */
 export function Tooltip({
   content,
@@ -44,7 +50,15 @@ export function Tooltip({
   const anchorRef = useRef<HTMLElement | null>(null);
   const ref = useRef<HTMLDivElement | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  useAnchorPosition({ open, anchor: anchorRef, floating: ref, side, align, offset: 6 });
+  useAnchorPosition({
+    open,
+    anchor: anchorRef,
+    floating: ref,
+    side,
+    align,
+    offset: ANCHOR_OFFSET,
+    arrowSize: ARROW_REACH,
+  });
 
   const show = useCallback(
     (immediate: boolean) => {

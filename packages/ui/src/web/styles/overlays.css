@@ -87,6 +87,128 @@
     box-shadow: 0 2px 8px rgb(0 0 0 / 0.12);
   }
 
+  /* The arrow answers a question a floating label cannot: which control is this about. It earns
+     its place in a toolbar, where one tooltip could belong to any of three buttons sitting a few
+     pixels apart.
+
+     It is one square turned 45deg with a hairline on its two outer sides only, centred on the
+     tooltip's own edge. The inner half sits over the body's own background, so the mouth merges
+     into the panel instead of drawing a seam across it, and there is no negative z-index to lose
+     when the enter transition gives the tooltip a stacking context of its own. Positioning writes
+     --crumza-arrow, the distance from the box's leading edge to the anchor's centre after
+     alignment and the viewport clamp, which is what keeps the tip on its trigger rather than
+     under the middle of the label. The hairline correction is there because an absolutely
+     positioned child measures from the padding box while --crumza-arrow measures the border box.
+
+     data-side is the resolved side, so a tooltip that flipped for want of room moves its arrow
+     to the edge it actually ended up on. */
+  .tooltip-content::after {
+    content: "";
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    background: var(--popover);
+    transform: rotate(45deg);
+  }
+  .tooltip-content[data-side="top"]::after {
+    top: calc(100% + var(--hairline));
+    left: calc(var(--crumza-arrow, 50%) - var(--hairline));
+    translate: -50% -50%;
+    border-right: var(--hairline) solid var(--border);
+    border-bottom: var(--hairline) solid var(--border);
+  }
+  .tooltip-content[data-side="bottom"]::after {
+    bottom: calc(100% + var(--hairline));
+    left: calc(var(--crumza-arrow, 50%) - var(--hairline));
+    translate: -50% 50%;
+    border-left: var(--hairline) solid var(--border);
+    border-top: var(--hairline) solid var(--border);
+  }
+  .tooltip-content[data-side="left"]::after {
+    left: calc(100% + var(--hairline));
+    top: calc(var(--crumza-arrow, 50%) - var(--hairline));
+    translate: -50% -50%;
+    border-top: var(--hairline) solid var(--border);
+    border-right: var(--hairline) solid var(--border);
+  }
+  .tooltip-content[data-side="right"]::after {
+    right: calc(100% + var(--hairline));
+    top: calc(var(--crumza-arrow, 50%) - var(--hairline));
+    translate: 50% -50%;
+    border-bottom: var(--hairline) solid var(--border);
+    border-left: var(--hairline) solid var(--border);
+  }
+  /* Forced colours drop backgrounds, which would leave a floating outlined lozenge beside the
+     panel. The side is still legible from the tooltip's own position there. */
+  @media (forced-colors: active) {
+    .tooltip-content::after {
+      display: none;
+    }
+  }
+
+  /* The hover card is an opaque card in the top layer rather than a glass pane, so unlike the
+     panes above it can fade: compositing opacity over a blurred, rounded slab flashes in
+     WebKit, which is why those animate transform only. It grows the same 4% the menu and the
+     popover grow, from the corner nearest the trigger that positioning wrote into
+     --crumza-transform-origin, so the card opens out of the word it belongs to rather than
+     appearing over it; a 2px drift on top keeps the near edge moving with it. The fade is the
+     shorter half of the enter, so the card is legible early while the growth is still
+     settling under it: reading starts before the motion ends, which is what makes a quick
+     card feel unhurried. The exit is shorter again and eased in, because a card that lingers
+     after the pointer has gone feels stuck to it. --motion-scale zeroes both under reduced
+     motion, and appearance.css drops the transition entirely there. */
+  .hover-card-content {
+    --_shift: calc(2px * var(--motion-scale));
+    --_from: translateY(calc(var(--_shift) * -1));
+    --_scale: scale(calc(1 - 0.04 * var(--motion-scale)));
+    --_exit: calc(var(--duration-fast) * 0.8);
+    position: fixed;
+    min-width: 12rem;
+    max-width: min(20rem, calc(100vw - 2rem));
+    max-height: var(--crumza-available-height, 80vh);
+    overflow: auto;
+    border-radius: var(--radius-lg);
+    border: var(--hairline) solid var(--border);
+    background: var(--card);
+    color: var(--card-foreground);
+    padding: calc(var(--space-unit) * 3);
+    line-height: 1.5;
+    box-shadow:
+      0 2px 4px rgb(0 0 0 / 0.06),
+      0 8px 24px -8px rgb(0 0 0 / 0.18);
+    transform-origin: var(--crumza-transform-origin, center);
+    opacity: 0;
+    transform: var(--_from) var(--_scale);
+    transition:
+      opacity var(--_exit) var(--ease-in-cubic),
+      transform var(--_exit) var(--ease-in-cubic),
+      display var(--_exit) allow-discrete,
+      overlay var(--_exit) allow-discrete;
+  }
+  /* The card always starts from the trigger's edge, whichever side the flip settled on. */
+  .hover-card-content[data-side="top"] {
+    --_from: translateY(var(--_shift));
+  }
+  .hover-card-content[data-side="left"] {
+    --_from: translateX(var(--_shift));
+  }
+  .hover-card-content[data-side="right"] {
+    --_from: translateX(calc(var(--_shift) * -1));
+  }
+  .hover-card-content:popover-open {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity var(--duration-fast) var(--ease-out-cubic),
+      transform var(--duration-base) var(--ease-out-cubic),
+      display var(--duration-base) allow-discrete,
+      overlay var(--duration-base) allow-discrete;
+    @starting-style {
+      opacity: 0;
+      transform: var(--_from) var(--_scale);
+    }
+  }
+
   .dialog-content {
     position: fixed;
     inset: 0;
@@ -125,6 +247,65 @@
     @starting-style {
       opacity: 0;
     }
+  }
+
+  /* A drawer is the dialog parked against an edge: same element, same engine behaviour, so
+     only geometry and the slide are restated here. The side is physical on purpose, because
+     "left" has to stay left when the document direction is RTL.
+
+     These are qualified with `dialog` deliberately. appearance.css loads after this file and
+     pins .dialog-content to `opacity: 1` and a 120ms transform to avoid opacity-compositing
+     flashes on rounded glass in WebKit; an unqualified .drawer-content loses to it on source
+     order and the slide never plays. The element selector takes the specificity back without
+     an !important. For the same reason the panel itself never animates opacity: the arrival
+     is carried by the travel and by the backdrop, which is not glass and can safely fade. */
+  dialog.drawer-content {
+    /* A short settle rather than a full-width sweep: the panel comes the last 2.5rem home.
+       The base rule is the closed state and owns the exit, which runs at the scale's
+       documented 0.66x on the ease-in curve; [open] owns the slower ease-out enter. Reduced
+       motion zeroes the travel through --motion-scale, leaving an instant swap. */
+    --_travel: calc(2.5rem * var(--motion-scale));
+    --_slide: translateX(calc(-1 * var(--_travel)));
+    --_exit: calc(var(--duration-slow) * 0.66);
+    inset: 0 auto 0 0;
+    margin: 0;
+    width: min(22rem, calc(100vw - 3rem));
+    height: 100dvh;
+    max-height: none;
+    border-radius: 0 var(--radius-dialog) var(--radius-dialog) 0;
+    transform: var(--_slide);
+    transition:
+      transform var(--_exit) var(--ease-in-cubic),
+      display var(--_exit) allow-discrete,
+      overlay var(--_exit) allow-discrete;
+  }
+  dialog.drawer-content[data-side="right"] {
+    --_slide: translateX(var(--_travel));
+    inset: 0 0 0 auto;
+    border-radius: var(--radius-dialog) 0 0 var(--radius-dialog);
+  }
+  dialog.drawer-content[open] {
+    transform: none;
+    transition:
+      transform var(--duration-slow) var(--ease-out-cubic),
+      display var(--duration-slow) allow-discrete,
+      overlay var(--duration-slow) allow-discrete;
+    @starting-style {
+      transform: var(--_slide);
+    }
+  }
+  /* The dim is timed to the panel, so the two arrive and leave together. */
+  dialog.drawer-content::backdrop {
+    transition:
+      opacity calc(var(--duration-slow) * 0.66) var(--ease-in-cubic),
+      display calc(var(--duration-slow) * 0.66) allow-discrete,
+      overlay calc(var(--duration-slow) * 0.66) allow-discrete;
+  }
+  dialog.drawer-content[open]::backdrop {
+    transition:
+      opacity var(--duration-slow) var(--ease-out-cubic),
+      display var(--duration-slow) allow-discrete,
+      overlay var(--duration-slow) allow-discrete;
   }
 
   /* The page behind a modal does not scroll. */

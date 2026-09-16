@@ -1,5 +1,9 @@
 import { useState, type ReactElement } from "react";
 import {
+  Accordion,
+  AccordionItem,
+  AccordionPanel,
+  AccordionTrigger,
   Badge,
   Button,
   Card,
@@ -111,6 +115,14 @@ const entries = [
     detail: "Checkbox",
     href: "checkbox",
     background: "tile-sage",
+  },
+  {
+    id: "accordion",
+    title: "Detail, when it is wanted",
+    category: "Layout",
+    detail: "Accordion",
+    href: "accordion",
+    background: "tile-lime",
   },
   {
     id: "overrides",
@@ -235,6 +247,21 @@ function Preview({ id, configured }: { id: string; configured: boolean }): React
         <Card className="preview-panel">
           <h3>Less, but considered.</h3>
           <p>A quiet surface for the things that deserve your attention.</p>
+        </Card>
+      );
+    case "accordion":
+      return (
+        <Card className="preview-panel">
+          <Accordion defaultValue={["several"]}>
+            <AccordionItem value="several">
+              <AccordionTrigger>Can several sections stay open?</AccordionTrigger>
+              <AccordionPanel>Set multiple. The value is an array either way.</AccordionPanel>
+            </AccordionItem>
+            <AccordionItem value="brand">
+              <AccordionTrigger>Will it match my brand?</AccordionTrigger>
+              <AccordionPanel>Material, radius and colour come from the Theme around it.</AccordionPanel>
+            </AccordionItem>
+          </Accordion>
         </Card>
       );
     case "checkbox":

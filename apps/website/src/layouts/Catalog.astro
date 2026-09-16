@@ -17,30 +17,77 @@ const items = [['/', 'Discover'], ['/ui', 'UI components'], ['/blocks', 'Blocks'
     <title>{title} · Crumza</title>
     <meta property="og:title" content={title + ' · Crumza'} />
     <meta property="og:description" content={description} />
+    <script is:inline>
+      try {
+        const stored = localStorage.getItem('crumza-theme');
+        document.documentElement.dataset['theme'] =
+          stored === 'light' || stored === 'dark'
+            ? stored
+            : matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
+      } catch {
+        /* Private mode: the markup default stands. */
+      }
+    </script>
   </head>
   <body class="catalog-body">
     <a class="skip-link" href="#main">Skip to content</a>
     <aside class="site-sidebar">
       <a href="/" class="site-name">Crumza</a>
-      <p class="sidebar-label">Collection</p>
       <nav aria-label="Main navigation">{items.map(([href, label]) => <a class="sidebar-link" href={href} aria-current={current === href ? 'page' : undefined}>{label}</a>)}</nav>
-      <p class="sidebar-label">Resources</p>
-      <nav aria-label="Resources">
-        <a class="sidebar-link" href="/docs/getting-started" aria-current={docs ? 'page' : undefined}>Documentation</a>
-        <a class="sidebar-link" href="/pro" aria-current={current === '/pro' ? 'page' : undefined}>Crumza Pro</a>
-        <a class="sidebar-link" href="https://github.com/crumza/crumza">GitHub</a>
-      </nav>
-      <div class="sidebar-bottom">
-        <button type="button" id="sound-toggle" aria-pressed="false">Sound off</button>
-        <p>Independent by design.</p><span>© {new Date().getFullYear()} · Early preview</span>
+      <div class="site-bar-end">
+        <nav aria-label="Resources">
+          <a class="sidebar-link" href="/docs/getting-started" aria-current={docs ? 'page' : undefined}>Docs</a>
+          <a class="sidebar-link" href="/pro" aria-current={current === '/pro' ? 'page' : undefined}>Crumza Pro</a>
+          <a class="sidebar-link" href="https://github.com/crumza/crumza" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </nav>
+        <button type="button" id="sound-toggle" class="bar-toggle" aria-pressed="false" aria-label="Sound off">
+          <svg class="sound-icon sound-icon-off" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2.6 6.2h2.1L7.7 3.6v8.8L4.7 9.8H2.6z" />
+            <path d="m10.6 6.4 3.2 3.2m0-3.2-3.2 3.2" />
+          </svg>
+          <svg class="sound-icon sound-icon-on" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2.6 6.2h2.1L7.7 3.6v8.8L4.7 9.8H2.6z" />
+            <path d="M10.4 6.1a2.9 2.9 0 0 1 0 3.8" />
+            <path d="M12.5 4.3a5.6 5.6 0 0 1 0 7.4" />
+          </svg>
+        </button>
+        <button type="button" id="theme-toggle" class="bar-toggle" aria-pressed="false" aria-label="Dark mode">
+          <svg class="theme-icon theme-icon-light" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+            <circle cx="8" cy="8" r="3.1" />
+            <path d="M8 1.1v1.5M8 13.4v1.5M14.9 8h-1.5M2.6 8H1.1M12.9 3.1l-1.1 1.1M4.2 11.8l-1.1 1.1M12.9 12.9l-1.1-1.1M4.2 4.2L3.1 3.1" />
+          </svg>
+          <svg class="theme-icon theme-icon-dark" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round">
+            <path d="M13.4 9.9A5.8 5.8 0 0 1 6.1 2.6a5.8 5.8 0 1 0 7.3 7.3Z" />
+          </svg>
+        </button>
       </div>
     </aside>
     <div class="site-content">
       <header class="page-heading"><div>{docs ? <p class="page-title">Documentation</p> : <h1>{title}</h1>}<p>{docs ? title : description}</p></div><a href="/docs/getting-started" class="quiet-link">React + Tailwind</a></header>
       <main id="main"><slot /></main>
-      <footer class="site-footer"><span>Designed by people. Ready for their agents.</span><a href="/pro">What we're building</a></footer>
+      <footer class="site-footer"><div class="footer-notes"><span>Designed by people. Ready for their agents.</span><span>Independent by design.</span><span>© {new Date().getFullYear()} · Early preview</span></div><a href="/pro">What we're building</a></footer>
     </div>
     <script>
+      const button = document.querySelector<HTMLButtonElement>('#theme-toggle');
+      const sync = () =>
+        button?.setAttribute(
+          'aria-pressed',
+          String(document.documentElement.dataset['theme'] === 'dark'),
+        );
+      sync();
+      button?.addEventListener('click', () => {
+        const dark = document.documentElement.dataset['theme'] !== 'dark';
+        document.documentElement.dataset['theme'] = dark ? 'dark' : 'light';
+        try {
+          localStorage.setItem('crumza-theme', dark ? 'dark' : 'light');
+        } catch {
+          /* The choice just will not outlive the page. */
+        }
+        sync();
+      });
+
       // A short synthesized cue, only after an explicit opt-in and a click.
       const soundButton = document.querySelector<HTMLButtonElement>('#sound-toggle');
       let enabled = false;
@@ -67,7 +114,7 @@ const items = [['/', 'Discover'], ['/ui', 'UI components'], ['/blocks', 'Blocks'
       }
       soundButton?.addEventListener('click', () => {
         enabled = !enabled;
-        soundButton.textContent = enabled ? 'Sound on' : 'Sound off';
+        soundButton.setAttribute('aria-label', enabled ? 'Sound on' : 'Sound off');
         soundButton.setAttribute('aria-pressed', String(enabled));
       });
       document.addEventListener('click', event => {

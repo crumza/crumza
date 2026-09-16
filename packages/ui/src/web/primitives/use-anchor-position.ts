@@ -9,13 +9,16 @@ export interface AnchorPositionOptions {
   readonly align?: Align | undefined;
   readonly offset?: number | undefined;
   readonly padding?: number | undefined;
+  /** Cross-axis width of an arrow to keep clear of the corners. Omit when there is none. */
+  readonly arrowSize?: number | undefined;
 }
 
 /**
  * Positions a top-layer element (popover or dialog) next to its anchor with `position: fixed`,
  * and keeps it there through scroll and resize. Writes `left`, `top`, `data-side`,
- * `data-align` and `--crumza-transform-origin` straight onto the element: no React state,
- * no re-render, no containing-block trap because the top layer ignores ancestors.
+ * `data-align`, `--crumza-transform-origin` and `--crumza-arrow` straight onto the element:
+ * no React state, no re-render, no containing-block trap because the top layer ignores
+ * ancestors.
  */
 export function useAnchorPosition({
   open,
@@ -25,6 +28,7 @@ export function useAnchorPosition({
   align = 'center',
   offset = 6,
   padding = 8,
+  arrowSize = 0,
 }: AnchorPositionOptions): void {
   useLayoutEffect(() => {
     if (!open) return;
@@ -44,6 +48,7 @@ export function useAnchorPosition({
         align,
         offset,
         padding,
+        arrowSize,
         rtl: getComputedStyle(el).direction === 'rtl',
       });
       el.style.position = 'fixed';
@@ -53,6 +58,7 @@ export function useAnchorPosition({
       el.style.top = `${p.y}px`;
       el.style.setProperty('--crumza-transform-origin', p.transformOrigin);
       el.style.setProperty('--crumza-available-height', `${p.availableHeight}px`);
+      el.style.setProperty('--crumza-arrow', `${p.arrow}px`);
       el.dataset['side'] = p.side;
       el.dataset['align'] = p.align;
     };
@@ -68,5 +74,5 @@ export function useAnchorPosition({
       window.removeEventListener('scroll', update, { capture: true });
       window.removeEventListener('resize', update);
     };
-  }, [open, anchor, floating, side, align, offset, padding]);
+  }, [open, anchor, floating, side, align, offset, padding, arrowSize]);
 }

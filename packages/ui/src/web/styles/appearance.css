@@ -386,6 +386,7 @@
     .menu-content,
     .dialog-content,
     .tooltip-content,
+    .hover-card-content,
     .toast {
       transition: none !important;
       animation: none !important;

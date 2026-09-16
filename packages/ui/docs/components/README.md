@@ -9,13 +9,17 @@
 | [Toolbar](/docs/components/toolbar) | a row of controls that is one Tab stop | `<div role="toolbar">` |
 | [Tooltip](/docs/components/tooltip) | a label on hover or focus | `popover="manual"`, `role="tooltip"` |
 | [Popover](/docs/components/popover) | an anchored non-modal panel | `popover="auto"` |
+| [HoverCard](/docs/components/hover-card) | a card of detail on hover | `popover="manual"`, `role="dialog"` |
 | [Dialog](/docs/components/dialog) | a modal | `<dialog>` + `showModal()` |
+| [Drawer](/docs/components/drawer) | a modal panel at the left or right edge | `<dialog>` + `showModal()` |
 | [Menu](/docs/components/menu) | a list of commands | `popover="auto"`, `role="menu"` |
 | [Tabs](/docs/components/tabs) | sections of one view | `role="tablist"` |
 | [Input](/docs/components/input), [Textarea](/docs/components/textarea) | text entry | native |
 | [Select](/docs/components/select) | one of many, in a form | native `<select>` |
 | [Slider](/docs/components/slider) | a number in a range | native range input |
 | [Progress](/docs/components/progress) | progress of a long task | `role="progressbar"` |
+| [Spinner](/docs/components/spinner) | an indeterminate wait | `<span role="status">` |
+| [Skeleton](/docs/components/skeleton) | content that is not here yet | `<div aria-hidden>` |
 | [Toast](/docs/components/toast) | a brief notice | `popover="manual"`, `role="status"` |
 | [Label](/docs/components/label), [Field](/docs/components/field) | naming and describing a control | `<label>` |
 | [Checkbox](/docs/components/checkbox) | independent on/off | native checkbox |

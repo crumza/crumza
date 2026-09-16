@@ -15,6 +15,119 @@
     cursor: not-allowed;
   }
 
+  /* The columns. Every row is one --time-item tall, so the row under the band is exactly
+     scrollTop / item: no measuring, and the reading cannot drift from what is shown. */
+  .time-columns {
+    --time-item: 2rem;
+    --time-rows: 5;
+    display: grid;
+    gap: 0.35rem;
+  }
+  .time-heads,
+  .time-rail {
+    display: flex;
+    gap: 0.25rem;
+  }
+  .time-heads > * {
+    width: 3.25rem;
+    text-align: center;
+    color: var(--muted-foreground);
+    font-size: var(--text-ui-sm, 0.75rem);
+  }
+  .time-rail {
+    position: relative;
+  }
+  .time-band {
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    height: var(--time-item);
+    translate: 0 -50%;
+    border-radius: var(--radius-control);
+    background: var(--accent);
+    pointer-events: none;
+  }
+  .time-column {
+    width: 3.25rem;
+    height: calc(var(--time-item) * var(--time-rows));
+    overflow-y: auto;
+    scrollbar-width: none;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    border-radius: var(--radius-control);
+    outline: none;
+    /* Half a column above and below, so the first and last rows can reach the band. */
+    padding-block: calc(var(--time-item) * (var(--time-rows) - 1) / 2);
+    /* The ends fade rather than being cut, which is what makes the column read as a reel. */
+    mask-image: linear-gradient(to bottom, transparent, #000 28%, #000 72%, transparent);
+  }
+  .time-column::-webkit-scrollbar {
+    display: none;
+  }
+  .time-column:focus-visible {
+    box-shadow: 0 0 0 2px var(--primary);
+  }
+  .time-option {
+    height: var(--time-item);
+    scroll-snap-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted-foreground);
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition:
+      color var(--duration-fast) var(--ease-snappy),
+      scale calc(var(--duration-base) * var(--motion-scale)) var(--ease-out-cubic);
+  }
+  .time-option[aria-selected="true"] {
+    color: var(--foreground);
+    font-weight: 500;
+    /* Just enough to lift the reading off the rows either side of it. */
+    scale: 1.08;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .time-column {
+      scroll-behavior: auto;
+    }
+  }
+
+  /* The field treatment keys off :focus-visible on the control itself, but a segmented clock
+     has no single focusable control: focus lives on whichever segment is active. :has moves
+     the same edge onto the group. */
+  .time-field:has(:focus) {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary);
+  }
+  @media (forced-colors: active) {
+    .time-field:has(:focus) {
+      outline: 2px solid Highlight;
+      outline-offset: 1px;
+    }
+  }
+
+  /* The accordion panel animates on grid rows: `height: auto` is not interpolable, and a
+     measured pixel height would need a resize observer this package does not want. The row
+     collapses to 0fr, the inner track clips, and visibility flips at the end of the close so
+     the content leaves the a11y tree, the Tab order and find-in-page once it is out of sight.
+     Reduced motion zeroes --motion-scale, which zeroes the duration and makes the swap
+     instant rather than animated. */
+  .accordion-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition:
+      grid-template-rows calc(var(--duration-slow) * var(--motion-scale)) var(--ease-out-cubic),
+      visibility calc(var(--duration-slow) * var(--motion-scale));
+  }
+  .accordion-panel[data-state="open"] {
+    grid-template-rows: 1fr;
+    visibility: visible;
+  }
+  .accordion-track {
+    overflow: hidden;
+  }
+
   /* Rect-shaped controls get true superellipse corners where the engine can draw them. */
   @supports (corner-shape: squircle) {
     .squircle {
@@ -121,6 +234,109 @@
       animation: none;
       width: 100%;
       opacity: 0.4;
+    }
+  }
+}
+
+/* Spinner and Skeleton: the two indeterminate waits. The spinner is the one indicator whose whole
+   meaning is motion, so reduced motion slows the turn rather than stopping it. */
+@layer components {
+  .spinner {
+    --_size: 16px;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--_size);
+    height: var(--_size);
+    color: inherit;
+    vertical-align: -0.1875em;
+  }
+  .spinner[data-size="sm"] {
+    --_size: 12px;
+  }
+  .spinner[data-size="lg"] {
+    --_size: 24px;
+  }
+  .spinner-ring {
+    width: 100%;
+    height: 100%;
+    animation: spinner-turn 0.7s linear infinite;
+  }
+  .spinner-track,
+  .spinner-head {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+  }
+  .spinner-track {
+    opacity: 0.2;
+  }
+  /* The circumference is 39.27; a quarter of it reads as one turning arc. */
+  .spinner-head {
+    stroke-dasharray: 9.82 29.45;
+  }
+  @keyframes spinner-turn {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+
+  /* Skeleton: a tint of the foreground with one highlight passing over it. The sweep is a
+     background position, so it costs no layout and no second element. */
+  .skeleton {
+    display: block;
+    height: 1rem;
+    width: 100%;
+    border-radius: var(--radius-sm);
+    background-color: color-mix(in oklab, var(--foreground) 8%, transparent);
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--foreground) 7%, transparent),
+      transparent
+    );
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    animation: skeleton-sweep 1.6s var(--ease-standard) infinite;
+  }
+  .skeleton[data-shape="circle"] {
+    width: 2.5rem;
+    aspect-ratio: 1;
+    height: auto;
+    border-radius: var(--radius-full);
+  }
+  .skeleton-text {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--space-unit) * 2);
+    width: 100%;
+  }
+  .skeleton[data-shape="line"] {
+    height: 0.75rem;
+    border-radius: var(--radius-xs);
+  }
+  /* Prose does not end flush, and a skeleton that does reads as a table. */
+  .skeleton-text > .skeleton[data-shape="line"]:last-child:not(:first-child) {
+    width: 60%;
+  }
+  @keyframes skeleton-sweep {
+    from {
+      background-position: -100% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spinner-ring {
+      animation-duration: 1.8s;
+    }
+    /* A flat tint still reads as "not here yet"; the travelling highlight does not survive. */
+    .skeleton {
+      animation: none;
+      background-image: none;
     }
   }
 }
