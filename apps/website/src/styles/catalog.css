@@ -504,6 +504,28 @@
   gap: 12px;
   justify-content: center;
 }
+/* The liquix stage owns a window and a page scroll, so its example is a window:
+   an iframe of the real component, not a box inside the article. */
+.demo-embed {
+  border: 1px solid #e4e7e0;
+  border-radius: var(--r-panel);
+  overflow: hidden;
+  background: #05060a;
+}
+.demo-embed iframe {
+  display: block;
+  width: 100%;
+  height: 420px;
+  border: 0;
+}
+.demo-embed p {
+  margin: 0;
+  padding: 10px 14px;
+  border-top: 1px solid #e4e7e0;
+  background: #f1f3ef;
+  color: var(--c-muted);
+  font-size: 12px;
+}
 .demo-controls {
   margin-bottom: 14px;
   padding-top: 0;

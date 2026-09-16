@@ -30,6 +30,9 @@
 | [Badge](/docs/components/badge) | a small fact | `<span>` |
 | [Kbd](/docs/components/kbd) | a key cap | `<kbd>` |
 | [Separator](/docs/components/separator) | a hairline | `<div>` |
+| [LiquixStage](/docs/components/liquix-stage) | the WebGL2 host for shader-drawn glass | `<canvas>` + `<div>` |
+| [LiquixCapsule](/docs/components/liquix-capsule) | a shader-drawn capsule action | `<button>` |
+| [LiquixCircle](/docs/components/liquix-circle) | a shader-drawn icon action | `<button>` |
 
 Every component sets `data-slot="<name>"` on its root and accepts `className`, which is merged
 last so your utilities win.

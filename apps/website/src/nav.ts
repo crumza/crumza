@@ -68,6 +68,14 @@ export const sidebar: readonly NavGroup[] = [
     ],
   },
   {
+    title: 'Liquix',
+    items: [
+      { slug: 'components/liquix-stage', label: 'LiquixStage' },
+      { slug: 'components/liquix-capsule', label: 'LiquixCapsule' },
+      { slug: 'components/liquix-circle', label: 'LiquixCircle' },
+    ],
+  },
+  {
     title: 'Facts',
     items: [
       { slug: 'components/badge', label: 'Badge' },

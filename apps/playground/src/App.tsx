@@ -492,6 +492,9 @@ export function App(): ReactElement {
             checked={reduce}
             onChange={(e) => setReduce(e.target.checked)}
           />
+          <a href="#liquix" className="underline underline-offset-4">
+            liquix stage
+          </a>
         </Glass>
       </div>
       <Toaster />

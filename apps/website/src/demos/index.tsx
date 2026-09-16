@@ -785,11 +785,44 @@ function SkeletonDemo(): ReactElement {
   );
 }
 
+/**
+ * The liquix stage is fixed to the window and takes the page scroll for its
+ * backdrop, so its example is a window of its own rather than a box in the
+ * article. The frame runs the real component, shader and all, and each page
+ * shows the shape it documents.
+ */
+function LiquixFrame({ shape, title }: { shape?: string; title: string }): ReactElement {
+  return (
+    <div className="demo-embed">
+      <iframe src={shape ? `/demos/liquix?shape=${shape}` : '/demos/liquix'} title={title} loading="lazy" />
+      <p>
+        Hover or press the shape, and scroll inside the frame to move the backdrop behind the glass.
+        Needs WebGL2; without it the shape falls back to CSS.
+      </p>
+    </div>
+  );
+}
+
+function LiquixStageDemo(): ReactElement {
+  return <LiquixFrame title="A liquix stage holding two shapes over a scrolling backdrop" />;
+}
+
+function LiquixCapsuleDemo(): ReactElement {
+  return <LiquixFrame shape="capsule" title="A liquix capsule over a scrolling backdrop" />;
+}
+
+function LiquixCircleDemo(): ReactElement {
+  return <LiquixFrame shape="circle" title="A liquix circle over a scrolling backdrop" />;
+}
+
 /** Which live demo sits above which docs page. Slugs match the docs/ file paths. */
 const demos: Record<string, ComponentType> = {
   'components/button': ButtonDemo,
   'components/glass': GlassDemo,
   'components/lens': LensDemo,
+  'components/liquix-stage': LiquixStageDemo,
+  'components/liquix-capsule': LiquixCapsuleDemo,
+  'components/liquix-circle': LiquixCircleDemo,
   'components/card': CardDemo,
   'components/toolbar': ToolbarDemo,
   'components/tabs': TabsDemo,
