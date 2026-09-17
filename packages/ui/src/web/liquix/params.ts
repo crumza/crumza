@@ -126,3 +126,32 @@ export const defaultLiquixPanels: readonly LiquixPanel[] = [
   { kind: PANEL_KINDS.spectrum, label: 'Spectrum, dispersion' },
   { kind: PANEL_KINDS.bars, label: 'Bars, chromatic fringe' },
 ];
+
+/**
+ * Effect parameters for a LiquixSurface, whose glass sits over live DOM rather
+ * than over a backdrop the host owns.
+ *
+ * The tint is light, and the glass dims itself over bright content the way
+ * the stage's does, so the white labels LiquixTabs draws stay legible over
+ * any picture without turning the glass frosted. Overscroll physics are
+ * off because the container scrolls natively. The shader's drop shadow is off
+ * because it is drawn into the backdrop pass as a darkening around the
+ * silhouette, and with everything outside the glass cut away it would survive
+ * only where the glass refracts it, as a dirty ring inside the rim. A surface
+ * wears a CSS shadow instead, on an element under the canvas.
+ */
+export const defaultLiquixSurfaceParams: LiquixParams = {
+  ...defaultLiquixParams,
+  // A bar is a lens, not a pane: the bevel reaches the centre of a 56px bar, so
+  // there is no flat interior to read as frosted, the backdrop stays sharp at
+  // the lip and only softens with depth, and the tint is light enough that
+  // the picture behind still shows through the middle.
+  refThickness: 28,
+  blurRadius: 4,
+  blurEdge: false,
+  tint: { r: 255, g: 255, b: 255, a: 0.14 },
+  pullStretch: 0,
+  pullSquash: 0,
+  pullShift: 0,
+  shadowFactor: 0,
+};

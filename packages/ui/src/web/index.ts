@@ -72,8 +72,25 @@ export type { LiquixCircleProps } from './components/LiquixCircle';
 export { LiquixCircle } from './components/LiquixCircle';
 export type { LiquixFrame, LiquixStageProps } from './components/LiquixStage';
 export { LiquixStage } from './components/LiquixStage';
+export type { LiquixSurfaceProps } from './components/LiquixSurface';
+export { LiquixSurface } from './components/LiquixSurface';
+export type {
+  LiquixTab,
+  LiquixTabsProps,
+  LiquixTabsShadowProps,
+} from './components/LiquixTabs';
+export { LiquixTabs, LiquixTabsShadow } from './components/LiquixTabs';
+export type { LiquixPaint, LiquixStrip } from './liquix/backdrop';
+export type { LiquixBoxEntry, LiquixBoxHandle, LiquixBoxShape } from './liquix/box';
+export { useLiquixBox } from './liquix/box';
 export type { LiquixPanel, LiquixParams, LiquixTint, PanelKind } from './liquix/params';
-export { PANEL_KINDS, defaultLiquixPanels, defaultLiquixParams } from './liquix/params';
+export {
+  PANEL_KINDS,
+  defaultLiquixPanels,
+  defaultLiquixParams,
+  defaultLiquixSurfaceParams,
+} from './liquix/params';
+export type { LiquixShape, LiquixShapeEntry, LiquixStageValue } from './liquix/stage';
 export type {
   MenuCheckboxItemProps,
   MenuContentProps,

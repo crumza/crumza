@@ -264,9 +264,28 @@ export function loadPanelTexture(gl: WebGL2RenderingContext, url: string): Promi
   });
 }
 
-export function createGlassRenderer(canvas: HTMLCanvasElement): GlassRenderer | null {
+export interface GlassRendererOptions {
+  /**
+   * Turns the canvas into a stencil: the backdrop is still rendered and
+   * refracted, but only the glass itself is composited, so the canvas can sit
+   * over live DOM and leave everything else clickable. Off by default, which is
+   * byte for byte the original opaque pipeline.
+   *
+   * premultipliedAlpha is off with it: the shader writes straight sRGB and a
+   * separate coverage, and premultiplying would darken the anti-aliased rim
+   * against a light page.
+   */
+  readonly transparent?: boolean | undefined;
+}
+
+export function createGlassRenderer(
+  canvas: HTMLCanvasElement,
+  options: GlassRendererOptions = {},
+): GlassRenderer | null {
+  const transparent = options.transparent === true;
   const context = canvas.getContext('webgl2', {
-    alpha: false,
+    alpha: transparent,
+    premultipliedAlpha: !transparent,
     antialias: false,
     depth: false,
     stencil: false,
@@ -468,6 +487,7 @@ export function createGlassRenderer(canvas: HTMLCanvasElement): GlassRenderer | 
         u_overLight: params.overLight / 100,
         u_overLightPoint: params.overLightPoint / 100,
         u_step: params.step,
+        u_cutout: transparent ? 1 : 0,
       },
       [
         ['u_bg', bgTarget.texture],

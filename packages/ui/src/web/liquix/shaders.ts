@@ -198,6 +198,12 @@ uniform int u_blurEdge;
 uniform float u_overLight;      // how hard to dim over a bright backdrop
 uniform float u_overLightPoint; // backdrop luminance the dimming centres on
 uniform int u_step;
+// 0: the canvas is opaque and the backdrop is painted outside the silhouette,
+// which is what every framed stage wants. 1: everything outside the glass is
+// punched to alpha 0, so the canvas can be laid over live DOM and only the
+// shape itself covers it. The backdrop is still sampled either way, it is the
+// thing being refracted, it just stops being drawn.
+uniform int u_cutout;
 
 // Gradient of the SDF. Deliberately unnormalised: its length falls off where
 // the field flattens (shape interior, blob neck), and sdfSlope() turns that
@@ -389,9 +395,12 @@ void main() {
   }
 
   // Anti-aliasing: resolve the silhouette against the background over ~2px of
-  // the distance field instead of letting the branch above hard-clip it.
-  outColor = mix(outColor, texture(u_bg, v_uv), smoothstep(-0.001, 0.001, merged));
+  // the distance field instead of letting the branch above hard-clip it. The
+  // same coverage doubles as the cutout alpha, so the edge the eye sees and
+  // the edge that lets the DOM through are one number and cannot disagree.
+  float coverage = 1.0 - smoothstep(-0.001, 0.001, merged);
+  outColor = mix(outColor, texture(u_bg, v_uv), 1.0 - coverage);
 
-  fragColor = outColor;
+  fragColor = vec4(outColor.rgb, u_cutout > 0 ? coverage : 1.0);
 }
 `;

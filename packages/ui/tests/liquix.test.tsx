@@ -1,10 +1,21 @@
 import { describe, expect, test } from 'bun:test';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { LiquixCapsule, LiquixCircle, LiquixStage } from '../src/web';
-import { defaultLiquixParams, PANEL_KINDS } from '../src/web/liquix/params';
+import {
+  LiquixCapsule,
+  LiquixCircle,
+  LiquixStage,
+  LiquixSurface,
+  LiquixTabs,
+  LiquixTabsShadow,
+} from '../src/web';
+import {
+  defaultLiquixParams,
+  defaultLiquixSurfaceParams,
+  PANEL_KINDS,
+} from '../src/web/liquix/params';
 import { gaussianKernel } from '../src/web/liquix/renderer';
 import { MAX_SHAPES } from '../src/web/liquix/shader-lib';
-import { MAX_PANELS } from '../src/web/liquix/shaders';
+import { FRAGMENT_MAIN, MAX_PANELS } from '../src/web/liquix/shaders';
 
 describe('liquix shapes', () => {
   test('the capsule takes its corner radius from half its height', () => {
@@ -95,5 +106,126 @@ describe('liquix pipeline limits', () => {
   test('the shader array bounds are what the stage allocates against', () => {
     expect(MAX_SHAPES).toBe(6);
     expect(MAX_PANELS).toBe(8);
+  });
+});
+
+describe('liquix surface', () => {
+  const paint = () => 0;
+
+  test('renders content, underlay and overlay in their layers, and stays server safe', () => {
+    const html = renderToStaticMarkup(
+      <LiquixSurface
+        paint={paint}
+        paintKey="home"
+        className="h-full w-full"
+        underlay={<span>under</span>}
+        overlay={<span>over</span>}
+      >
+        <p>content</p>
+      </LiquixSurface>,
+    );
+    expect(html).toContain('data-slot="liquix-surface"');
+    expect(html).toContain('class="relative overflow-hidden h-full w-full"');
+    expect(html).toContain('<section tabindex="0" data-slot="liquix-surface-scroll"');
+    expect(html).toContain('<p>content</p>');
+    expect(html.indexOf('<span>under</span>')).toBeLessThan(html.indexOf('<canvas'));
+    expect(html.indexOf('<canvas')).toBeLessThan(html.indexOf('<span>over</span>'));
+    expect(html).not.toContain('data-fallback');
+  });
+
+  test('the surface defaults keep the shared pipeline but cut its physics and shadow', () => {
+    expect(defaultLiquixSurfaceParams.refFactor).toBe(defaultLiquixParams.refFactor);
+    expect(defaultLiquixSurfaceParams.tint).toEqual({ r: 255, g: 255, b: 255, a: 0.14 });
+    expect(defaultLiquixSurfaceParams.blurRadius).toBe(4);
+    expect(defaultLiquixSurfaceParams.blurEdge).toBe(false);
+    // The bevel reaches the centre of the default 56px bar: the whole bar is a lens.
+    expect(defaultLiquixSurfaceParams.refThickness).toBe(28);
+    expect(defaultLiquixSurfaceParams.overLight).toBe(defaultLiquixParams.overLight);
+    expect(defaultLiquixSurfaceParams.pullStretch).toBe(0);
+    expect(defaultLiquixSurfaceParams.pullSquash).toBe(0);
+    expect(defaultLiquixSurfaceParams.pullShift).toBe(0);
+    expect(defaultLiquixSurfaceParams.shadowFactor).toBe(0);
+  });
+
+  test('the glass pass can punch everything outside the shape to alpha 0', () => {
+    expect(FRAGMENT_MAIN).toContain('uniform int u_cutout;');
+    expect(FRAGMENT_MAIN).toContain('u_cutout > 0 ? coverage : 1.0');
+  });
+});
+
+describe('liquix tabs', () => {
+  const Dot = () => <svg aria-hidden="true" />;
+  const tabs = [
+    { id: 'home', label: 'Home', Icon: Dot },
+    { id: 'inbox', label: 'Inbox', Icon: Dot },
+    { id: 'explore', label: 'Explore', Icon: Dot },
+  ];
+
+  test('a tablist of real buttons, the selected one marked', () => {
+    const html = renderToStaticMarkup(
+      <LiquixTabs tabs={tabs} active="inbox" onChange={() => undefined} width={390} />,
+    );
+    expect(html).toContain('role="tablist"');
+    expect(html).toContain('aria-label="Sections"');
+    expect(html.match(/role="tab"/g)).toHaveLength(3);
+    expect(html).toContain('id="tab-inbox" aria-selected="true"');
+    expect(html).toContain('id="tab-home" aria-selected="false"');
+    expect(html.match(/text-blue-600/g)).toHaveLength(1);
+    expect(html.match(/text-white drop-shadow-/g)).toHaveLength(2);
+    expect(html).toContain('class="liquix-tabs__pill absolute will-change-transform"');
+  });
+
+  test('the bar is measured from the surface width and the geometry defaults', () => {
+    const html = renderToStaticMarkup(
+      <LiquixTabs tabs={tabs} active="home" onChange={() => undefined} width={390} />,
+    );
+    expect(html).toContain('bottom:28px');
+    expect(html).toContain('width:362px;height:56px');
+    // The pill is a tab wide, inset 4px each side: 362 / 3 - 8.
+    expect(html).toContain(`width:${362 / 3 - 8}px;height:48px;border-radius:24px`);
+  });
+
+  test('geometry, label and classes are overridable', () => {
+    const html = renderToStaticMarkup(
+      <LiquixTabs
+        tabs={tabs}
+        active="home"
+        onChange={() => undefined}
+        width={300}
+        inset={10}
+        bottom={12}
+        height={48}
+        label="Pages"
+        activeClassName="text-red-500"
+        inactiveClassName="text-stone-500"
+        pillClassName="bg-stone-200"
+      />,
+    );
+    expect(html).toContain('aria-label="Pages"');
+    expect(html).toContain('bottom:12px');
+    expect(html).toContain('width:280px;height:48px');
+    expect(html).toContain('text-red-500');
+    expect(html).toContain('text-stone-500');
+    expect(html).toContain('bg-stone-200');
+    expect(html).not.toContain('text-blue-600');
+    expect(html).toContain('liquix-tabs__pill absolute will-change-transform bg-stone-200');
+  });
+
+  test('outside a surface the track and highlight fall back to CSS glass', () => {
+    const html = renderToStaticMarkup(
+      <LiquixTabs tabs={tabs} active="home" onChange={() => undefined} width={390} />,
+    );
+    expect(html).toContain('backdrop-blur-xl');
+    expect(html).toContain('backdrop-blur-md');
+  });
+
+  test('the shadow is the bar, one box down, for the surface underlay', () => {
+    const html = renderToStaticMarkup(<LiquixTabsShadow width={390} />);
+    expect(html).toContain('data-slot="liquix-tabs-shadow"');
+    expect(html).toContain('bottom:28px');
+    expect(html).toContain('width:362px;height:56px;border-radius:28px');
+    expect(renderToStaticMarkup(<LiquixTabsShadow width={390} inset={20} height={40} />)).toContain(
+      'width:350px;height:40px;border-radius:20px',
+    );
   });
 });
