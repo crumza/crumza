@@ -40,7 +40,7 @@ Each `paintKeys` entry keeps its tiles on the GPU, and the content can be any he
 
 ## Shapes and layers
 
-Shapes register with the surface through `useLiquixBox(layer)`. It hands back a ref to hang on a transparent element, and a mutable entry whose shape the frame loop reads every frame, so a caller can animate a box for nothing. [LiquixTabs](/docs/components/liquix-tabs) is built on it.
+Shapes register with the surface through `useLiquixBox(layer)`. It hands back a ref to hang on a transparent element, and a mutable entry whose shape the frame loop reads every frame, so a caller can animate a box for nothing. The entry's `alpha` fades the shape's glass over the layer below, which is how a shape can cross-fade with something else rather than be cut. [LiquixTabs](/docs/components/liquix-tabs) is built on it.
 
 The shader merges every shape in a pass into one distance field with `min()`, so a pill inside a bar would be swallowed by it: inside the bar, the bar is always the deeper shape. Shapes are therefore grouped by `layer` and drawn in separate passes, and each pass after the first refracts a copy of the canvas the one before it left behind. That is how a highlight comes to sit on a bar's glass rather than merge into it. At most six shapes are drawn per layer.
 

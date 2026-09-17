@@ -70,6 +70,7 @@ interface LoopState {
     sizes: Float32Array;
     corners: Float32Array;
     glows: Float32Array;
+    alphas: Float32Array;
   };
   size: { width: number; height: number; dpr: number; blurScale: number };
   accumulator: number;
@@ -145,6 +146,7 @@ export function LiquixSurface({
       sizes: new Float32Array(MAX_SHAPES * 2),
       corners: new Float32Array(MAX_SHAPES * 2),
       glows: new Float32Array(MAX_SHAPES),
+      alphas: new Float32Array(MAX_SHAPES),
     },
     size: { width: 0, height: 0, dpr: 0, blurScale: 0 },
     accumulator: 0,
@@ -264,7 +266,7 @@ export function LiquixSurface({
       }
 
       const entries = shapesRef.current;
-      const { centers, sizes, corners, glows } = state.arrays;
+      const { centers, sizes, corners, glows, alphas } = state.arrays;
       const canvasBox = canvas.getBoundingClientRect();
 
       // One pass per layer, lowest first; see the component's note on why.
@@ -287,6 +289,7 @@ export function LiquixSurface({
           corners[i * 2] = entry.shape.cornerRadius * entry.scale;
           corners[i * 2 + 1] = entry.shape.roundness;
           glows[i] = entry.glow;
+          alphas[i] = entry.alpha ?? 1;
         });
 
         if (pass === 0) {
@@ -329,6 +332,7 @@ export function LiquixSurface({
             sizes,
             corners,
             glows,
+            alphas,
             pull: [0, 0],
           },
           params: settingsRef.current,

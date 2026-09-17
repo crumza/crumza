@@ -284,6 +284,9 @@ void main() {
   float resCssY = u_resolution.y / u_dpr;
   float merged = mainSDF(gl_FragCoord.xy, vec2(0.0));
   vec4 outColor;
+  // How solid the shape under this pixel is. Only a stencilled canvas uses
+  // it: there a shape can fade over the layer below rather than be cut.
+  float alpha = 1.0;
 
   // --- inspection steps (u_step 4 is the finished glass) ---------------------
   if (u_step == 0) {
@@ -329,7 +332,9 @@ void main() {
     float depth = -merged * resCssY; // CSS px inside the silhouette
     float edgeFactor = refractionEdgeFactor(depth);
 
-    float glow = nearestGlow(gl_FragCoord.xy);
+    int owner = nearestShape(gl_FragCoord.xy);
+    float glow = u_shapeGlow[owner];
+    alpha = u_shapeAlpha[owner];
 
     if (edgeFactor <= 0.0) {
       // Flat interior: blurred backdrop plus tint, no bending.
@@ -401,6 +406,6 @@ void main() {
   float coverage = 1.0 - smoothstep(-0.001, 0.001, merged);
   outColor = mix(outColor, texture(u_bg, v_uv), 1.0 - coverage);
 
-  fragColor = vec4(outColor.rgb, u_cutout > 0 ? coverage : 1.0);
+  fragColor = vec4(outColor.rgb, u_cutout > 0 ? coverage * alpha : 1.0);
 }
 `;

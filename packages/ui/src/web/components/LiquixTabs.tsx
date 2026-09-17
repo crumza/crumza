@@ -22,16 +22,20 @@ const STIFFNESS = 260;
 const DAMPING = 2 * Math.sqrt(STIFFNESS) * 0.68;
 const SUBSTEP = 1 / 120;
 
-// Below this, in px per second, the pill counts as parked. The spring's last
-// wobbles are slower than this, so the glass lets go as the pill lands rather
-// than riding out the tail.
+// The pill counts as parked once it is within SETTLED px of its tab and moving
+// slower than MOVING px per second. Both, because the spring passes through
+// the target at speed and stands still for an instant at the top of each
+// overshoot; either test alone would let go of the glass mid-bounce and grab
+// it again on the way back.
+const SETTLED = 1.5;
 const MOVING = 30;
 
-// How fast the pill crosses between its two looks, per second. Glass arrives
-// as the travel starts, which the motion hides; grey comes back a beat after
-// it parks, quick enough that the rim does not linger over the capsule.
-const TO_GLASS = 18;
-const TO_GREY = 8;
+// How long the pill takes to cross between its two looks, in seconds. Glass
+// arrives as the travel starts, which the motion hides; grey comes back over a
+// beat once it parks. The blend runs on a clock and is eased at both ends, so
+// neither look pops in or trails off.
+const TO_GLASS = 0.1;
+const TO_GREY = 0.32;
 
 // No WebGL2: the look without the physics, same as the other liquix shapes.
 const FALLBACK_TRACK =
@@ -91,11 +95,10 @@ interface Motion {
  * glass only while it travels, refracting the bar's surface on the layer above
  * it rather than merging into it.
  *
- * The two cross-fade. The grey capsule is opaque and sits over the canvas, so
- * fading it in hides the glass underneath it; the glass is tucked a couple of
- * px further in as it goes, which keeps its rim from showing around the edge.
- * Only once the grey is solid is the shape handed back to the surface: at
- * rest the shader is not drawing a pill at all, and its pass drops with it.
+ * The two cross-fade: the glass through its own alpha on the canvas, the
+ * capsule through the element's opacity, on one eased clock. Only once the
+ * glass is gone is the shape handed back to the surface: at rest the shader
+ * is not drawing a pill at all, and its pass drops with it.
  *
  * The spring runs here rather than in CSS because the shader needs the box
  * every frame: the surface reads this element's rect for the centre and the
@@ -173,20 +176,17 @@ function Highlight({ index, tabWidth, height, pillClassName }: HighlightProps): 
       entry.shape.width = width * (1 + 0.2 * speed);
       entry.shape.height = pillHeight * (1 - 0.12 * speed);
 
-      // Glass while it travels, grey once it parks, and a ramp between the
-      // two rather than a switch.
-      const moving = Math.abs(state.velocity) > MOVING;
+      // Glass while it travels, grey once it parks. The blend walks towards
+      // whichever it should be at a fixed pace, and the eased value below is
+      // what both halves of the cross-fade read.
+      const moving =
+        Math.abs(state.x - state.target) > SETTLED || Math.abs(state.velocity) > MOVING;
       const blend = mix.current;
-      blend.value +=
-        ((moving ? 1 : 0) - blend.value) * Math.min(1, elapsed * (moving ? TO_GLASS : TO_GREY));
-      if (blend.value < 0.004) blend.value = 0;
-      if (blend.value > 0.996) blend.value = 1;
+      const pace = elapsed / (moving ? TO_GLASS : TO_GREY);
+      blend.value = moving ? Math.min(1, blend.value + pace) : Math.max(0, blend.value - pace);
+      const glass = blend.value * blend.value * (3 - 2 * blend.value);
 
-      // Tuck the glass in behind the grey as it fades, so no rim is left
-      // showing around a capsule that is meant to be flat.
-      const tuck = (1 - blend.value) * 3;
-      entry.shape.width = Math.max(0, entry.shape.width - tuck * 2);
-      entry.shape.height = Math.max(0, entry.shape.height - tuck * 2);
+      entry.alpha = glass;
       entry.shape.cornerRadius = entry.shape.height / 2;
       entry.glowTarget = 0.5 * speed;
 
@@ -199,7 +199,7 @@ function Highlight({ index, tabWidth, height, pillClassName }: HighlightProps): 
 
       element.style.transform = `translateX(${state.x.toFixed(2)}px)`;
       if (blobRef.current) {
-        blobRef.current.style.opacity = (1 - blend.value).toFixed(3);
+        blobRef.current.style.opacity = (1 - glass).toFixed(3);
         blobRef.current.style.transform = element.style.transform;
       }
     };

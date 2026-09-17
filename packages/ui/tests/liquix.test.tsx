@@ -162,7 +162,12 @@ describe('liquix surface', () => {
 
   test('the glass pass can punch everything outside the shape to alpha 0', () => {
     expect(FRAGMENT_MAIN).toContain('uniform int u_cutout;');
-    expect(FRAGMENT_MAIN).toContain('u_cutout > 0 ? coverage : 1.0');
+    expect(FRAGMENT_MAIN).toContain('u_cutout > 0 ? coverage * alpha : 1.0');
+  });
+
+  test('a shape on a stencilled canvas can fade by its own alpha', () => {
+    expect(FRAGMENT_MAIN).toContain('uniform float u_shapeAlpha[MAX_SHAPES];');
+    expect(FRAGMENT_MAIN).toContain('alpha = u_shapeAlpha[owner];');
   });
 });
 
