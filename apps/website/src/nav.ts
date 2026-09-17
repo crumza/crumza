@@ -27,6 +27,7 @@ export const sidebar: readonly NavGroup[] = [
       { slug: 'components/liquid-pricing-card', label: 'LiquidPricingCard' },
       { slug: 'components/liquid-testimonials', label: 'LiquidTestimonials' },
       { slug: 'components/liquid-header', label: 'LiquidHeader' },
+      { slug: 'components/liquid-mobile-nav', label: 'LiquidMobileNav' },
       { slug: 'components/liquid-tab-indicator', label: 'LiquidTabIndicator' },
       { slug: 'components/liquid-search', label: 'LiquidSearch' },
       { slug: 'components/liquid-stepper', label: 'LiquidStepper' },

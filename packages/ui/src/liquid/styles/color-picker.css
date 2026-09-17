@@ -82,6 +82,17 @@
   pointer-events: none;
 }
 
+/* under the finger the knob lifts, so the colour being set is the thing you are
+   looking at rather than the pad around it */
+.lqc-color-knob,
+.lqc-color-hue-knob {
+  transition: scale 180ms var(--lq-ease);
+}
+.lqc-color-pad[data-press="on"] .lqc-color-knob,
+.lqc-color-hue[data-press="on"] .lqc-color-hue-knob {
+  scale: 1.3;
+}
+
 .lqc-color-foot {
   display: flex;
   align-items: center;
@@ -152,7 +163,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lqc-color-swatch {
+  .lqc-color-swatch,
+  .lqc-color-knob,
+  .lqc-color-hue-knob {
     transition-duration: 1ms;
   }
 }

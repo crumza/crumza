@@ -73,6 +73,14 @@
     0 0 0 0.5px rgba(255, 255, 255, 0.14),
     0 10px 22px -12px rgba(0, 0, 0, 0.55);
 }
+/* fanned out, a card can be thrown off the side, so it offers the grab */
+.lqc-notif-deck[data-expanded] .lqc-notif {
+  cursor: grab;
+}
+.lqc-notif-deck[data-expanded] .lqc-notif:active {
+  cursor: grabbing;
+}
+
 .lqc-notif-content {
   justify-content: space-between;
   gap: 10px;

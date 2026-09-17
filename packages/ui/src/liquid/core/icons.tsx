@@ -69,6 +69,45 @@ export const Search: IconComponent = icon('search', [
   ['circle', { cx: '11', cy: '11', r: '8' }, '4ej97u'],
 ]);
 
+export const House: IconComponent = icon('house', [
+  ['path', { d: 'M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8' }, '5wwlr5'],
+  [
+    'path',
+    {
+      d: 'M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
+    },
+    '1d0kgt',
+  ],
+]);
+
+export const Compass: IconComponent = icon('compass', [
+  [
+    'path',
+    {
+      d: 'm16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z',
+    },
+    '9ktpf1',
+  ],
+  ['circle', { cx: '12', cy: '12', r: '10' }, '1mglay'],
+]);
+
+export const Bell: IconComponent = icon('bell', [
+  ['path', { d: 'M10.268 21a2 2 0 0 0 3.464 0' }, 'vwvbt9'],
+  [
+    'path',
+    {
+      d: 'M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326',
+    },
+    '11g9vi',
+  ],
+]);
+
+export const CircleUser: IconComponent = icon('circle-user', [
+  ['circle', { cx: '12', cy: '12', r: '10' }, '1mglay'],
+  ['circle', { cx: '12', cy: '10', r: '3' }, 'ilqhr7'],
+  ['path', { d: 'M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662' }, '154egf'],
+]);
+
 export const Star: IconComponent = icon('star', [
   [
     'path',

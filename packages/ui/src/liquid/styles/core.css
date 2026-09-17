@@ -108,6 +108,21 @@
   justify-items: safe center;
 }
 
+/* Every component arrives: it rises the last few pixels into place and fades
+   up, so a scene assembles rather than being there already. Only the layer's
+   own children, so a menu or a panel that has its own entrance is not animated
+   twice. Deliberately opacity and translate alone: the box never changes size,
+   so the arrival re-uses the displacement map the surface was born with. */
+.lq-layer > * {
+  animation: lq-arrive 560ms var(--lq-ease) both;
+}
+@keyframes lq-arrive {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+}
+
 /* the cloned scene held inside each surface; positioned (never transformed) so
    it lines up pixel-for-pixel with the real scene behind the surface */
 .lq-refraction-scene {
@@ -130,6 +145,10 @@
   color: #fff;
   -webkit-tap-highlight-color: transparent;
   transition: scale 150ms var(--lq-ease);
+  /* The scene offers a grab, because its backdrop scrolls. The glass does not
+     move, so it must not inherit that offer; what is interactive inside it says
+     so for itself. */
+  cursor: default;
 }
 
 button.lq-lens {
@@ -304,6 +323,9 @@ button.lq-lens {
 @media (prefers-reduced-motion: reduce) {
   .lq-lens {
     transition: none !important;
+  }
+  .lq-layer > * {
+    animation: none !important;
   }
   /* The press still answers, it just does not travel: a flat highlight for the
      length of the press instead of a scale and a spreading ripple. */

@@ -19,10 +19,13 @@ const STEPPER_MAX = 12;
  */
 export function LiquidStepper({ radius = LIQUID_RADIUS }: LiquidComponentProps): ReactElement {
   const [count, setCount] = useState(3);
+  const [up, setUp] = useState(true);
   const r = pill(H.stepper, radius);
 
-  const nudge = (by: number): void =>
+  const nudge = (by: number): void => {
+    setUp(by > 0);
     setCount((c) => Math.max(STEPPER_MIN, Math.min(STEPPER_MAX, c + by)));
+  };
 
   return (
     <LiquidSurface
@@ -42,9 +45,14 @@ export function LiquidStepper({ radius = LIQUID_RADIUS }: LiquidComponentProps):
         <Minus />
       </button>
 
-      {/* tabular figures, so 9 to 10 does not shift the buttons either side */}
+      {/* Tabular figures, so 9 to 10 does not shift the buttons either side.
+          The live region is the outer span and stays put; the inner one is keyed
+          by the value, so each number rolls in from the side it came from
+          without the announcement being remounted out from under it. */}
       <span className="lqc-stepper-value" aria-live="polite">
-        {count}
+        <span key={count} data-from={up ? 'below' : 'above'}>
+          {count}
+        </span>
       </span>
 
       <button

@@ -1,0 +1,119 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component transitions. */
+/* LiquidMobileNav: geometry and motion only; the material is .lq-lens (core)
+
+   A dock at the foot of the scene. Two things move and nothing else: the glyph
+   that was tapped, once, and the pane of glass that slides in behind it a beat
+   later. Both live in .lq-content, which sits ABOVE the filtered layers rather
+   than inside them, so the compositor carries them and the engine is never
+   asked to repaint a filter for either.
+
+   The bar's box never changes, so it builds one displacement map and keeps it.
+
+   The chrome is the liquix stage's: its glyph shadow, its focus ring, and for
+   the pane the material liquix falls back to when it cannot run the shader. */
+
+.lqc-dock {
+  --lqc-dock-pad: 8px;
+  position: relative;
+  /* a dock sits at the foot of the scene, not in the middle of it */
+  align-self: end;
+  margin-bottom: 18px;
+  width: min(296px, var(--lq-room));
+}
+
+.lqc-dock-bar {
+  width: 100%;
+  height: 68px;
+}
+.lqc-dock-content {
+  position: relative;
+  gap: 0;
+  padding: 0 var(--lqc-dock-pad);
+}
+
+/* The glass behind the glyph you are on. It is one slot wide and travels by
+   exactly its own width, so nothing here needs measuring, and it starts moving
+   a beat after the tap: the glyph answers first, the glass follows it in. */
+.lqc-dock-pane {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: var(--lqc-dock-pad);
+  width: calc((100% - 2 * var(--lqc-dock-pad)) / var(--n, 5));
+  border-radius: var(--lq-inner-r, 18px);
+  background-color: rgb(255 255 255 / 0.14);
+  box-shadow:
+    inset 0 1.5px 1px rgb(255 255 255 / 0.5),
+    inset 0 -1.5px 1px rgb(255 255 255 / 0.22),
+    0 6px 18px -10px rgb(0 0 0 / 0.55);
+  translate: calc(var(--at, 0) * 100%) 0;
+  transition: translate 420ms var(--lq-ease) 110ms;
+  pointer-events: none;
+}
+
+.lqc-dock-item {
+  /* the glyph answers the tap by jumping, so the item gives only a little */
+  --lq-press-scale: 0.94;
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  border-radius: var(--lq-inner-r, 18px);
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.lqc-dock-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.8);
+}
+
+/* A fixed box: the pop is a scale, which moves no layout, so a glyph never
+   takes more or less room than its neighbours whatever it is doing. */
+.lqc-dock-icon {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.45));
+}
+.lqc-dock-icon svg {
+  width: 25px;
+  height: 25px;
+  stroke-width: 2;
+}
+
+/* The tap, answered: up and back in under a third of a second, and only on the
+   glyph that was chosen. Re-keyed on every pick, so tapping the item you are
+   already on says so too. */
+.lqc-dock-item[aria-current="page"] .lqc-dock-icon {
+  animation: lqc-dock-pop 300ms var(--lq-ease) both;
+}
+@keyframes lqc-dock-pop {
+  0% {
+    scale: 1;
+  }
+  45% {
+    scale: 1.34;
+  }
+  100% {
+    scale: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The dock still answers: the glass is simply already there. */
+  .lqc-dock-pane {
+    transition: none !important;
+  }
+  .lqc-dock-item[aria-current="page"] .lqc-dock-icon {
+    animation: none !important;
+  }
+}

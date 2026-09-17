@@ -175,6 +175,9 @@ export function LiquidScene({
   useEffect(() => {
     let id = 0;
     let last = 0;
+    // The components arrive over the first half second (see lq-arrive in
+    // core.css): glass is moving, so the scene paints through it.
+    pumpUntilRef.current = Math.max(pumpUntilRef.current, performance.now() + 900);
     const loop = (now: number): void => {
       const dt = last ? Math.min(64, now - last) : 16;
       last = now;

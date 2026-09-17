@@ -21,6 +21,7 @@ export { LiquidContextMenu } from './components/ContextMenu';
 export { LiquidGallery } from './components/Gallery';
 export type { LiquidGalleryImage, LiquidGalleryProps } from './components/Gallery';
 export { LiquidHeader } from './components/Header';
+export { LiquidMobileNav } from './components/MobileNav';
 export { LiquidNotificationStack } from './components/NotificationStack';
 export { LiquidPricingCard } from './components/PricingCard';
 export { LiquidSearch } from './components/Search';

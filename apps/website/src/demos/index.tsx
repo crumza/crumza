@@ -71,6 +71,7 @@ import {
   LiquidContextMenu,
   LiquidGallery,
   LiquidHeader,
+  LiquidMobileNav,
   LiquidNotificationStack,
   LiquidPricingCard,
   LiquidSearch,
@@ -849,6 +850,9 @@ function LiquidPricingCardDemo(): ReactElement {
 function LiquidTestimonialsDemo(): ReactElement {
   return <LiquidFrame height={480}>{(r) => <LiquidTestimonials radius={r} />}</LiquidFrame>;
 }
+function LiquidMobileNavDemo(): ReactElement {
+  return <LiquidFrame height={460}>{(r) => <LiquidMobileNav radius={r} />}</LiquidFrame>;
+}
 function LiquidTabIndicatorDemo(): ReactElement {
   return <LiquidFrame height={360}>{(r) => <LiquidTabIndicator radius={r} />}</LiquidFrame>;
 }
@@ -925,6 +929,7 @@ const demos: Record<string, ComponentType> = {
   'components/liquid-pricing-card': LiquidPricingCardDemo,
   'components/liquid-testimonials': LiquidTestimonialsDemo,
   'components/liquid-header': LiquidHeaderDemo,
+  'components/liquid-mobile-nav': LiquidMobileNavDemo,
   'components/liquid-tab-indicator': LiquidTabIndicatorDemo,
   'components/liquid-search': LiquidSearchDemo,
   'components/liquid-stepper': LiquidStepperDemo,

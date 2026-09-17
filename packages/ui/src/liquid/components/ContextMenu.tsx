@@ -157,6 +157,7 @@ export function LiquidContextMenu({ radius = LIQUID_RADIUS }: LiquidComponentPro
                 <div
                   key={row.label}
                   className="lqc-ctx-row-wrap"
+                  style={{ '--at': ROWS.indexOf(row) } as LiquidCSS}
                   onPointerEnter={() => setOpenSub(row.submenu ? row.label : null)}
                 >
                   <button

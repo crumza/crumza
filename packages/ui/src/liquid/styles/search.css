@@ -57,6 +57,17 @@
     color: #fff;
   }
 }
+/* Folded, the whole round face is the button: a 52px target a thumb can find,
+   rather than a 16px glyph in the middle of one. Open, it shrinks back to the
+   glyph so the rest of the bar belongs to the field. */
+.lqc-search-field:not([data-open]) .lqc-search-toggle {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  border-radius: 999px;
+}
+
 .lqc-search-icon {
   width: 16px;
   height: 16px;
@@ -64,6 +75,7 @@
 
 /* the input arrives once the bar has made room for it, and leaves first */
 .lqc-search-field input {
+  cursor: text;
   flex: 1 1 0;
   min-width: 0;
   width: 0;
@@ -82,6 +94,12 @@
 }
 .lqc-search-field input::placeholder {
   color: rgba(255, 255, 255, 0.72);
+}
+/* Folded, the field is not there for the reader, and it must not be there for
+   the pointer either: opacity below 1 gives it a stacking context, so it paints
+   over the toggle behind it and would swallow every press on the round face. */
+.lqc-search-field:not([data-open]) input {
+  pointer-events: none;
 }
 
 .lqc-search-clear {

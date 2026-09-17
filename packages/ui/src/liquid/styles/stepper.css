@@ -47,17 +47,43 @@
   cursor: default;
 }
 
+/* the value is the thing the two buttons are about, so it carries the weight */
 .lqc-stepper-value {
-  font: 600 15px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  font: 700 15px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
   font-variant-numeric: tabular-nums;
   color: #fff;
   /* fixed box: 9 to 10 must not shove the buttons either side */
   min-width: 28px;
   text-align: center;
+  /* the roll happens inside this box and is clipped by it */
+  overflow: hidden;
+}
+/* a number arrives from the side it was counted towards */
+.lqc-stepper-value > span {
+  display: block;
+  animation: lqc-stepper-roll-up 240ms var(--lq-ease) both;
+}
+.lqc-stepper-value > span[data-from="above"] {
+  animation-name: lqc-stepper-roll-down;
+}
+@keyframes lqc-stepper-roll-up {
+  from {
+    opacity: 0;
+    translate: 0 9px;
+  }
+}
+@keyframes lqc-stepper-roll-down {
+  from {
+    opacity: 0;
+    translate: 0 -9px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .lqc-stepper-btn {
     transition: none !important;
+  }
+  .lqc-stepper-value > span {
+    animation: none !important;
   }
 }

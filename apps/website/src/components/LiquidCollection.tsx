@@ -3,6 +3,7 @@ import {
   LiquidContextMenu,
   LiquidGallery,
   LiquidHeader,
+  LiquidMobileNav,
   LiquidNotificationStack,
   LiquidPricingCard,
   LiquidScene,
@@ -30,7 +31,7 @@ interface Entry {
 /** The set, grouped the way it is reached for rather than alphabetically. */
 const groups: readonly { readonly heading: string; readonly items: readonly string[] }[] = [
   { heading: 'Cards', items: ['Pricing card', 'Testimonials'] },
-  { heading: 'Navigation', items: ['Header', 'Tab indicator'] },
+  { heading: 'Navigation', items: ['Header', 'Tab indicator', 'Mobile nav'] },
   { heading: 'Inputs', items: ['Search', 'Stepper', 'Color picker'] },
   { heading: 'Feedback', items: ['Notifications'] },
   { heading: 'Surfaces', items: ['Context menu'] },
@@ -55,6 +56,12 @@ const entries: Record<string, Entry> = {
     component: 'LiquidHeader',
     href: 'liquid-header',
     render: (r) => <LiquidHeader radius={r} />,
+  },
+  'Mobile nav': {
+    title: 'A dock for a thumb',
+    component: 'LiquidMobileNav',
+    href: 'liquid-mobile-nav',
+    render: (r) => <LiquidMobileNav radius={r} />,
   },
   'Tab indicator': {
     title: 'A drop that travels',

@@ -34,6 +34,7 @@
 | [LiquidPricingCard](/docs/components/liquid-pricing-card) | a plan card with a billing switch | `<button role="switch">` |
 | [LiquidTestimonials](/docs/components/liquid-testimonials) | quotes with a featured card | `<section>` |
 | [LiquidHeader](/docs/components/liquid-header) | a nav bar with sliding menus | `<button aria-expanded>`, `role="menu"` |
+| [LiquidMobileNav](/docs/components/liquid-mobile-nav) | a dock at the foot of the scene | `<nav>`, `aria-current` |
 | [LiquidTabIndicator](/docs/components/liquid-tab-indicator) | tabs with a travelling indicator | `role="tablist"` |
 | [LiquidSearch](/docs/components/liquid-search) | a search field with live matches | native input, `role="listbox"` |
 | [LiquidStepper](/docs/components/liquid-stepper) | a minus/plus counter | two `<button>`s |

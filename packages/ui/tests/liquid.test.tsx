@@ -12,6 +12,7 @@ import {
   LiquidContextMenu,
   LiquidGallery,
   LiquidHeader,
+  LiquidMobileNav,
   LiquidNotificationStack,
   LiquidPricingCard,
   LiquidScene,
@@ -201,6 +202,7 @@ describe('liquid component contracts', () => {
       ['liquid-tab-indicator', <LiquidTabIndicator key="t" />],
       ['liquid-search', <LiquidSearch key="q" />],
       ['liquid-header', <LiquidHeader key="h" />],
+      ['liquid-mobile-nav', <LiquidMobileNav key="d" />],
       ['liquid-testimonials', <LiquidTestimonials key="x" />],
     ];
     for (const [slot, node] of roots) {
@@ -231,7 +233,7 @@ describe('liquid component contracts', () => {
     expect(html).toContain('aria-label="Decrease"');
     expect(html).toContain('aria-label="Increase"');
     expect(html).not.toContain('disabled=""');
-    expect(html).toContain('aria-live="polite">3<');
+    expect(html).toContain('aria-live="polite"><span data-from="below">3</span>');
     expect(html).toContain('--lq-inner-r:4px');
   });
   test('tab indicator: a tablist with one selected tab and a decorative blob', () => {
