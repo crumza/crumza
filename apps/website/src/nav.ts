@@ -99,6 +99,7 @@ export const sidebar: readonly NavGroup[] = [
       { slug: 'components/liquix-menu', label: 'LiquixMenu' },
       { slug: 'components/liquix-popover', label: 'LiquixPopover' },
       { slug: 'components/liquix-toast', label: 'LiquixToast' },
+      { slug: 'components/liquix-frosted', label: 'LiquixFrosted' },
     ],
   },
   {

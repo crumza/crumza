@@ -1,5 +1,5 @@
-import { LiquixCapsule, LiquixCircle, LiquixStage, PANEL_KINDS } from '@crumza/ui/web';
-import type { ReactElement } from 'react';
+import { LiquixCapsule, LiquixCircle, LiquixStage, PANEL_KINDS, Switch } from '@crumza/ui/web';
+import { type ReactElement, useState } from 'react';
 
 // Generated patterns only, so the page carries no image assets: a checker shows
 // how the edge bends straight lines, and the spectrum and bars make the
@@ -19,17 +19,31 @@ const PANELS = [
  *
  * ?shape picks what the stage holds, so each docs page shows its own component
  * and the stage page shows what it is for: several shapes as one field.
+ * ?frosted is the LiquixFrosted page: it opens on the frosted material and is
+ * the one frame that carries the switch, so the component pages stay clear
+ * glass with nothing but the component in view.
  */
 export function LiquixEmbed(): ReactElement {
-  const shape = new URLSearchParams(window.location.search).get('shape');
+  const query = new URLSearchParams(window.location.search);
+  const shape = query.get('shape');
+  const material = query.has('frosted');
+  const [frosted, setFrosted] = useState(material);
   return (
-    <LiquixStage panels={PANELS}>
-      {shape !== 'circle' ? <LiquixCapsule title="Capsule">Liquid Glass</LiquixCapsule> : null}
-      {shape !== 'capsule' ? (
-        <LiquixCircle title="Circle" aria-label="Favourite">
-          ★
-        </LiquixCircle>
+    <>
+      <LiquixStage panels={PANELS} frosted={frosted}>
+        {shape !== 'circle' ? <LiquixCapsule title="Capsule">Liquid Glass</LiquixCapsule> : null}
+        {shape !== 'capsule' ? (
+          <LiquixCircle title="Circle" aria-label="Favourite">
+            ★
+          </LiquixCircle>
+        ) : null}
+      </LiquixStage>
+      {/* The material toggle, above the stage: the one knob the frosted page exposes. */}
+      {material ? (
+        <div className="fixed top-4 right-4 z-20 rounded-full bg-black/45 px-3.5 py-2 text-[13px] text-white/90 backdrop-blur-sm">
+          <Switch label="Frosted" checked={frosted} onCheckedChange={setFrosted} />
+        </div>
       ) : null}
-    </LiquixStage>
+    </>
   );
 }

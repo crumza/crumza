@@ -40,11 +40,11 @@ function Group({ label, children }: { label?: string; children: ReactNode }): Re
 }
 
 /**
- * The only knobs the liquid set exposes: a frosted toggle, blur, glint, tint and
- * radius, plus the panel of the backdrop strip the glass sits over. The strip
- * also scrolls by hand, so these thumbnails are a shortcut rather than the only
- * way there. Column layout is the catalogue's inspector; row layout sits above
- * a docs demo.
+ * The only knobs the liquid set exposes: the material (clear glass, or frosted
+ * the way Apple frosts a surface), blur, glint, tint and radius, plus the panel
+ * of the backdrop strip the glass sits over. The strip also scrolls by hand, so
+ * these thumbnails are a shortcut rather than the only way there. Column layout
+ * is the catalogue's inspector; row layout sits above a docs demo.
  */
 export function LiquidInspector({
   settings,

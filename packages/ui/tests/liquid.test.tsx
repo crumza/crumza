@@ -40,12 +40,29 @@ describe('liquid options', () => {
   test('clear glass is the default; the frosted toggle swaps the whole optic', () => {
     expect(resolveLiquidParams()).toEqual(LIQUID_OPTICS.clear);
     expect(resolveLiquidParams({ frosted: true })).toEqual(LIQUID_OPTICS.frosted);
-    expect(LIQUID_OPTICS.frosted.depth).toBeGreaterThan(LIQUID_OPTICS.clear.depth);
-    expect(LIQUID_OPTICS.frosted.splay).toBeGreaterThan(LIQUID_OPTICS.clear.splay);
+    expect(LIQUID_OPTICS.clear.frosted).toBe(false);
+    expect(LIQUID_OPTICS.frosted.frosted).toBe(true);
+    // frost diffuses what a clear edge bends: the frosted rim is the slighter
+    // one, so a blurred pane does not wear its bend as a thick frame
+    expect(LIQUID_OPTICS.frosted.depth).toBeLessThan(LIQUID_OPTICS.clear.depth);
+    expect(LIQUID_OPTICS.frosted.splay).toBeLessThanOrEqual(LIQUID_OPTICS.clear.splay);
+    expect(LIQUID_OPTICS.frosted.feather).toBeLessThan(LIQUID_OPTICS.clear.feather);
+  });
+  test('frosted is the Dock material: a softening blur, a little saturation, a thin milk veil', () => {
+    const frosted = LIQUID_OPTICS.frosted;
+    expect(frosted.blur).toBe(14);
+    expect(frosted.saturate).toBe(1.25);
+    expect(frosted.tint).toBe(0.14);
+    expect(frosted.tintColor).toBe('#ffffff');
+    expect(LIQUID_OPTICS.clear.saturate).toBe(1);
+    // the clone reaches far enough past the edge for that blur to sample real
+    // pixels there: about three standard deviations, and past the clear overhang
+    expect(frosted.overhang).toBeGreaterThanOrEqual(frosted.blur * 2.5);
+    expect(frosted.overhang).toBeGreaterThan(LIQUID_OPTICS.clear.overhang);
   });
   test('only blur, glint and tint are adjustable, and each clamps to its range', () => {
-    const params = resolveLiquidParams({ blur: 40, glint: -5, tint: 3, tintColor: '#ff6600' });
-    expect(params.blur).toBe(15);
+    const params = resolveLiquidParams({ blur: 60, glint: -5, tint: 3, tintColor: '#ff6600' });
+    expect(params.blur).toBe(40);
     expect(params.glint).toBe(0);
     expect(params.tint).toBe(1);
     expect(params.tintColor).toBe('#ff6600');
@@ -60,14 +77,14 @@ describe('liquid options', () => {
     expect(rest.glint).toBe(100);
     expect(rest.tint).toBe(0.2);
     expect(rest.tintColor).toBe('#000000');
-    // frosted only changes the rim and the blur; glint and tint carry over
+    // frosted keeps the glint; its veil is a thin white milk rather than a black tint
     const frosted = resolveLiquidParams({ frosted: true });
     expect(frosted.glint).toBe(100);
-    expect(frosted.tint).toBe(0.2);
-    expect(frosted.tintColor).toBe('#000000');
+    expect(frosted.tint).toBe(0.14);
+    expect(frosted.tintColor).toBe('#ffffff');
   });
   test('an omitted or non-finite knob takes the value of the optic it sits in', () => {
-    expect(resolveLiquidParams({ frosted: true }).blur).toBe(5);
+    expect(resolveLiquidParams({ frosted: true }).blur).toBe(14);
     expect(resolveLiquidParams({ frosted: false }).blur).toBe(2.5);
     expect(resolveLiquidParams({ blur: Number.NaN, glint: Number.POSITIVE_INFINITY })).toEqual(
       LIQUID_OPTICS.clear,
@@ -123,13 +140,34 @@ describe('liquid scene and surface contracts', () => {
   });
   test('the server markup follows the scene options it was rendered with', () => {
     const html = renderToStaticMarkup(
-      <LiquidScene frosted blur={0} glint={40} tint={0.5} tintColor="#ff6600">
+      <LiquidScene blur={0} glint={40} tint={0.5} tintColor="#ff6600">
         <LiquidSurface />
       </LiquidScene>,
     );
     expect(html).toContain('<div class="lq-blur"><div class="lq-refraction"></div></div>');
     expect(html).toContain('class="lq-tint" style="background:#ff6600;opacity:0.5"');
     expect(html).toContain('class="lq-glint" style="opacity:0.4"');
+  });
+  test('frosted markup stands in with the whole interior: the blur and the saturation', () => {
+    const html = renderToStaticMarkup(
+      <LiquidScene frosted>
+        <LiquidSurface />
+      </LiquidScene>,
+    );
+    expect(html).toContain('data-frosted=""');
+    expect(html).toContain(
+      'class="lq-blur" style="-webkit-backdrop-filter:blur(14px) saturate(1.25);backdrop-filter:blur(14px) saturate(1.25)"',
+    );
+    expect(html).toContain('class="lq-tint" style="background:#ffffff;opacity:0.14"');
+    // with the blur turned off the saturation lift still stands in on its own
+    const flat = renderToStaticMarkup(
+      <LiquidScene frosted blur={0}>
+        <LiquidSurface />
+      </LiquidScene>,
+    );
+    expect(flat).toContain(
+      'class="lq-blur" style="-webkit-backdrop-filter:saturate(1.25);backdrop-filter:saturate(1.25)"',
+    );
   });
   test('as="button" is a native non-submit button', () => {
     const html = scene(

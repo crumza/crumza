@@ -29,7 +29,8 @@ The stage is fixed to the window (or to `frame`) and adds page scroll of one vie
 | Prop | Default | Meaning |
 | --- | --- | --- |
 | panels | four sample panels | The backdrop strip, one viewport each, up to eight |
-| params | defaultLiquixParams | Overrides merged over the default effect parameters |
+| frosted | false | The frosted material in place of clear glass; see [LiquixFrosted](/docs/components/liquix-frosted) |
+| params | the material's parameters | Overrides merged over the material's effect parameters |
 | frame | none | A device-sized viewport centred in the page, scaled to fit but never up |
 | className | none | Appended to the viewport element |
 
@@ -37,9 +38,13 @@ A panel is `{ kind, src, label, content }`. `kind` comes from `PANEL_KINDS`: `im
 
 At most six shapes are evaluated per stage, and at most eight panels are drawn.
 
+## Frosted
+
+Clear glass is the resting material. `frosted` swaps every shape in the stage to the frosted material, the glass of the macOS Dock. Its look, its parameters and its fallback have a page of their own: [LiquixFrosted](/docs/components/liquix-frosted).
+
 ## Parameters
 
-`params` is a partial `LiquixParams`, merged over `defaultLiquixParams`. Refraction: `refThickness`, `refDistance`, `refFactor`, `refDispersion`. Fresnel: `fresnelRange`, `fresnelHardness`, `fresnelFactor`. Glare: `glareRange`, `glareHardness`, `glareFactor`, `glareConvergence`, `glareOppositeFactor`, `glareAngle`. Blur mask: `blurRadius`, `blurEdge`, `blurScale`. Overscroll: `pullStretch`, `pullSquash`, `pullShift`, `pullSaturation`, `pullBounce`. Backdrop adaptation: `overLight`, `overLightPoint`. Tint and shadow: `tint`, `shadowExpand`, `shadowFactor`, `shadowOffsetX`, `shadowOffsetY`. `step` selects the debug output: 0 sdf, 1 normals, 2 edge factor, 3 blur mask, 4 the finished glass.
+`params` is a partial `LiquixParams`, merged over `defaultLiquixParams`, or over `frostedLiquixParams` when the stage is frosted. Refraction: `refThickness`, `refDistance`, `refFactor`, `refDispersion`. Fresnel: `fresnelRange`, `fresnelHardness`, `fresnelFactor`. Glare: `glareRange`, `glareHardness`, `glareFactor`, `glareConvergence`, `glareOppositeFactor`, `glareAngle`. Blur mask: `blurRadius`, `blurEdge`, `blurScale`. Colour: `saturation`, in percent, of the backdrop seen through the glass. Overscroll: `pullStretch`, `pullSquash`, `pullShift`, `pullSaturation`, `pullBounce`. Backdrop adaptation: `overLight`, `overLightPoint`. Tint and shadow: `tint`, `shadowExpand`, `shadowFactor`, `shadowOffsetX`, `shadowOffsetY`. `step` selects the debug output: 0 sdf, 1 normals, 2 edge factor, 3 blur mask, 4 the finished glass.
 
 ## Fallback and motion
 

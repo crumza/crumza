@@ -45,6 +45,7 @@
 | [LiquixStage](/docs/components/liquix-stage) | the WebGL2 host for shader-drawn glass | `<canvas>` + `<div>` |
 | [LiquixCapsule](/docs/components/liquix-capsule) | a shader-drawn capsule action | `<button>` |
 | [LiquixCircle](/docs/components/liquix-circle) | a shader-drawn icon action | `<button>` |
+| [LiquixFrosted](/docs/components/liquix-frosted) | the frosted material for the liquix shapes | a `frosted` stage |
 
 Every component sets `data-slot="<name>"` on its root and accepts `className`, which is merged
 last so your utilities win.

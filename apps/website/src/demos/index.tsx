@@ -816,13 +816,26 @@ function SkeletonDemo(): ReactElement {
  * article. The frame runs the real component, shader and all, and each page
  * shows the shape it documents.
  */
-function LiquixFrame({ shape, title }: { shape?: string; title: string }): ReactElement {
+function LiquixFrame({
+  shape,
+  frosted,
+  title,
+}: {
+  shape?: string;
+  frosted?: boolean;
+  title: string;
+}): ReactElement {
+  const query = new URLSearchParams();
+  if (shape) query.set('shape', shape);
+  if (frosted) query.set('frosted', '');
+  const search = query.toString().replace(/=(&|$)/g, '$1');
   return (
     <div className="demo-embed">
-      <iframe src={shape ? `/demos/liquix?shape=${shape}` : '/demos/liquix'} title={title} loading="lazy" />
+      <iframe src={search ? `/demos/liquix?${search}` : '/demos/liquix'} title={title} loading="lazy" />
       <p>
         Hover or press the shape, and scroll inside the frame to move the backdrop behind the glass.
-        Needs WebGL2; without it the shape falls back to CSS.
+        {frosted ? ' The switch in the corner toggles the material.' : ''} Needs WebGL2; without it
+        the shape falls back to CSS.
       </p>
     </div>
   );
@@ -838,6 +851,10 @@ function LiquixCapsuleDemo(): ReactElement {
 
 function LiquixCircleDemo(): ReactElement {
   return <LiquixFrame shape="circle" title="A liquix circle over a scrolling backdrop" />;
+}
+
+function LiquixFrostedDemo(): ReactElement {
+  return <LiquixFrame frosted title="Two liquix shapes in the frosted material over a scrolling backdrop" />;
 }
 
 /* Liquid glass: every demo is one component on a refracting stage, with the five knobs above. */
@@ -894,6 +911,7 @@ const demos: Record<string, ComponentType> = {
   'components/liquix-menu': LiquixMenuDemo,
   'components/liquix-popover': LiquixPopoverDemo,
   'components/liquix-toast': LiquixToastDemo,
+  'components/liquix-frosted': LiquixFrostedDemo,
   'components/card': CardDemo,
   'components/toolbar': ToolbarDemo,
   'components/tabs': TabsDemo,

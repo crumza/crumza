@@ -53,10 +53,19 @@ export const defaultLiquidSettings: LiquidSettings = {
   backdrop: 0,
 };
 
-/** The toggle is a material change, so blur and glint move to that material's resting values. */
+/** The toggle is a material change, so blur, glint, tint and its colour move
+ *  to that material's resting values (clear rests on a black tint, frosted on
+ *  white milk); the radius is the reader's and stays put. */
 export function withFrosted(settings: LiquidSettings, frosted: boolean): LiquidSettings {
   const optic = frosted ? LIQUID_OPTICS.frosted : LIQUID_OPTICS.clear;
-  return { ...settings, frosted, blur: optic.blur, glint: optic.glint };
+  return {
+    ...settings,
+    frosted,
+    blur: optic.blur,
+    glint: optic.glint,
+    tint: optic.tint,
+    tintColor: optic.tintColor,
+  };
 }
 
 /** The usage a reader can paste, reflecting the current settings. */

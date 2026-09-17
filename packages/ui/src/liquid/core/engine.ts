@@ -7,11 +7,19 @@
    explicit pixel geometry, so a surface can be any size the layout gives it. */
 
 export interface LiquidGlassParams {
+  /** The material. Frosted is Apple's frosted glass: a heavy, saturated blur
+   *  under a dense veil, with the bend kept soft at the rim. Off is clear glass. */
+  readonly frosted: boolean;
   readonly depth: number;
   readonly splay: number;
   readonly feather: number;
   readonly curve: number;
   readonly blur: number;
+  /** Saturation of the blurred interior, 1 = as the scene is. Frosted glass
+   *  lifts it, the way a system material does, so colour survives the veil. */
+  readonly saturate: number;
+  /** How far past the glass edge the map and the clone reach, in px. */
+  readonly overhang: number;
   readonly chroma: number;
   readonly glint: number;
   readonly tint: number;
@@ -20,20 +28,26 @@ export interface LiquidGlassParams {
 
 /** The public knobs. Every other optic in LiquidGlassParams is fixed by the frosted toggle. */
 export interface LiquidOptions {
-  /** Frosted glass: a deeper, wider rim with a soft interior blur. Off is clear glass. */
+  /** Frosted glass, the way Apple frosts a material: a heavy, saturated blur
+   *  under a dense veil, a hairline rim and a soft bend. Off is clear glass. */
   readonly frosted?: boolean | undefined;
-  /** Interior blur in px, 0 to 15. Defaults to 2.5, or 5 when frosted. */
+  /** Interior blur in px, 0 to 40. Defaults to 2.5, or 14 when frosted. */
   readonly blur?: number | undefined;
   /** Specular rim intensity, 0 to 100. Defaults to 100. */
   readonly glint?: number | undefined;
-  /** Tint strength, 0 to 1. Defaults to 0.2. */
+  /** Tint strength, 0 to 1. Defaults to 0.2, or 0.14 when frosted. */
   readonly tint?: number | undefined;
-  /** Tint colour, any CSS colour. Defaults to black. */
+  /** Tint colour, any CSS colour. Defaults to black, or white when frosted.
+   *  Clear glass multiplies it into the refraction; frosted glass lays it over
+   *  as a veil, so white frosts to milk where clear glass would show no change. */
   readonly tintColor?: string | undefined;
 }
 
 /** Padding around the glass window that the map and refraction layer overhang, so
- *  the edge displacement has real pixels to pull inward from. */
+ *  the edge displacement has real pixels to pull inward from. This is the clear
+ *  material's overhang; frosted glass reaches further (see LIQUID_OPTICS),
+ *  because a blur samples that far past the edge, and a clone that stopped at
+ *  the edge would thin to nothing there and let the sharp scene through. */
 export const PAD = 20;
 /** Saturation boost of the displacement map (how hard the rim bends light). */
 export const BOOST = 0.8;
@@ -41,29 +55,46 @@ export const BOOST = 0.8;
  *  cannot sustain at 60fps. Do not raise without re-testing WebKit. */
 export const SS = 1;
 
-/** The two optics. Clear is the resting material; frosted is the toggle. */
+/** The two optics. Clear is the resting material; frosted is the toggle.
+ *
+ *  Frosted is the material of the macOS Dock: the scene stays visible through
+ *  it, its colour intact and its detail softened rather than erased, lifted by
+ *  a little milk rather than dimmed to a slab. Frost diffuses the light a clear
+ *  edge would bend, so the rim all but stops refracting: what is left is a
+ *  whisper of a bend under the hairline the stylesheet draws. A deep rim here
+ *  reads as a thick frame once it is blurred, and a dense veil reads as paint;
+ *  a frosted pane must have neither. */
 export const LIQUID_OPTICS: Record<'clear' | 'frosted', LiquidGlassParams> = {
   clear: {
+    frosted: false,
     depth: 60,
     splay: 2,
     feather: 24,
     curve: 2,
     blur: 2.5,
+    saturate: 1,
+    overhang: PAD,
     chroma: 0,
     glint: 100,
     tint: 0.2,
     tintColor: '#000000',
   },
   frosted: {
-    depth: 120,
-    splay: 16,
-    feather: 26,
-    curve: 2.6,
-    blur: 5,
+    frosted: true,
+    depth: 24,
+    splay: 2,
+    feather: 10,
+    curve: 2,
+    blur: 14,
+    saturate: 1.25,
+    // well past three standard deviations of the resting blur, and room for
+    // the slider: the fade a blur leaves at the edge of what it samples lands
+    // out here, beyond the clip
+    overhang: 64,
     chroma: 0,
     glint: 100,
-    tint: 0.2,
-    tintColor: '#000000',
+    tint: 0.14,
+    tintColor: '#ffffff',
   },
 };
 
@@ -75,7 +106,7 @@ export interface LiquidRange {
 
 /** Slider ranges for the three adjustable optics. */
 export const LIQUID_RANGES: Record<'blur' | 'glint' | 'tint', LiquidRange> = {
-  blur: { min: 0, max: 15, step: 0.5 },
+  blur: { min: 0, max: 40, step: 0.5 },
   glint: { min: 0, max: 100, step: 1 },
   tint: { min: 0, max: 1, step: 0.02 },
 };
@@ -96,6 +127,16 @@ export function resolveLiquidParams(options: LiquidOptions = {}): LiquidGlassPar
     tint: pick(options.tint, base.tint, LIQUID_RANGES.tint),
     tintColor: options.tintColor ?? base.tintColor,
   };
+}
+
+/** The CSS filter list for the interior at these optics: the blur, and the
+ *  saturation lift when the material has one. The same list serves the clone
+ *  once the engine paints and the backdrop that stands in for it before then. */
+export function liquidInteriorFilter(p: Pick<LiquidGlassParams, 'blur' | 'saturate'>): string {
+  const parts: string[] = [];
+  if (p.blur > 0) parts.push(`blur(${p.blur}px)`);
+  if (p.saturate !== 1) parts.push(`saturate(${p.saturate})`);
+  return parts.length ? parts.join(' ') : 'none';
 }
 
 /* displacement map */

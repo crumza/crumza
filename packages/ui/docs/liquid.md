@@ -5,7 +5,7 @@ A refraction engine shared by every liquid surface. The scene owns a background 
 ```tsx
 import { LiquidScene, LiquidStepper } from '@crumza/ui/liquid';
 
-<LiquidScene background="/scenes/ridge.jpg" frosted blur={5} className="h-[420px] rounded-xl">
+<LiquidScene background="/scenes/ridge.jpg" frosted className="h-[420px] rounded-xl">
   <LiquidStepper radius={40} />
 </LiquidScene>
 ```
@@ -18,11 +18,11 @@ Five things are adjustable. Everything else about the optics is fixed, so every 
 
 | Prop | Type | Default | Notes |
 | --- | --- | --- | --- |
-| `frosted` | `boolean` | `false` | the toggle between clear glass and frosted glass: a deeper, wider rim and a soft interior blur |
-| `blur` | `number` | `2.5`, or `5` when frosted | interior blur in px, 0 to 15 |
+| `frosted` | `boolean` | `false` | the toggle between clear glass and frosted glass, the material of the macOS Dock: a softening blur, a little saturation and a thin milk veil, with a hairline for a rim |
+| `blur` | `number` | `2.5`, or `14` when frosted | interior blur in px, 0 to 40 |
 | `glint` | `number` | `100` | specular rim intensity, 0 to 100 |
-| `tint` | `number` | `0.2` | tint strength, 0 to 1 |
-| `tintColor` | `string` | `'#000000'` | tint colour, multiplied over the refraction |
+| `tint` | `number` | `0.2`, or `0.14` when frosted | tint strength, 0 to 1 |
+| `tintColor` | `string` | `'#000000'`, or `'#ffffff'` when frosted | tint colour: multiplied into the refraction on clear glass, laid over it as a veil on frosted glass |
 | `radius` | `number` | `40` | on each component, not the scene: 0 to 40, capped per surface so a panel matches its control |
 | `background` | `string` | | image URL for the scene |
 | `backdrops` | `readonly LiquidBackdrop[]` | | a strip of backdrops that scrolls behind the glass; takes the place of `background` |
@@ -32,6 +32,18 @@ Five things are adjustable. Everything else about the optics is fixed, so every 
 | `animated` | `boolean` | `false` | set when the scene paints continuously, so Safari re-samples every frame |
 
 Out-of-range values clamp. `LiquidScene` extends native div props.
+
+## Frosted
+
+Clear glass is the resting material: a thin pane that bends what passes under its rim and barely softens the rest. `frosted` is the other material, and its reference is the macOS Dock rather than clear glass with more blur. The scene behind each pane stays visible, its colour intact and its detail softened rather than erased, lifted by a thin white milk rather than dimmed to a slab. The bevel gives way to a hairline round the rim, a touch brighter along the top edge, with a faint sheen down the face and a little elevation. Frost diffuses the light a clear edge would bend, so the rim all but stops refracting: a frosted pane ends at its hairline, not at a band of bent scene.
+
+The same knobs apply. Blur, tint and its colour start at the material's own resting values and can be pulled anywhere in their ranges; on frosted glass the tint colour is laid over the blur rather than multiplied into it, so the white it rests on frosts to milk, and a dark `tintColor` turns it smoky where clear glass would only darken. Glint drives the hairline and the sheen together, so glint 0 is a plain frosted pane. The set's type stays white, so over a very light backdrop a frosted pane gives a lower contrast than clear glass does; raise the tint towards black there, or keep frosted for photographic and mid-tone backdrops, which is where the Dock lives too.
+
+```tsx
+<LiquidScene backdrops={LIQUID_BACKDROPS} frosted className="h-[420px]">
+  <LiquidPricingCard />
+</LiquidScene>
+```
 
 ## The scrolling strip
 
@@ -100,7 +112,7 @@ Every component takes the shared `radius` and is centred over the scene. The gla
 
 One `requestAnimationFrame` loop per scene drives every surface. A surface repaints only when something changed under it: a size or position change, an option change, or a short pump a component asks for while it animates. Parked over a still scene, the glass costs nothing.
 
-Server-rendered markup already carries the blur, tint and glint as inline styles, with a backdrop blur standing in for the clone, so the glass looks right from its first paint; the rim refraction arrives when the engine mounts.
+Server-rendered markup already carries the blur, tint and glint as inline styles, with a backdrop blur standing in for the clone, so the glass looks right from its first paint; the rim refraction arrives when the engine mounts. Frosted glass blurs its clone hard, and a blur thins out towards the edge of what it samples, so a frosted clone reaches further past the glass edge than a clear one before the wrapper clips it; that is why the frosted material is a little more work per surface.
 
 Displacement maps are built on a canvas, keyed by size, radius and optics, and cached across surfaces. Mid-animation a surface builds on an 8px-quantized size and lets the filter stretch it, so an opening panel costs a couple of cached maps rather than one per frame.
 

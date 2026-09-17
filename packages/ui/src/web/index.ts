@@ -124,6 +124,8 @@ export {
   defaultLiquixSurfaceParams,
 } from './liquix/params';
 export type { LiquixShape, LiquixShapeEntry, LiquixStageValue } from './liquix/stage';
+  frostedLiquixParams,
+} from './liquix/params';
 export type {
   MenuCheckboxItemProps,
   MenuContentProps,

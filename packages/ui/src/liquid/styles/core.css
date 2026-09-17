@@ -161,10 +161,13 @@ button.lq-lens {
 /* Composited inner layers (a filtered subtree, a blended layer) escape the
    parent's overflow+border-radius clip in WebKit and show square corners.
    clip-path on this wrapper clips them reliably, and unlike clipping .lq-lens
-   directly, it leaves the outer shadow intact. */
+   directly, it leaves the outer shadow intact. It also passes the lens radius
+   down, so the tint and glint layers that inherit theirs from it draw their
+   inset strokes round the corner rather than being cut off at it. */
 .lq-clip {
   position: absolute;
   inset: 0;
+  border-radius: inherit;
 }
 
 /* standalone blur, deliberately NOT chained onto the url() filter, which
@@ -311,6 +314,45 @@ button.lq-lens {
   height: 0;
   pointer-events: none;
   visibility: hidden;
+}
+
+/* Frosted glass
+
+   The scene's frosted toggle. The engine does the optics (a softening blur of
+   the clone, a little saturation, the milk of the veil, a whisper of a rim);
+   what makes it read as the Dock's material rather than as blurred clear glass
+   is here.
+
+   The tint stops multiplying and lies over the blur as a veil, so the white
+   the material rests on frosts to milk where clear glass would show no change
+   at all. The bevel gives way to a hairline: one pixel of light round the
+   whole rim, a touch brighter along the top edge where the light lands, with a
+   shade under the bottom edge. A faint sheen falls down the face and the
+   surface lifts a little from the backdrop. Nothing here is dense: the scene
+   behind the pane stays a picture, not a colour. The glint slider still drives
+   the rim and the sheen through the layer's opacity, so glint 0 is a plain
+   frosted pane. */
+.lq-stage[data-frosted] .lq-tint {
+  mix-blend-mode: normal;
+}
+.lq-stage[data-frosted] .lq-glint {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.03) 50%,
+    rgba(255, 255, 255, 0)
+  );
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+}
+/* Elevation for a pane that sits on the scene; a pane inside another pane
+   (a button in a card) stays flush, the way a control on a system material does. */
+.lq-stage[data-frosted] .lq-lens:not(.lq-lens .lq-lens) {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    0 12px 32px -12px rgba(0, 0, 0, 0.4);
 }
 
 @media (prefers-reduced-transparency: reduce) {

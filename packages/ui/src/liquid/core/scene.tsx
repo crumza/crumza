@@ -18,8 +18,8 @@ import {
   buildLensMap,
   createLensFilter,
   type LiquidGlassParams,
+  liquidInteriorFilter,
   type LiquidOptions,
-  PAD,
   peekLensMap,
   prewarmLensMap,
   quantizeMapDim,
@@ -136,8 +136,8 @@ export function LiquidScene({
     const qh = quantizeMapDim(h);
     const r = Math.min(radius, qw / 2, qh / 2);
     prewarmLensMap(
-      (qw + 2 * PAD) * SS,
-      (qh + 2 * PAD) * SS,
+      (qw + 2 * p.overhang) * SS,
+      (qh + 2 * p.overhang) * SS,
       qw * SS,
       qh * SS,
       r * SS,
@@ -436,15 +436,20 @@ export function LiquidSurface({
       const offY = Math.round(lensRect.top - sceneRect.top);
       const r = Math.min(L.radius, w / 2, h / 2);
 
-      const mapW = (w + 2 * PAD) * SS;
-      const mapH = (h + 2 * PAD) * SS;
+      const pad = p.overhang;
+      const mapW = (w + 2 * pad) * SS;
+      const mapH = (h + 2 * pad) * SS;
 
       refraction.style.width = `${mapW}px`;
       refraction.style.height = `${mapH}px`;
-      refraction.style.left = `${-PAD}px`;
-      refraction.style.top = `${-PAD}px`;
+      refraction.style.left = `${-pad}px`;
+      refraction.style.top = `${-pad}px`;
       refraction.style.transform = 'none'; // Safari will not filter a transform-scaled subtree
-      refraction.style.clipPath = `inset(${PAD * SS}px round ${r * SS}px)`;
+      // Clear glass clips the clone at the glass edge here, then blurs it a little.
+      // Frosted glass blurs it a lot, and a blur thins out towards the edge of
+      // what it samples, so its clone is left whole out to the overhang and the
+      // wrapper's clip below decides where the glass ends.
+      refraction.style.clipPath = p.frosted ? 'none' : `inset(${pad * SS}px round ${r * SS}px)`;
 
       // one radius drives lens outline, the composited-layer clip and the map SDF
       lens.style.borderRadius = `${r}px`;
@@ -455,8 +460,8 @@ export function LiquidSurface({
       if (clone) {
         clone.style.width = `${Math.round(sceneRect.width)}px`;
         clone.style.height = `${Math.round(sceneRect.height)}px`;
-        clone.style.left = `${-(offX - PAD)}px`;
-        clone.style.top = `${-(offY - PAD)}px`;
+        clone.style.left = `${-(offX - pad)}px`;
+        clone.style.top = `${-(offY - pad)}px`;
         // Scaling about the scene point that sits under the surface's centre is
         // what keeps a loupe honest: whatever the lens is parked on stays put
         // and grows, instead of the whole image sliding out from under it.
@@ -466,7 +471,7 @@ export function LiquidSurface({
       }
 
       // blur is standalone, NOT chained onto url(): Safari over-blurs a chained blur
-      blurWrap.style.filter = p.blur > 0 ? `blur(${p.blur}px)` : 'none';
+      blurWrap.style.filter = liquidInteriorFilter(p);
       glint.style.opacity = String(Math.min(1, p.glint / 100));
       tint.style.background = p.tintColor;
       tint.style.opacity = String(p.tint);
@@ -477,6 +482,7 @@ export function LiquidSurface({
     const paint = (now: number): void => {
       const g = place();
       const p = scene.paramsRef.current;
+      const pad = p.overhang;
 
       // Mid-resize (a panel animating open, the stage reflowing) the box changes
       // every frame: build on a quantized size and let feImage stretch it, so an
@@ -495,8 +501,8 @@ export function LiquidSurface({
 
       if (geomKey !== L.geomKey || opticsKey !== L.opticsKey || !L.mapUrl) {
         const args = [
-          (bw + 2 * PAD) * SS,
-          (bh + 2 * PAD) * SS,
+          (bw + 2 * pad) * SS,
+          (bh + 2 * pad) * SS,
           bw * SS,
           bh * SS,
           br * SS,
@@ -603,10 +609,10 @@ export function LiquidSurface({
           ref={blurRef}
           className="lq-blur"
           style={
-            initial.blur > 0
+            liquidInteriorFilter(initial) !== 'none'
               ? {
-                  WebkitBackdropFilter: `blur(${initial.blur}px)`,
-                  backdropFilter: `blur(${initial.blur}px)`,
+                  WebkitBackdropFilter: liquidInteriorFilter(initial),
+                  backdropFilter: liquidInteriorFilter(initial),
                 }
               : undefined
           }

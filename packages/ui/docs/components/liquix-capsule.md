@@ -24,6 +24,8 @@ Extends native button props. `type` defaults to `button`, as elsewhere in Crumza
 
 ## Rules
 
+The material is the stage's: set `frosted` on [LiquixStage](/docs/components/liquix-stage) and every shape in it takes [LiquixFrosted](/docs/components/liquix-frosted), the Dock's frosted glass, with the same label, focus ring and physics.
+
 Render it inside [LiquixStage](/docs/components/liquix-stage). Without one there is no shader to draw it and it falls back to a CSS approximation: blur and a rim highlight, no refraction, dispersion, glare or stretching. The same fallback covers a device with no WebGL2 and a lost context.
 
 Give an icon-only capsule an `aria-label`. The label sits in a span the stage moves with the shape, so do not position the button's children yourself.

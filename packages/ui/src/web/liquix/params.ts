@@ -35,6 +35,9 @@ export interface LiquixParams {
   readonly blurRadius: number;
   /** True: the whole shape reads the blurred backdrop. */
   readonly blurEdge: boolean;
+  /** Percent saturation of the backdrop seen through the glass. 100 leaves it
+   *  as it is; a system material lifts it so colour survives blur and veil. */
+  readonly saturation: number;
   /** Blur passes run at this fraction of canvas resolution. */
   readonly blurScale: number;
   /** Growth along the pull axis at full pull. */
@@ -84,6 +87,7 @@ export const defaultLiquixParams: LiquixParams = {
   glareAngle: -45,
   blurRadius: 8,
   blurEdge: true,
+  saturation: 100,
   blurScale: 0.4,
   pullStretch: 0.05,
   pullSquash: 0.04,
@@ -98,6 +102,46 @@ export const defaultLiquixParams: LiquixParams = {
   shadowOffsetX: 0,
   shadowOffsetY: 10,
   step: 4,
+};
+
+/* LiquixFrosted
+   ------------------------------------------------------------------------
+   The frosted material, documented at docs/components/liquix-frosted.md. A
+   stage with `frosted` set merges its `params` over this preset instead of
+   over the defaults above. */
+
+/**
+ * The frosted material: the glass of the macOS Dock.
+ *
+ * The backdrop stays visible through it, its colour intact and its detail
+ * softened rather than erased, lifted by a little milk rather than dimmed to a
+ * slab; `overLight` still dims it where the backdrop is bright, a touch less
+ * than clear glass does, so the white labels keep their contrast the way the
+ * Dock greys over a white desktop. The bevel narrows to a few pixels with
+ * almost no dispersion, because frost diffuses the light a clear edge would
+ * bend, and the Fresnel and glare bands close down to the hairline a frosted
+ * pane shows at its rim: a wide bevel here reads as a thick frame, and a dense
+ * veil reads as paint, and a frosted pane must have neither. The overscroll
+ * physics are the same glass; the shadow sits a little softer and lower.
+ */
+export const frostedLiquixParams: LiquixParams = {
+  ...defaultLiquixParams,
+  refThickness: 6,
+  refDistance: 0.02,
+  refDispersion: 1.5,
+  fresnelRange: 12,
+  fresnelHardness: 30,
+  fresnelFactor: 24,
+  glareRange: 12,
+  glareFactor: 30,
+  glareOppositeFactor: 40,
+  blurRadius: 20,
+  saturation: 125,
+  overLight: 30,
+  tint: { r: 255, g: 255, b: 255, a: 0.2 },
+  shadowExpand: 30,
+  shadowFactor: 22,
+  shadowOffsetY: 14,
 };
 
 /** What a backdrop panel draws. Patterns make refraction and dispersion easy to read. */

@@ -1,5 +1,5 @@
-import { LiquixCapsule, LiquixCircle, LiquixStage, PANEL_KINDS } from '@crumza/ui/web';
-import type { ReactElement } from 'react';
+import { LiquixCapsule, LiquixCircle, LiquixStage, PANEL_KINDS, Switch } from '@crumza/ui/web';
+import { type ReactElement, useState } from 'react';
 
 // Generated patterns only, so the demo carries no image assets: a checker shows
 // how the edge bends straight lines, and the spectrum and bars make the
@@ -10,11 +10,13 @@ const PANELS = [
   { kind: PANEL_KINDS.bars, label: 'Bars, chromatic fringe' },
 ];
 
-/** Scroll the page: the panels travel behind the glass, and overscroll pulls it. */
+/** Scroll the page: the panels travel behind the glass, and overscroll pulls it.
+ *  The switch in the corner frosts the glass. */
 export function LiquixDemo(): ReactElement {
+  const [frosted, setFrosted] = useState(false);
   return (
     <>
-      <LiquixStage panels={PANELS}>
+      <LiquixStage panels={PANELS} frosted={frosted}>
         <LiquixCapsule title="Capsule" className="text-base">
           Liquid Glass
         </LiquixCapsule>
@@ -28,6 +30,9 @@ export function LiquixDemo(): ReactElement {
       >
         Back to the playground
       </a>
+      <div className="fixed top-6 right-6 z-20 rounded-full bg-black/40 px-4 py-2 text-[13px] text-white/80 backdrop-blur-sm">
+        <Switch label="Frosted" checked={frosted} onCheckedChange={setFrosted} />
+      </div>
     </>
   );
 }

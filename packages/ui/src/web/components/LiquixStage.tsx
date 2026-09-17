@@ -15,6 +15,7 @@ import {
   PANEL_KINDS,
   defaultLiquixPanels,
   defaultLiquixParams,
+  frostedLiquixParams,
 } from '../liquix/params';
 import {
   createGlassRenderer,
@@ -39,7 +40,11 @@ export interface LiquixStageProps {
   readonly children?: ReactNode | undefined;
   /** The scrolling backdrop. One viewport per panel. */
   readonly panels?: readonly LiquixPanel[] | undefined;
-  /** Overrides on top of the default effect parameters. */
+  /** Frosted glass, the way Apple frosts a material: the backdrop blurred far
+   *  past reading, saturated up and veiled in milk, under a hairline rim. Off
+   *  is the clear glass. Every shape in the stage is the one material. */
+  readonly frosted?: boolean | undefined;
+  /** Overrides on top of the material's effect parameters. */
   readonly params?: Partial<LiquixParams> | undefined;
   /** Without it the stage fills the window. */
   readonly frame?: LiquixFrame | undefined;
@@ -159,11 +164,16 @@ interface LoopState {
 export function LiquixStage({
   children,
   panels = defaultLiquixPanels,
+  frosted = false,
   params: paramOverrides,
   frame,
   className,
 }: LiquixStageProps): ReactElement {
-  const params = useMemo(() => ({ ...defaultLiquixParams, ...paramOverrides }), [paramOverrides]);
+  // The material picks the base; a caller's overrides still win over either.
+  const params = useMemo(
+    () => ({ ...(frosted ? frostedLiquixParams : defaultLiquixParams), ...paramOverrides }),
+    [frosted, paramOverrides],
+  );
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stripRef = useRef<HTMLDivElement | null>(null);
@@ -539,6 +549,7 @@ export function LiquixStage({
       <div
         data-slot="liquix-stage"
         data-framed={view.framed ? '' : undefined}
+        data-frosted={frosted ? '' : undefined}
         className={cn('liquix-stage', className)}
         style={viewportStyle}
       >

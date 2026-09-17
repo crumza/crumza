@@ -506,11 +506,14 @@ test('liquid tab indicator: a press selects the tab and the indicator settles un
     const b = tab.getBoundingClientRect();
     return Math.abs(a.left - b.left) < 1.5 && Math.abs(a.width - b.width) < 1.5;
   });
-  // A frosted scene marks itself, and its glass carries the interior blur.
+  // A frosted scene marks itself, and its glass carries the material's heavy,
+  // saturated interior blur.
   const stage = bar.locator('xpath=ancestor::*[@data-slot="liquid-scene"]');
   expect(await stage.getAttribute('data-frosted')).toBe('');
   const blurLayer = bar.locator('.lq-blur');
-  expect(await blurLayer.evaluate((el) => getComputedStyle(el).filter)).toContain('blur(5px)');
+  const interior = await blurLayer.evaluate((el) => getComputedStyle(el).filter);
+  expect(interior).toContain('blur(14px)');
+  expect(interior).toContain('saturate(1.25)');
   // The backdrop blur only stands in before the engine's first paint; the clone carries it now.
   expect(await blurLayer.evaluate((el) => getComputedStyle(el).backdropFilter)).toBe('none');
 });

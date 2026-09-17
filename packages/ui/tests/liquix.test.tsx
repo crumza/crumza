@@ -14,6 +14,8 @@ import {
   PANEL_KINDS,
 } from '../src/web/liquix/params';
 import { tileWindow } from '../src/web/liquix/backdrop';
+import { LiquixCapsule, LiquixCircle, LiquixStage } from '../src/web';
+import { defaultLiquixParams, frostedLiquixParams, PANEL_KINDS } from '../src/web/liquix/params';
 import { gaussianKernel } from '../src/web/liquix/renderer';
 import { MAX_SHAPES } from '../src/web/liquix/shader-lib';
 import { FRAGMENT_MAIN, MAX_PANELS } from '../src/web/liquix/shaders';
@@ -88,6 +90,52 @@ describe('liquix stage', () => {
       </LiquixStage>,
     );
     expect(html).toContain('gap:12px');
+  });
+
+  test('a frosted stage marks itself, and clear glass does not', () => {
+    const frosted = renderToStaticMarkup(
+      <LiquixStage frosted>
+        <LiquixCapsule>Buy</LiquixCapsule>
+      </LiquixStage>,
+    );
+    expect(frosted).toContain('data-slot="liquix-stage" data-frosted=""');
+    expect(renderToStaticMarkup(<LiquixStage />)).not.toContain('data-frosted');
+  });
+
+  test('overrides still win over the frosted material', () => {
+    const html = renderToStaticMarkup(
+      <LiquixStage frosted params={{ rowGap: 7 }}>
+        <LiquixCircle />
+      </LiquixStage>,
+    );
+    expect(html).toContain('gap:7px');
+  });
+});
+
+describe('liquix materials', () => {
+  test('clear glass leaves the backdrop colour alone and shows no veil', () => {
+    expect(defaultLiquixParams.saturation).toBe(100);
+    expect(defaultLiquixParams.tint.a).toBe(0);
+  });
+
+  test('frosted is the Dock material: softened, a little saturated, thinly milked, soft at the rim', () => {
+    expect(frostedLiquixParams.blurRadius).toBeGreaterThan(defaultLiquixParams.blurRadius * 2);
+    expect(frostedLiquixParams.saturation).toBeGreaterThan(100);
+    // a thin veil: the backdrop stays a picture through it, never a slab
+    expect(frostedLiquixParams.tint).toEqual({ r: 255, g: 255, b: 255, a: 0.2 });
+    expect(frostedLiquixParams.refDispersion).toBeLessThan(defaultLiquixParams.refDispersion);
+    expect(frostedLiquixParams.refDistance).toBeLessThan(defaultLiquixParams.refDistance);
+    expect(frostedLiquixParams.fresnelRange).toBeLessThan(defaultLiquixParams.fresnelRange);
+    expect(frostedLiquixParams.glareFactor).toBeLessThan(defaultLiquixParams.glareFactor);
+    // the bevel is a few pixels, not a frame: a wide one reads as a thick border
+    expect(frostedLiquixParams.refThickness).toBeLessThanOrEqual(6);
+    // the labels keep some protection over bright content, a touch less than
+    // clear glass so the frost stays light
+    expect(frostedLiquixParams.overLight).toBeGreaterThan(0);
+    expect(frostedLiquixParams.overLight).toBeLessThanOrEqual(defaultLiquixParams.overLight);
+    // and the physics are the same glass
+    expect(frostedLiquixParams.pullBounce).toBe(defaultLiquixParams.pullBounce);
+    expect(frostedLiquixParams.pullSaturation).toBe(defaultLiquixParams.pullSaturation);
   });
 });
 
