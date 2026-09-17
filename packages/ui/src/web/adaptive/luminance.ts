@@ -189,7 +189,10 @@ const COLOR_TOKEN =
  * Returns undefined when nothing in the string is a colour this parser knows
  * (an image URL, an unknown keyword), so the caller can sample or declare.
  */
-export function estimateLuminance(background: string, resolve = parseColor): number | undefined {
+export function estimateLuminance(
+  background: string,
+  resolve: (token: string) => Rgba | undefined = parseColor,
+): number | undefined {
   let total = 0;
   let weight = 0;
   for (const match of background.matchAll(COLOR_TOKEN)) {
@@ -209,9 +212,9 @@ export function luminanceBand(lightness: number): LuminanceBand {
 /** Mean lightness of a run of RGBA bytes, the shape ImageData hands back. */
 export function meanLightness(
   data: ArrayLike<number>,
-  stride = 4,
-  from = 0,
-  to = data.length,
+  stride: number = 4,
+  from: number = 0,
+  to: number = data.length,
 ): number | undefined {
   let total = 0;
   let count = 0;
