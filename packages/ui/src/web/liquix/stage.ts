@@ -30,6 +30,12 @@ export interface LiquixShapeEntry {
   glow: number;
   glowTarget: number;
   /**
+   * How solid the shape is, 1 by default. A LiquixStage draws every shape
+   * solid and ignores it; a LiquixSurface fades the shape's glass by it over
+   * the layer below, which is how a highlight can cross-fade rather than cut.
+   */
+  alpha?: number | undefined;
+  /**
    * Draw order for hosts that render in passes. A LiquixStage draws every
    * shape in one pass and ignores it; a LiquixSurface draws each layer over
    * the last, which is how a pill can sit on a bar of glass rather than merge

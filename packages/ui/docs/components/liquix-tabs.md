@@ -22,7 +22,7 @@ const tabs = [
 </LiquixSurface>
 ```
 
-Every tab is a real `<button role="tab">` inside a `tablist`, so screen readers announce position and state. The buttons are transparent: the bar and the highlight are drawn by the surface's shader on the canvas underneath, and the selected tab is distinguished by the filled capsule and a different label colour, so it survives a screenshot in greyscale.
+Every tab is a real `<button role="tab">` inside a `tablist`, so screen readers announce position and state. The bar is one Tab stop: Left and Right arrows move between tabs and select as they go, Home and End jump to the ends, and the arrows swap in right-to-left text. The buttons are transparent: the bar and the highlight are drawn by the surface's shader on the canvas underneath, and the selected tab is distinguished by the filled capsule and a different label colour, so it survives a screenshot in greyscale.
 
 ## Props
 
@@ -48,7 +48,7 @@ The drop shadow, which the shader cannot draw for a stencilled canvas. Pass it t
 
 ## How the highlight moves
 
-The highlight travels on an under-damped spring: it arrives, leans past the tab and settles, which is what makes the glass read as liquid rather than as a box being moved. While it moves it is glass, stretched along the direction of travel and pinched across it, drawn on a layer above the bar so it refracts the bar's own surface. Once it parks it fades to the resting capsule, translucent grey over a blur, and hands its shape back to the surface, so at rest the shader draws only the bar and the second pass drops. Under reduced transparency the capsule is solid.
+The highlight travels on an under-damped spring: it arrives, leans past the tab and settles, which is what makes the glass read as liquid rather than as a box being moved. While it moves it is glass, stretched along the direction of travel and pinched across it, drawn on a layer above the bar so it refracts the bar's own surface. It counts as parked once it is within a couple of pixels of its tab and nearly still, both at once, so the instant of stillness at the top of an overshoot does not count. Then the two looks cross-fade on one eased clock, the glass through its own alpha on the canvas and the resting capsule, translucent grey over a blur, through its opacity. Once the glass is gone the highlight hands its shape back to the surface, so at rest the shader draws only the bar and the second pass drops. Under reduced transparency the capsule is solid.
 
 Resizing is not a move: the pill belongs to the same tab, so it goes straight to the new geometry instead of sliding across the bar.
 

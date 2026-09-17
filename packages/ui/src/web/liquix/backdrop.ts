@@ -80,6 +80,22 @@ export function paintPanels(
   return { panels, contentHeight: total };
 }
 
+/**
+ * Which tiles to hand the shader for a scroll position, and the scroll to
+ * hand with them. The shader takes only so many tiles and a long screen has
+ * more, but only two can ever be on screen at once: the window starts at the
+ * tile the top of the viewport is in, and the scroll is measured from it.
+ */
+export function tileWindow(
+  scrollTop: number,
+  height: number,
+  count: number,
+): { readonly first: number; readonly scroll: number } {
+  if (height <= 0 || count === 0) return { first: 0, scroll: 0 };
+  const first = Math.min(Math.max(0, Math.floor(scrollTop / height)), count - 1);
+  return { first, scroll: scrollTop - first * height };
+}
+
 export function disposePanels(gl: WebGL2RenderingContext, panels: readonly PanelRecord[]): void {
   for (const panel of panels) if (panel.texture) gl.deleteTexture(panel.texture);
 }

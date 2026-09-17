@@ -97,6 +97,7 @@ uniform vec2 u_shapeCenters[MAX_SHAPES]; // device px, y-up
 uniform vec2 u_shapeSizes[MAX_SHAPES];   // CSS px
 uniform vec2 u_shapeCorners[MAX_SHAPES]; // x: radius in CSS px, y: superellipse exponent
 uniform float u_shapeGlow[MAX_SHAPES];  // 0 at rest, up to 1 while hovered or pressed
+uniform float u_shapeAlpha[MAX_SHAPES]; // 1 solid; a stencilled canvas fades the shape by it
 uniform vec2 u_pull;          // overscroll vector, x right / y up, ~-1..1 per axis
 uniform float u_pullStretch;
 uniform float u_pullSquash;
@@ -180,19 +181,24 @@ float mainSDF(vec2 frag, vec2 offset) {
   return merged;
 }
 
-// Interaction state of whichever shape owns this pixel. Only called for pixels
-// inside the glass, where the nearest shape is the one being drawn.
-float nearestGlow(vec2 frag) {
+// Whichever shape owns this pixel. Only called for pixels inside the glass,
+// where the nearest shape is the one being drawn.
+int nearestShape(vec2 frag) {
   float best = 1e9;
-  float glow = 0.0;
+  int owner = 0;
   for (int i = 0; i < MAX_SHAPES; i++) {
     if (i >= u_shapeCount) break;
     float d = shapeSDF(i, frag, vec2(0.0));
     if (d < best) {
       best = d;
-      glow = u_shapeGlow[i];
+      owner = i;
     }
   }
-  return glow;
+  return owner;
+}
+
+// Interaction state of whichever shape owns this pixel.
+float nearestGlow(vec2 frag) {
+  return u_shapeGlow[nearestShape(frag)];
 }
 `;

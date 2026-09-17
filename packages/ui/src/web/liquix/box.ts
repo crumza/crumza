@@ -53,6 +53,7 @@ export function useLiquixBox(layer = 0): LiquixBoxHandle {
     scaleTarget: 1,
     glow: 0,
     glowTarget: 0,
+    alpha: 1,
     layer,
   });
 

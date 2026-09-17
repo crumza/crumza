@@ -9,6 +9,7 @@
 // Ported from the liquid-glass-studio reference renderer; see THIRD-PARTY.md.
 
 import type { LiquixParams } from './params';
+import { MAX_SHAPES } from './shader-lib';
 import {
   FRAGMENT_BG,
   FRAGMENT_BLUR_H,
@@ -23,6 +24,9 @@ export interface GaussianKernel {
   readonly radius: number;
   readonly weights: readonly number[];
 }
+
+/** Every shape solid, for hosts that never fade one. */
+const SOLID = new Float32Array(MAX_SHAPES).fill(1);
 
 /** Normalised 1D Gaussian kernel, index 0 being the centre tap. */
 export function gaussianKernel(radius: number): GaussianKernel {
@@ -52,6 +56,8 @@ export interface ShapeFrame {
   readonly sizes: Float32Array;
   readonly corners: Float32Array;
   readonly glows: Float32Array;
+  /** 1 solid, 0 gone. Only read on a transparent canvas; solid when absent. */
+  readonly alphas?: Float32Array | undefined;
   readonly pull: readonly [number, number];
 }
 
@@ -411,6 +417,7 @@ export function createGlassRenderer(
       u_shapeSizes: shapes.sizes,
       u_shapeCorners: shapes.corners,
       u_shapeGlow: shapes.glows,
+      u_shapeAlpha: shapes.alphas ?? SOLID,
       u_pull: shapes.pull,
       u_pullStretch: params.pullStretch,
       u_pullSquash: params.pullSquash,

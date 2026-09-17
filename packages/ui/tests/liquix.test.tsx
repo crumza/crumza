@@ -13,6 +13,7 @@ import {
   defaultLiquixSurfaceParams,
   PANEL_KINDS,
 } from '../src/web/liquix/params';
+import { tileWindow } from '../src/web/liquix/backdrop';
 import { gaussianKernel } from '../src/web/liquix/renderer';
 import { MAX_SHAPES } from '../src/web/liquix/shader-lib';
 import { FRAGMENT_MAIN, MAX_PANELS } from '../src/web/liquix/shaders';
@@ -147,9 +148,26 @@ describe('liquix surface', () => {
     expect(defaultLiquixSurfaceParams.shadowFactor).toBe(0);
   });
 
+  test('a long screen is handed the tiles around the scroll, with the scroll measured from them', () => {
+    // Tiles of 500px. Short content passes straight through.
+    expect(tileWindow(0, 500, 3)).toEqual({ first: 0, scroll: 0 });
+    expect(tileWindow(1200, 500, 3)).toEqual({ first: 2, scroll: 200 });
+    // Deep into a strip longer than the shader can take, the window slides with the scroll.
+    expect(tileWindow(4700, 500, 12)).toEqual({ first: 9, scroll: 200 });
+    // The last tile is the furthest the window starts, and an empty strip asks for nothing.
+    expect(tileWindow(9000, 500, 12)).toEqual({ first: 11, scroll: 3500 });
+    expect(tileWindow(300, 500, 0)).toEqual({ first: 0, scroll: 0 });
+    expect(tileWindow(300, 0, 4)).toEqual({ first: 0, scroll: 0 });
+  });
+
   test('the glass pass can punch everything outside the shape to alpha 0', () => {
     expect(FRAGMENT_MAIN).toContain('uniform int u_cutout;');
-    expect(FRAGMENT_MAIN).toContain('u_cutout > 0 ? coverage : 1.0');
+    expect(FRAGMENT_MAIN).toContain('u_cutout > 0 ? coverage * alpha : 1.0');
+  });
+
+  test('a shape on a stencilled canvas can fade by its own alpha', () => {
+    expect(FRAGMENT_MAIN).toContain('uniform float u_shapeAlpha[MAX_SHAPES];');
+    expect(FRAGMENT_MAIN).toContain('alpha = u_shapeAlpha[owner];');
   });
 });
 
@@ -168,8 +186,9 @@ describe('liquix tabs', () => {
     expect(html).toContain('role="tablist"');
     expect(html).toContain('aria-label="Sections"');
     expect(html.match(/role="tab"/g)).toHaveLength(3);
-    expect(html).toContain('id="tab-inbox" aria-selected="true"');
-    expect(html).toContain('id="tab-home" aria-selected="false"');
+    expect(html).toMatch(/id="[^"]+-tab-inbox" aria-selected="true" [^>]*tabindex="0"/);
+    expect(html).toMatch(/id="[^"]+-tab-home" aria-selected="false" [^>]*tabindex="-1"/);
+    expect(html.match(/tabindex="-1"/g)).toHaveLength(2);
     expect(html.match(/text-blue-600/g)).toHaveLength(1);
     expect(html.match(/text-white drop-shadow-/g)).toHaveLength(2);
     expect(html).toContain('class="liquix-tabs__pill absolute will-change-transform"');
