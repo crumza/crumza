@@ -18,4 +18,4 @@ import { LiquidScene, LiquidColorPicker } from '@crumza/ui/liquid';
 
 ## Behaviour
 
-The pad and the rail are `role="slider"` elements with values: press anywhere to set, drag to refine, and keep receiving moves after the pointer leaves. Arrow keys walk the hue rail; left and right walk saturation on the pad and up and down walk brightness. A press on either picks a colour and does not carry the panel. Nothing resizes, so the surface holds one map throughout.
+The pad and the rail are `role="slider"` elements with values: press anywhere to set, drag to refine, and keep receiving moves after the pointer leaves. Arrow keys walk the hue rail; left and right walk saturation on the pad and up and down walk brightness. A press on either picks a colour rather than scrolling the backdrop behind it. Nothing resizes, so the surface holds one map throughout.

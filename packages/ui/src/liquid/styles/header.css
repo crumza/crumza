@@ -4,6 +4,7 @@
 .lqc-header {
   position: relative;
   display: flex;
+  max-width: var(--lq-room);
 }
 
 .lqc-header-bar {
@@ -18,29 +19,46 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
   height: 40px;
   padding: 0 16px;
   appearance: none;
   border: 0;
   background: transparent;
   border-radius: var(--lq-inner-r, 18px);
-  color: rgba(255, 255, 255, 0.82);
-  font: 500 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
-  white-space: nowrap;
+  color: #fff;
+  font: 600 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
   cursor: pointer;
+  --lq-press-scale: 0.94;
   transition:
     background 200ms var(--lq-ease),
-    color 200ms var(--lq-ease);
+    color 200ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
 }
-.lqc-header-nav:hover,
 .lqc-header-nav[data-open] {
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
+}
+@media (hover: hover) {
+  .lqc-header-nav:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+  }
+}
+
+/* The label is what gives if a bar is asked to hold more than it can: an
+   ellipsis keeps the bar inside its stage whatever it is asked to carry. */
+.lqc-header-nav > span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .lqc-header-chevron {
   width: 15px;
   height: 15px;
+  flex: 0 0 auto;
   opacity: 0.75;
   transition:
     transform 320ms var(--lq-ease),
@@ -57,7 +75,7 @@
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
-  width: 184px;
+  width: min(184px, var(--lq-room));
   transition: transform 420ms var(--lq-ease);
 }
 
@@ -91,20 +109,58 @@
   appearance: none;
   border: 0;
   background: transparent;
-  color: rgba(255, 255, 255, 0.86);
-  font: 500 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
+  font: 600 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
   text-align: left;
   padding: 12px 14px;
   border-radius: var(--lq-inner-r, 16px);
   cursor: pointer;
+  --lq-press-scale: 0.975;
   transition:
     background 160ms ease,
-    color 160ms ease;
+    color 160ms ease,
+    scale 150ms var(--lq-ease);
   animation: lqc-header-row-in 220ms var(--lq-ease) both;
 }
-.lqc-header-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+@media (hover: hover) {
+  .lqc-header-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+}
+
+/* A narrow scene: the bar keeps all three items by giving up padding and a
+   little type rather than running past the edge of its own stage. The two steps
+   are measured against the labels it carries, not guessed: 297px of bar at the
+   first, 268px at the second, which is what a 320px scene has room for. Past
+   that the labels ellipsise, which is the backstop rather than the plan. */
+@container lq-stage (max-width: 460px) {
+  .lqc-header-content {
+    padding: 0 6px;
+  }
+  .lqc-header-nav {
+    gap: 4px;
+    padding: 0 10px;
+    font-size: 13px;
+  }
+  .lqc-header-chevron {
+    width: 13px;
+    height: 13px;
+  }
+}
+@container lq-stage (max-width: 380px) {
+  .lqc-header-content {
+    padding: 0 5px;
+  }
+  .lqc-header-nav {
+    gap: 3px;
+    padding: 0 7px;
+    font-size: 12.5px;
+  }
+  .lqc-header-chevron {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 @keyframes lqc-header-row-in {

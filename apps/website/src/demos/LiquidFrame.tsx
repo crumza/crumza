@@ -1,9 +1,11 @@
 import { LiquidScene } from '@crumza/ui/liquid';
 import { type ReactElement, type ReactNode, useState } from 'react';
-import { defaultLiquidSettings } from './liquid';
+import { defaultLiquidSettings, liquidBackdrops } from './liquid';
 import { LiquidInspector } from './LiquidInspector';
 
-/** A refracting stage above a docs page, with the five liquid knobs over it. */
+/** A refracting stage above a docs page, with the five liquid knobs over it.
+ *  The backdrop strip scrolls behind the component: wheel over the scene, or
+ *  sweep it. */
 export function LiquidFrame({
   children,
   height = 420,
@@ -16,7 +18,9 @@ export function LiquidFrame({
     <>
       <LiquidInspector settings={settings} onChange={setSettings} layout="row" />
       <LiquidScene
-        background={settings.scene}
+        backdrops={liquidBackdrops}
+        backdrop={settings.backdrop}
+        onBackdropChange={(backdrop) => setSettings((current) => ({ ...current, backdrop }))}
         frosted={settings.frosted}
         blur={settings.blur}
         glint={settings.glint}

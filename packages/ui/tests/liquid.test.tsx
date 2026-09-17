@@ -3,7 +3,9 @@ import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import {
   inner,
+  LIQUID_BACKDROPS,
   LIQUID_OPTICS,
+  LIQUID_PATTERNS,
   LIQUID_RADIUS,
   LIQUID_RADIUS_MAX,
   LiquidColorPicker,
@@ -18,6 +20,7 @@ import {
   LiquidSurface,
   LiquidTabIndicator,
   LiquidTestimonials,
+  liquidBackdropStyle,
   pill,
   resolveLiquidParams,
 } from '../src/liquid';
@@ -88,11 +91,14 @@ describe('liquid scene and surface contracts', () => {
     expect(scene(null).indexOf('lq-scene')).toBeLessThan(scene(null).indexOf('lq-layer'));
     expect(renderToStaticMarkup(<LiquidScene frosted />)).toContain('data-frosted=""');
   });
-  test('a draggable renders centred by the stylesheet until the script places it', () => {
+  test('a component ships itself and nothing else: the layer is what places it', () => {
     const html = scene(<LiquidStepper />);
-    expect(html).toContain('data-slot="liquid-draggable" class="lq-drag"');
-    expect(html).not.toContain('data-placed');
-    expect(html).not.toContain('left:0');
+    expect(html).toContain('<div class="lq-layer">');
+    // no positioner, and no inline placement to hydrate around
+    expect(html).not.toContain('liquid-draggable');
+    expect(html).not.toContain('lq-drag');
+    expect(html).not.toContain('left:');
+    expect(html).not.toContain('top:');
   });
   test('a surface outside a scene fails loudly instead of rendering flat', () => {
     expect(() => renderToStaticMarkup(<LiquidSurface />)).toThrow('<LiquidScene>');
@@ -133,6 +139,53 @@ describe('liquid scene and surface contracts', () => {
     expect(html.match(/<button/g)).toHaveLength(1);
     expect(html).toContain('type="button"');
     expect(html).toContain('aria-label="Push"');
+  });
+});
+
+describe('the scrolling backdrop strip', () => {
+  test('the generated panels are the ones the liquix stage draws', () => {
+    // 22px cells on a 44px pitch, 32px bars on a 64px pitch: the same numbers
+    // proceduralPanel() in web/liquix/shaders.ts uses.
+    expect(LIQUID_PATTERNS.checker).toContain('44px 44px');
+    expect(LIQUID_PATTERNS.bars).toContain('0 32px');
+    expect(LIQUID_PATTERNS.bars).toContain('32px 64px');
+    expect(LIQUID_PATTERNS.spectrum).toContain('0 65px');
+    expect(LIQUID_BACKDROPS.map((panel) => panel.css)).toEqual([
+      LIQUID_PATTERNS.checker,
+      LIQUID_PATTERNS.spectrum,
+      LIQUID_PATTERNS.bars,
+    ]);
+  });
+  test('an image wins over a pattern, and a panel with neither paints nothing', () => {
+    expect(liquidBackdropStyle({ src: '/a.jpg', css: 'red' })).toEqual({
+      backgroundImage: 'url(/a.jpg)',
+    });
+    expect(liquidBackdropStyle({ css: 'red' })).toEqual({ background: 'red' });
+    expect(liquidBackdropStyle({ label: 'Empty' })).toEqual({});
+  });
+  test('a strip renders one panel each, and the stage carries the count it divides by', () => {
+    const html = renderToStaticMarkup(
+      <LiquidScene
+        backdrops={[{ src: '/a.jpg', label: 'Ridge' }, { css: LIQUID_PATTERNS.bars }]}
+      />,
+    );
+    expect(html).toContain('--lq-panels:2');
+    expect(html).toContain('data-strip=""');
+    expect(html.match(/class="lq-panel"/g)).toHaveLength(2);
+    expect(html).toContain('class="lq-panel" style="background-image:url(/a.jpg)"');
+    expect(html).toContain('<span class="lq-panel-label">Ridge</span>');
+    // the strip replaces the single background, and stays inside the scene
+    expect(html).not.toContain('lq-scene-bg');
+    expect(html.indexOf('lq-strip')).toBeLessThan(html.indexOf('lq-layer'));
+  });
+  test('one backdrop is a strip with nothing to scroll', () => {
+    const html = renderToStaticMarkup(<LiquidScene backdrops={[{ css: 'red' }]} />);
+    expect(html).toContain('--lq-panels:1');
+    expect(html).not.toContain('data-strip');
+  });
+  test('the strip starts at the top: the offset is written by the driver, not the markup', () => {
+    const html = renderToStaticMarkup(<LiquidScene backdrops={LIQUID_BACKDROPS} />);
+    expect(html).not.toContain('--lq-scroll');
   });
 });
 
@@ -203,6 +256,8 @@ describe('liquid component contracts', () => {
   test('context menu: only the hint until the scene is right-clicked', () => {
     const html = scene(<LiquidContextMenu />);
     expect(html).toContain('Right-click anywhere on the scene');
+    // there is no right button on a phone, so the hint has a touch half too
+    expect(html).toContain('Long-press anywhere on the scene');
     expect(html).not.toContain('role="menu"');
   });
   test('colour picker: two keyboard sliders with values, a readout and seven swatches', () => {

@@ -6,7 +6,6 @@ import {
   inner,
   LIQUID_RADIUS,
   type LiquidComponentProps,
-  LiquidDraggable,
   LiquidSurface,
   pill,
 } from '../core';
@@ -45,77 +44,75 @@ export function LiquidGallery({
   );
 
   return (
-    <LiquidDraggable>
-      <LiquidSurface
-        radius={r}
-        data-slot="liquid-gallery"
-        className="lqc-gallery"
-        contentClassName="lq-content-interactive lqc-gallery-content"
-        role="group"
-        aria-roledescription="carousel"
-        aria-label="Scenes"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'ArrowLeft') go(-1);
-          if (e.key === 'ArrowRight') go(1);
-        }}
-        style={{ '--lq-inner-r': `${inner(r, 10)}px` }}
-      >
-        <div className="lqc-gallery-stage">
-          {images.map((shot, i) => (
-            <span
-              key={shot.label}
-              className="lqc-gallery-slide"
-              data-shown={i === index || undefined}
-              // aria-hidden keeps the faded-out slides out of the a11y tree,
-              // so the frame reads as one image rather than several
-              aria-hidden={i !== index}
-              role="img"
-              aria-label={`${i + 1} of ${images.length}: ${shot.label}`}
-              style={{ backgroundImage: `url(${shot.src})` }}
-            />
-          ))}
+    <LiquidSurface
+      radius={r}
+      data-slot="liquid-gallery"
+      className="lqc-gallery"
+      contentClassName="lq-content-interactive lqc-gallery-content"
+      role="group"
+      aria-roledescription="carousel"
+      aria-label="Scenes"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'ArrowLeft') go(-1);
+        if (e.key === 'ArrowRight') go(1);
+      }}
+      style={{ '--lq-inner-r': `${inner(r, 10)}px` }}
+    >
+      <div className="lqc-gallery-stage">
+        {images.map((shot, i) => (
+          <span
+            key={shot.label}
+            className="lqc-gallery-slide"
+            data-shown={i === index || undefined}
+            // aria-hidden keeps the faded-out slides out of the a11y tree,
+            // so the frame reads as one image rather than several
+            aria-hidden={i !== index}
+            role="img"
+            aria-label={`${i + 1} of ${images.length}: ${shot.label}`}
+            style={{ backgroundImage: `url(${shot.src})` }}
+          />
+        ))}
 
-          {/* caption sits over the image, under its own gradient scrim so the
+        {/* caption sits over the image, under its own gradient scrim so the
               text survives a bright frame */}
-          <span className="lqc-gallery-caption">
-            <strong>{current?.label}</strong>
-            <span>{current?.meta}</span>
-          </span>
+        <span className="lqc-gallery-caption">
+          <strong>{current?.label}</strong>
+          <span>{current?.meta}</span>
+        </span>
 
-          <button
-            type="button"
-            className="lqc-gallery-nav is-prev"
-            aria-label="Previous scene"
-            onClick={() => go(-1)}
-          >
-            <ChevronLeft />
-          </button>
-          <button
-            type="button"
-            className="lqc-gallery-nav is-next"
-            aria-label="Next scene"
-            onClick={() => go(1)}
-          >
-            <ChevronRight />
-          </button>
-        </div>
+        <button
+          type="button"
+          className="lqc-gallery-nav is-prev"
+          aria-label="Previous scene"
+          onClick={() => go(-1)}
+        >
+          <ChevronLeft />
+        </button>
+        <button
+          type="button"
+          className="lqc-gallery-nav is-next"
+          aria-label="Next scene"
+          onClick={() => go(1)}
+        >
+          <ChevronRight />
+        </button>
+      </div>
 
-        <div className="lqc-gallery-rail" role="tablist" aria-label="Choose scene">
-          {images.map((shot, i) => (
-            <button
-              key={shot.label}
-              type="button"
-              role="tab"
-              aria-selected={i === index}
-              aria-label={shot.label}
-              className={`lqc-gallery-thumb ${i === index ? 'is-active' : ''}`}
-              style={{ backgroundImage: `url(${shot.src})` }}
-              onClick={() => setIndex(i)}
-            />
-          ))}
-        </div>
-      </LiquidSurface>
-    </LiquidDraggable>
+      <div className="lqc-gallery-rail" role="tablist" aria-label="Choose scene">
+        {images.map((shot, i) => (
+          <button
+            key={shot.label}
+            type="button"
+            role="tab"
+            aria-selected={i === index}
+            aria-label={shot.label}
+            className={`lqc-gallery-thumb ${i === index ? 'is-active' : ''}`}
+            style={{ backgroundImage: `url(${shot.src})` }}
+            onClick={() => setIndex(i)}
+          />
+        ))}
+      </div>
+    </LiquidSurface>
   );
 }

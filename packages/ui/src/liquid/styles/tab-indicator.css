@@ -3,7 +3,7 @@
 .lqc-indicator-bar {
   /* explicit, like every other bar in the set: a content-sized surface would
      shrink-wrap differently per label and the blob's travel would change with it */
-  width: 340px;
+  width: min(340px, var(--lq-room));
   height: 52px;
 }
 .lqc-indicator-content {
@@ -39,15 +39,20 @@
   flex: 1 1 0;
   padding: 0;
   border-radius: var(--lq-inner-r, 16px);
-  color: rgba(255, 255, 255, 0.8);
-  font: 500 13.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
+  font: 600 13.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
   letter-spacing: -0.005em;
   cursor: pointer;
+  --lq-press-scale: 0.94;
   /* the label crosses to dark as the blob arrives under it */
-  transition: color 220ms var(--lq-ease);
+  transition:
+    color 220ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
 }
-.lqc-indicator-tab:hover:not(.is-active) {
-  color: #fff;
+@media (hover: hover) {
+  .lqc-indicator-tab:hover:not(.is-active) {
+    color: #fff;
+  }
 }
 .lqc-indicator-tab.is-active {
   color: #16181d;

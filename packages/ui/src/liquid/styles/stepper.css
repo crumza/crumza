@@ -2,7 +2,7 @@
 /* LiquidStepper: geometry and motion only; the material is .lq-lens (core) */
 
 .lqc-stepper {
-  width: 156px;
+  width: min(156px, var(--lq-room));
   height: 44px;
 }
 .lqc-stepper-content {
@@ -20,20 +20,24 @@
   border: 0;
   background: transparent;
   border-radius: var(--lq-inner-r, 16px);
-  color: rgba(255, 255, 255, 0.86);
+  color: #fff;
   cursor: pointer;
+  --lq-press-scale: 0.86;
   transition:
     background 180ms ease,
     color 180ms ease,
-    opacity 180ms ease;
+    opacity 180ms ease,
+    scale 150ms var(--lq-ease);
 }
 .lqc-stepper-btn svg {
   width: 15px;
   height: 15px;
 }
-.lqc-stepper-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+@media (hover: hover) {
+  .lqc-stepper-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+  }
 }
 .lqc-stepper-btn:active:not(:disabled) {
   background: rgba(255, 255, 255, 0.18);
@@ -44,7 +48,7 @@
 }
 
 .lqc-stepper-value {
-  font: 500 15px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  font: 600 15px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
   font-variant-numeric: tabular-nums;
   color: #fff;
   /* fixed box: 9 to 10 must not shove the buttons either side */

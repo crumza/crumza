@@ -4,7 +4,6 @@ import {
   inner,
   LIQUID_RADIUS,
   type LiquidComponentProps,
-  LiquidDraggable,
   LiquidSurface,
   Minus,
   pill,
@@ -26,39 +25,37 @@ export function LiquidStepper({ radius = LIQUID_RADIUS }: LiquidComponentProps):
     setCount((c) => Math.max(STEPPER_MIN, Math.min(STEPPER_MAX, c + by)));
 
   return (
-    <LiquidDraggable>
-      <LiquidSurface
-        radius={r}
-        data-slot="liquid-stepper"
-        className="lqc-stepper"
-        contentClassName="lq-content-interactive lqc-stepper-content"
-        style={{ '--lq-inner-r': `${inner(r, 6)}px` }}
+    <LiquidSurface
+      radius={r}
+      data-slot="liquid-stepper"
+      className="lqc-stepper"
+      contentClassName="lq-content-interactive lqc-stepper-content"
+      style={{ '--lq-inner-r': `${inner(r, 6)}px` }}
+    >
+      <button
+        type="button"
+        className="lqc-stepper-btn"
+        aria-label="Decrease"
+        disabled={count === STEPPER_MIN}
+        onClick={() => nudge(-1)}
       >
-        <button
-          type="button"
-          className="lqc-stepper-btn"
-          aria-label="Decrease"
-          disabled={count === STEPPER_MIN}
-          onClick={() => nudge(-1)}
-        >
-          <Minus />
-        </button>
+        <Minus />
+      </button>
 
-        {/* tabular figures, so 9 to 10 does not shift the buttons either side */}
-        <span className="lqc-stepper-value" aria-live="polite">
-          {count}
-        </span>
+      {/* tabular figures, so 9 to 10 does not shift the buttons either side */}
+      <span className="lqc-stepper-value" aria-live="polite">
+        {count}
+      </span>
 
-        <button
-          type="button"
-          className="lqc-stepper-btn"
-          aria-label="Increase"
-          disabled={count === STEPPER_MAX}
-          onClick={() => nudge(1)}
-        >
-          <Plus />
-        </button>
-      </LiquidSurface>
-    </LiquidDraggable>
+      <button
+        type="button"
+        className="lqc-stepper-btn"
+        aria-label="Increase"
+        disabled={count === STEPPER_MAX}
+        onClick={() => nudge(1)}
+      >
+        <Plus />
+      </button>
+    </LiquidSurface>
   );
 }

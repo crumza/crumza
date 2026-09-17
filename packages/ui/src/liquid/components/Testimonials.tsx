@@ -6,7 +6,6 @@ import {
   inner,
   LIQUID_RADIUS,
   type LiquidComponentProps,
-  LiquidDraggable,
   LiquidSurface,
   pill,
   Star,
@@ -64,87 +63,81 @@ export function LiquidTestimonials({ radius = LIQUID_RADIUS }: LiquidComponentPr
   const step = (d: number): void => feature((active + d + QUOTES.length) % QUOTES.length);
 
   return (
-    <LiquidDraggable>
-      <section
-        className="lqc-testimonials"
-        aria-label="Testimonials"
-        data-slot="liquid-testimonials"
-      >
-        <header className="lqc-testimonials-head">
-          <LiquidSurface radius={chipR} className="lqc-testimonials-kicker">
-            <Star aria-hidden="true" /> Loved by 2,400 teams
+    <section className="lqc-testimonials" aria-label="Testimonials" data-slot="liquid-testimonials">
+      <header className="lqc-testimonials-head">
+        <LiquidSurface radius={chipR} className="lqc-testimonials-kicker">
+          <Star aria-hidden="true" /> Loved by 2,400 teams
+        </LiquidSurface>
+        <div className="lqc-testimonials-nav">
+          <LiquidSurface
+            as="button"
+            type="button"
+            radius={chipR}
+            className="lqc-testimonials-arrow"
+            aria-label="Previous testimonial"
+            onClick={() => step(-1)}
+          >
+            <ChevronLeft />
           </LiquidSurface>
-          <div className="lqc-testimonials-nav">
-            <LiquidSurface
-              as="button"
-              type="button"
-              radius={chipR}
-              className="lqc-testimonials-arrow"
-              aria-label="Previous testimonial"
-              onClick={() => step(-1)}
-            >
-              <ChevronLeft />
-            </LiquidSurface>
-            <LiquidSurface
-              as="button"
-              type="button"
-              radius={chipR}
-              className="lqc-testimonials-arrow"
-              aria-label="Next testimonial"
-              onClick={() => step(1)}
-            >
-              <ChevronRight />
-            </LiquidSurface>
-          </div>
-        </header>
+          <LiquidSurface
+            as="button"
+            type="button"
+            radius={chipR}
+            className="lqc-testimonials-arrow"
+            aria-label="Next testimonial"
+            onClick={() => step(1)}
+          >
+            <ChevronRight />
+          </LiquidSurface>
+        </div>
+      </header>
 
-        <div className="lqc-testimonials-row">
-          {QUOTES.map((q, i) => (
-            <LiquidSurface
-              key={q.name}
-              radius={r}
-              className={`lqc-quote ${i === active ? 'is-active' : ''}`}
-              contentClassName="lq-content-interactive lqc-quote-content"
-              style={{ '--lq-inner-r': `${inner(r, CARD_PAD)}px` }}
-              onPointerEnter={() => feature(i)}
-            >
-              <span className="lqc-quote-stars" role="img" aria-label={`${q.stars} out of 5`}>
-                {STAR_SLOTS.map((slot, k) => (
-                  <Star key={slot} className={k < q.stars ? 'is-filled' : ''} aria-hidden="true" />
-                ))}
+      <div className="lqc-testimonials-row">
+        {QUOTES.map((q, i) => (
+          <LiquidSurface
+            key={q.name}
+            radius={r}
+            className={`lqc-quote ${i === active ? 'is-active' : ''}`}
+            contentClassName="lq-content-interactive lqc-quote-content"
+            style={{ '--lq-inner-r': `${inner(r, CARD_PAD)}px` }}
+            onPointerEnter={() => feature(i)}
+          >
+            <span className="lqc-quote-stars" role="img" aria-label={`${q.stars} out of 5`}>
+              {STAR_SLOTS.map((slot, k) => (
+                <Star key={slot} className={k < q.stars ? 'is-filled' : ''} aria-hidden="true" />
+              ))}
+            </span>
+            <blockquote className="lqc-quote-text">{q.quote}</blockquote>
+            <footer className="lqc-quote-who">
+              <span
+                className="lqc-quote-avatar"
+                aria-hidden="true"
+                style={{ '--avatar-hue': q.hue } as CSSProperties}
+              >
+                {q.initials}
               </span>
-              <blockquote className="lqc-quote-text">{q.quote}</blockquote>
-              <footer className="lqc-quote-who">
-                <span
-                  className="lqc-quote-avatar"
-                  aria-hidden="true"
-                  style={{ '--avatar-hue': q.hue } as CSSProperties}
-                >
-                  {q.initials}
-                </span>
-                <span>
-                  <strong>{q.name}</strong>
-                  <small>{q.role}</small>
-                </span>
-              </footer>
-            </LiquidSurface>
-          ))}
-        </div>
+              <span>
+                <strong>{q.name}</strong>
+                <small>{q.role}</small>
+              </span>
+            </footer>
+          </LiquidSurface>
+        ))}
+      </div>
 
-        <div className="lqc-testimonials-dots" role="tablist" aria-label="Testimonial">
-          {QUOTES.map((q, i) => (
-            <button
-              key={q.name}
-              type="button"
-              role="tab"
-              aria-selected={i === active}
-              aria-label={q.name}
-              className={`lqc-testimonials-dot ${i === active ? 'is-active' : ''}`}
-              onClick={() => feature(i)}
-            />
-          ))}
-        </div>
-      </section>
-    </LiquidDraggable>
+      <div className="lqc-testimonials-dots" role="tablist" aria-label="Testimonial">
+        {QUOTES.map((q, i) => (
+          <button
+            key={q.name}
+            type="button"
+            role="tab"
+            aria-selected={i === active}
+            aria-label={q.name}
+            className={`lqc-testimonials-dot ${i === active ? 'is-active' : ''}`}
+            onClick={() => feature(i)}
+          />
+        ))}
+      </div>
+    </section>
   );
 }

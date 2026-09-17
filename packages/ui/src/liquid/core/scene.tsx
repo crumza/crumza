@@ -13,6 +13,7 @@ import {
   useMemo,
   useRef,
 } from 'react';
+import { type LiquidBackdrop, liquidBackdropKey, liquidBackdropStyle } from './backdrops';
 import {
   buildLensMap,
   createLensFilter,
@@ -26,6 +27,8 @@ import {
   SS,
 } from './engine';
 import type { LiquidCSS } from './geometry';
+import { attachLiquidPress } from './press';
+import { type BackdropTrack, createBackdropTrack } from './track';
 
 /* <LiquidScene> + <LiquidSurface>
 
@@ -67,6 +70,13 @@ export function useLiquidScene(): LiquidSceneContextValue {
 export interface LiquidSceneProps extends ComponentProps<'div'>, LiquidOptions {
   /** Image URL for the scene. The scene is what refracts. */
   readonly background?: string | undefined;
+  /** A strip of backdrops that scrolls behind the glass, the way the liquix
+   *  stage scrolls its panels. Takes the place of `background`. */
+  readonly backdrops?: readonly LiquidBackdrop[] | undefined;
+  /** Which backdrop is showing. Changing it settles the strip on that panel. */
+  readonly backdrop?: number | undefined;
+  /** Fires when the reader scrolls the strip onto a different backdrop. */
+  readonly onBackdropChange?: ((index: number) => void) | undefined;
   /** Extra scene content (also refracts). Keep it out of the interactive layer. */
   readonly sceneContent?: ReactNode;
   /** Set when the scene paints continuously (video, CSS/JS animation): the
@@ -83,6 +93,9 @@ export function LiquidScene({
   tint,
   tintColor,
   background,
+  backdrops,
+  backdrop,
+  onBackdropChange,
   sceneContent,
   animated = false,
   className,
@@ -100,8 +113,14 @@ export function LiquidScene({
   const dirtyTokenRef = useRef(0);
   const pumpUntilRef = useRef(0);
   const animatedRef = useRef(animated);
-  animatedRef.current = animated;
   const registry = useRef(new Set<(now: number) => void>());
+  const trackRef = useRef<BackdropTrack | null>(null);
+  const onIndexRef = useRef(onBackdropChange);
+  onIndexRef.current = onBackdropChange;
+
+  /** Panels in the strip. Two is where there is something to scroll. */
+  const panelCount = backdrops?.length ?? 0;
+  const scrolls = panelCount > 1;
 
   const requestPaint = useCallback(() => {
     dirtyTokenRef.current++;
@@ -142,23 +161,66 @@ export function LiquidScene({
     requestPaint();
   }, [params, requestPaint]);
 
-  // Scene content changed (new background image): every clone is stale.
-  const sceneVersion = background ?? '';
+  // Scene content changed (a new image, a different strip): every clone is stale.
+  const sceneVersion = backdrops ? backdrops.map(liquidBackdropKey).join('|') : (background ?? '');
 
   // The single rAF driver. Surfaces are painted only when something under them
   // changed: an optics or geometry change (dirty token), or an active pump
   // window (transition, animated scene content). Parked over a static scene
   // the lens costs nothing.
+  //
+  // The strip's physics run here rather than in a loop of their own, so the
+  // offset is written before the surfaces repaint: a second driver would leave
+  // the glass refracting where the backdrop was a frame ago.
   useEffect(() => {
     let id = 0;
+    let last = 0;
     const loop = (now: number): void => {
-      if (animated) pumpUntilRef.current = now + 1000;
+      const dt = last ? Math.min(64, now - last) : 16;
+      last = now;
+      const moving = trackRef.current?.step(now, dt) ?? false;
+      if (moving) dirtyTokenRef.current++;
+      // Safari caches filter output, so source content that moves needs the
+      // filter id re-minted: a travelling strip is animated scene content.
+      animatedRef.current = animated || moving;
+      if (animated || moving) {
+        pumpUntilRef.current = Math.max(pumpUntilRef.current, now + (animated ? 1000 : 200));
+      }
       for (const tick of registry.current) tick(now);
       id = requestAnimationFrame(loop);
     };
     id = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(id);
   }, [animated]);
+
+  // The strip, its panel count and the panel a caller asks for, kept apart so
+  // that changing the count never tears down the gesture handlers.
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage || !scrolls) return;
+    const track = createBackdropTrack(stage, (index) => onIndexRef.current?.(index));
+    trackRef.current = track;
+    return () => {
+      trackRef.current = null;
+      track.dispose();
+    };
+  }, [scrolls]);
+
+  useEffect(() => {
+    trackRef.current?.setCount(panelCount);
+  }, [panelCount]);
+
+  useEffect(() => {
+    if (backdrop !== undefined) trackRef.current?.scrollTo(backdrop);
+  }, [backdrop]);
+
+  // Every control in the scene answers a press. One delegated listener, because
+  // the state belongs to the pointer rather than to any one component.
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    return attachLiquidPress(stage, () => pump(280));
+  }, [pump]);
 
   // Stage resize changes both scene size and every surface's offset within it.
   useEffect(() => {
@@ -168,6 +230,18 @@ export function LiquidScene({
     ro.observe(stage);
     return () => ro.disconnect();
   }, [requestPaint]);
+
+  // Keyed by what a panel paints rather than by where it sits, with a counter
+  // for a strip that shows the same backdrop twice.
+  const panels = useMemo(() => {
+    const seen = new Map<string, number>();
+    return (backdrops ?? []).map((panel) => {
+      const base = `${liquidBackdropKey(panel)}:${panel.label ?? ''}`;
+      const at = seen.get(base) ?? 0;
+      seen.set(base, at + 1);
+      return { key: at ? `${base}#${at}` : base, panel };
+    });
+  }, [backdrops]);
 
   const ctx = useMemo<LiquidSceneContextValue>(
     () => ({
@@ -192,15 +266,26 @@ export function LiquidScene({
         ref={stageRef}
         data-slot="liquid-scene"
         data-frosted={frosted ? '' : undefined}
+        data-strip={scrolls ? '' : undefined}
         className={className ? `lq-stage ${className}` : 'lq-stage'}
-        style={style}
+        style={backdrops ? ({ ...style, '--lq-panels': panelCount } as LiquidCSS) : style}
       >
         {/* the refracted subject: real, behind everything, non-interactive */}
         <div ref={sceneRef} className="lq-scene">
-          <div
-            className="lq-scene-bg"
-            style={background ? { backgroundImage: `url(${background})` } : undefined}
-          />
+          {backdrops ? (
+            <div className="lq-strip">
+              {panels.map(({ key, panel }) => (
+                <div key={key} className="lq-panel" style={liquidBackdropStyle(panel)}>
+                  {panel.label ? <span className="lq-panel-label">{panel.label}</span> : null}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div
+              className="lq-scene-bg"
+              style={background ? { backgroundImage: `url(${background})` } : undefined}
+            />
+          )}
           {sceneContent}
         </div>
         {/* the interactive layer: glass surfaces live here, never in the scene */}

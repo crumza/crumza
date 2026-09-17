@@ -105,18 +105,21 @@ export function LiquidContextMenu({ radius = LIQUID_RADIUS }: LiquidComponentPro
     const x = e.clientX - b.left;
     const y = e.clientY - b.top;
     setOpenSub(null);
+    // On a scene narrower than the menu, the panel is capped by the stylesheet;
+    // clamp against the width it will actually be drawn at, not the nominal one.
+    const width = Math.min(MENU_W, b.width);
     place({
-      x: Math.max(0, Math.min(x, b.width - MENU_W)),
+      x: Math.max(0, Math.min(x, b.width - width)),
       y: Math.max(0, Math.min(y, b.height - MENU_H)),
       // no room on the right for a submenu: open it to the left instead
-      flip: x + MENU_W + SUB_W > b.width,
+      flip: x + width + SUB_W > b.width,
     });
   };
 
   const panelStyle = (width: number): LiquidCSS => ({
     '--lq-inner-r': `${inner(r, PANEL_PADDING)}px`,
     padding: PANEL_PADDING,
-    width,
+    width: `min(${width}px, var(--lq-room))`,
   });
 
   return (
@@ -127,7 +130,10 @@ export function LiquidContextMenu({ radius = LIQUID_RADIUS }: LiquidComponentPro
       data-slot="liquid-context-menu"
       onContextMenu={onContextMenu}
     >
-      <span className="lqc-ctx-hint">Right-click anywhere on the scene</span>
+      <span className="lqc-ctx-hint">
+        <span className="lqc-ctx-hint-pointer">Right-click anywhere on the scene</span>
+        <span className="lqc-ctx-hint-touch">Long-press anywhere on the scene</span>
+      </span>
 
       {mounted && at && (
         <div

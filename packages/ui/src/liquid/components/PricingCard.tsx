@@ -5,7 +5,6 @@ import {
   inner,
   LIQUID_RADIUS,
   type LiquidComponentProps,
-  LiquidDraggable,
   LiquidSurface,
   pill,
   useLiquidScene,
@@ -31,66 +30,64 @@ export function LiquidPricingCard({ radius = LIQUID_RADIUS }: LiquidComponentPro
   const switchR = pill(H.toggle, radius);
 
   return (
-    <LiquidDraggable>
-      <LiquidSurface
-        radius={r}
-        data-slot="liquid-pricing-card"
-        className="lqc-pricing"
-        contentClassName="lq-content-interactive lqc-pricing-content"
-        style={{ '--lq-inner-r': `${inner(r, CARD_PAD)}px` }}
+    <LiquidSurface
+      radius={r}
+      data-slot="liquid-pricing-card"
+      className="lqc-pricing"
+      contentClassName="lq-content-interactive lqc-pricing-content"
+      style={{ '--lq-inner-r': `${inner(r, CARD_PAD)}px` }}
+    >
+      <div className="lqc-pricing-head">
+        <div>
+          <span className="lqc-pricing-eyebrow">Studio</span>
+          <span className="lqc-pricing-blurb">For teams shipping glass.</span>
+        </div>
+        <span className="lqc-pricing-chip">Popular</span>
+      </div>
+
+      <div className="lqc-pricing-price">
+        <span key={String(yearly)} className="lqc-pricing-amount">
+          <sup>$</sup>
+          {yearly ? '19' : '24'}
+        </span>
+        <span className="lqc-pricing-period">
+          / month
+          <small>{yearly ? 'billed yearly' : 'billed monthly'}</small>
+        </span>
+      </div>
+
+      <button
+        type="button"
+        role="switch"
+        aria-checked={yearly}
+        className={`lqc-pricing-switch ${yearly ? 'is-on' : ''}`}
+        style={{ '--period-r': `${switchR}px` } as CSSProperties}
+        onClick={() => {
+          setYearly((v) => !v);
+          pump(360); // the knob slides across the glass
+        }}
       >
-        <div className="lqc-pricing-head">
-          <div>
-            <span className="lqc-pricing-eyebrow">Studio</span>
-            <span className="lqc-pricing-blurb">For teams shipping glass.</span>
-          </div>
-          <span className="lqc-pricing-chip">Popular</span>
-        </div>
+        <span className="lqc-pricing-knob" />
+        <span className="lqc-pricing-side" data-side="monthly">
+          Monthly
+        </span>
+        <span className="lqc-pricing-side" data-side="yearly">
+          Yearly <em>−20%</em>
+        </span>
+      </button>
 
-        <div className="lqc-pricing-price">
-          <span key={String(yearly)} className="lqc-pricing-amount">
-            <sup>$</sup>
-            {yearly ? '19' : '24'}
-          </span>
-          <span className="lqc-pricing-period">
-            / month
-            <small>{yearly ? 'billed yearly' : 'billed monthly'}</small>
-          </span>
-        </div>
+      <ul className="lqc-pricing-features">
+        {FEATURES.map((f) => (
+          <li key={f}>
+            <Check aria-hidden="true" />
+            {f}
+          </li>
+        ))}
+      </ul>
 
-        <button
-          type="button"
-          role="switch"
-          aria-checked={yearly}
-          className={`lqc-pricing-switch ${yearly ? 'is-on' : ''}`}
-          style={{ '--period-r': `${switchR}px` } as CSSProperties}
-          onClick={() => {
-            setYearly((v) => !v);
-            pump(360); // the knob slides across the glass
-          }}
-        >
-          <span className="lqc-pricing-knob" />
-          <span className="lqc-pricing-side" data-side="monthly">
-            Monthly
-          </span>
-          <span className="lqc-pricing-side" data-side="yearly">
-            Yearly <em>−20%</em>
-          </span>
-        </button>
-
-        <ul className="lqc-pricing-features">
-          {FEATURES.map((f) => (
-            <li key={f}>
-              <Check aria-hidden="true" />
-              {f}
-            </li>
-          ))}
-        </ul>
-
-        <button type="button" className="lqc-pricing-cta">
-          Start 14-day trial
-        </button>
-      </LiquidSurface>
-    </LiquidDraggable>
+      <button type="button" className="lqc-pricing-cta">
+        Start 14-day trial
+      </button>
+    </LiquidSurface>
   );
 }

@@ -1,11 +1,10 @@
-import { type ReactElement, useEffect, useRef, useState } from 'react';
+import { type PointerEvent, type ReactElement, useEffect, useRef, useState } from 'react';
 import {
   ChevronDown,
   H,
   inner,
   LIQUID_RADIUS,
   type LiquidComponentProps,
-  LiquidDraggable,
   LiquidSurface,
   pill,
   useEnterExit,
@@ -34,6 +33,8 @@ export function LiquidHeader({ radius = LIQUID_RADIUS }: LiquidComponentProps): 
   const { mounted, shown } = useEnterExit(!!active, MENU_EXIT);
   const [x, setX] = useState(0);
   const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const headerRef = useRef<HTMLDivElement | null>(null);
+  const slotRef = useRef<HTMLDivElement | null>(null);
   const lastActive = useRef<string>(NAV[0].label);
 
   if (active) lastActive.current = active;
@@ -42,67 +43,80 @@ export function LiquidHeader({ radius = LIQUID_RADIUS }: LiquidComponentProps): 
 
   const r = pill(H.bar, radius);
 
-  // follow the pointed-at item; the slide and the fade both need repaints
+  // Follow the pointed-at item; the slide and the fade both need repaints. The
+  // panel stays inside the bar: on a narrow scene the last item sits further
+  // right than a panel of that width can start from.
   useEffect(() => {
     if (active) {
       const el = itemRefs.current[active];
-      if (el) setX(el.offsetLeft);
+      const room = headerRef.current?.clientWidth ?? 0;
+      const panel = slotRef.current?.offsetWidth ?? 0;
+      if (el) setX(Math.max(0, Math.min(el.offsetLeft, room - panel)));
     }
     pump(800);
   }, [active, pump]);
 
   return (
-    <LiquidDraggable>
-      <div className="lqc-header" data-slot="liquid-header" onPointerLeave={() => setActive(null)}>
-        <LiquidSurface
-          radius={r}
-          className="lqc-header-bar"
-          contentClassName="lq-content-interactive lqc-header-content"
-          style={{ '--lq-inner-r': `${inner(r, 8)}px` }}
-        >
-          {NAV.map((nav) => (
-            <button
-              key={nav.label}
-              ref={(el) => {
-                itemRefs.current[nav.label] = el;
-              }}
-              type="button"
-              className="lqc-header-nav"
-              aria-expanded={active === nav.label}
+    <div
+      ref={headerRef}
+      className="lqc-header"
+      data-slot="liquid-header"
+      onPointerLeave={() => setActive(null)}
+    >
+      <LiquidSurface
+        radius={r}
+        className="lqc-header-bar"
+        contentClassName="lq-content-interactive lqc-header-content"
+        style={{ '--lq-inner-r': `${inner(r, 8)}px` }}
+      >
+        {NAV.map((nav) => (
+          <button
+            key={nav.label}
+            ref={(el) => {
+              itemRefs.current[nav.label] = el;
+            }}
+            type="button"
+            className="lqc-header-nav"
+            aria-expanded={active === nav.label}
+            data-open={active === nav.label || undefined}
+            onPointerEnter={(event: PointerEvent<HTMLButtonElement>) => {
+              // A tap fires pointerenter as well, and the click right behind
+              // it would toggle the menu straight back shut. On touch the
+              // click alone opens it.
+              if (event.pointerType === 'touch') return;
+              setActive(nav.label);
+            }}
+            onFocus={() => setActive(nav.label)}
+            onClick={() => setActive((a) => (a === nav.label ? null : nav.label))}
+          >
+            <span>{nav.label}</span>
+            <ChevronDown
+              className="lqc-header-chevron"
               data-open={active === nav.label || undefined}
-              onPointerEnter={() => setActive(nav.label)}
-              onFocus={() => setActive(nav.label)}
-              onClick={() => setActive((a) => (a === nav.label ? null : nav.label))}
-            >
-              <span>{nav.label}</span>
-              <ChevronDown
-                className="lqc-header-chevron"
-                data-open={active === nav.label || undefined}
-              />
-            </button>
-          ))}
-        </LiquidSurface>
+            />
+          </button>
+        ))}
+      </LiquidSurface>
 
-        {/* the slot moves; the surface inside only fades and settles */}
-        <div className="lqc-header-slot" style={{ transform: `translateX(${x}px)` }}>
-          {mounted && (
-            <LiquidSurface
-              radius={r}
-              className={`lqc-header-menu ${shown ? 'is-shown' : ''}`}
-              contentClassName="lq-content-interactive lqc-header-menu-content"
-              role="menu"
-              aria-label={openLabel}
-              style={{ '--lq-inner-r': `${inner(r, MENU_PADDING)}px`, padding: MENU_PADDING }}
-            >
-              {openItems.map((item) => (
-                <button key={item} type="button" role="menuitem" className="lqc-header-item">
-                  {item}
-                </button>
-              ))}
-            </LiquidSurface>
-          )}
-        </div>
+      {/* the slot moves; the surface inside only fades and settles */}
+      <div ref={slotRef} className="lqc-header-slot" style={{ transform: `translateX(${x}px)` }}>
+        {mounted && (
+          <LiquidSurface
+            radius={r}
+            className={`lqc-header-menu ${shown ? 'is-shown' : ''}`}
+            contentClassName="lq-content-interactive lqc-header-menu-content"
+            role="menu"
+            aria-label={openLabel}
+            style={{ '--lq-inner-r': `${inner(r, MENU_PADDING)}px`, padding: MENU_PADDING }}
+          >
+            {openItems.map((item) => (
+              <button key={item} type="button" role="menuitem" className="lqc-header-item">
+                {item}
+              </button>
+            ))}
+          </LiquidSurface>
+        )}
       </div>
-    </LiquidDraggable>
+    </div>
   );
 }

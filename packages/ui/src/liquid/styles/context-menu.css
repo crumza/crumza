@@ -15,13 +15,26 @@
   border-radius: 999px;
   border: 1px dashed rgba(255, 255, 255, 0.22);
   background: rgba(10, 11, 15, 0.28);
-  color: rgba(255, 255, 255, 0.6);
-  font: 500 12px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
+  font: 600 12px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
   pointer-events: none;
 }
 
 .lqc-ctx-slot {
   position: absolute;
+}
+
+/* One hint or the other: there is no right button on a phone. */
+.lqc-ctx-hint-touch {
+  display: none;
+}
+@media (hover: none) {
+  .lqc-ctx-hint-pointer {
+    display: none;
+  }
+  .lqc-ctx-hint-touch {
+    display: inline;
+  }
 }
 
 /* opens from its top-left corner, which is where the pointer was */
@@ -63,15 +76,16 @@
   height: 32px;
   padding: 0 10px;
   border-radius: var(--lq-inner-r, 14px);
-  color: rgba(255, 255, 255, 0.88);
-  font: 500 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
+  font: 600 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
   text-align: left;
   cursor: pointer;
+  --lq-press-scale: 0.985;
   transition:
     background 140ms ease,
-    color 140ms ease;
+    color 140ms ease,
+    scale 150ms var(--lq-ease);
 }
-.lqc-ctx-row:hover,
 .lqc-ctx-row.is-open {
   background: rgba(255, 255, 255, 0.13);
   color: #fff;
@@ -79,9 +93,15 @@
 .lqc-ctx-row.is-danger {
   color: rgba(255, 138, 128, 0.92);
 }
-.lqc-ctx-row.is-danger:hover {
-  background: rgba(255, 92, 78, 0.16);
-  color: #ff9d92;
+@media (hover: hover) {
+  .lqc-ctx-row:hover {
+    background: rgba(255, 255, 255, 0.13);
+    color: #fff;
+  }
+  .lqc-ctx-row.is-danger:hover {
+    background: rgba(255, 92, 78, 0.16);
+    color: #ff9d92;
+  }
 }
 
 .lqc-ctx-icon {
@@ -96,8 +116,8 @@
 }
 
 .lqc-ctx-shortcut {
-  font: 500 11px / 1 var(--font-mono, ui-monospace, monospace);
-  color: rgba(255, 255, 255, 0.42);
+  font: 600 11px / 1 var(--font-mono, ui-monospace, monospace);
+  color: #fff;
   letter-spacing: 0.02em;
 }
 
@@ -126,6 +146,19 @@
 .lqc-ctx-sub.is-flipped {
   left: auto;
   right: calc(100% + 2px);
+}
+
+/* No scene holds a 216px menu and a 168px submenu side by side once it is
+   narrower than about 440px, on either side. So the submenu stops being a
+   column beside its parent and opens under the row it belongs to, over the
+   rows below it, which is what a menu on a phone does. */
+@container lq-stage (max-width: 440px) {
+  .lqc-ctx-sub,
+  .lqc-ctx-sub.is-flipped {
+    top: calc(100% + 4px);
+    left: 0;
+    right: auto;
+  }
 }
 
 .lqc-ctx-submenu {

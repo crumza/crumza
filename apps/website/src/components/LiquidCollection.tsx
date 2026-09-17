@@ -12,7 +12,12 @@ import {
   LiquidTestimonials,
 } from '@crumza/ui/liquid';
 import { type ReactElement, type ReactNode, useState } from 'react';
-import { defaultLiquidSettings, liquidGalleryImages, liquidSnippet } from '../demos/liquid';
+import {
+  defaultLiquidSettings,
+  liquidBackdrops,
+  liquidGalleryImages,
+  liquidSnippet,
+} from '../demos/liquid';
 import { LiquidInspector } from '../demos/LiquidInspector';
 
 interface Entry {
@@ -111,8 +116,8 @@ export default function LiquidCollection(): ReactElement {
           <span className="liquid-count">{count} components</span>
         </div>
         <p>
-          One refraction engine, shared by every surface. Drag a component across the scene to
-          watch it resample the image underneath.
+          One refraction engine, shared by every surface. Scroll the scene to carry the next
+          backdrop under the glass and watch the rim resample what passes beneath it.
         </p>
       </div>
       <div className="liquid-grid">
@@ -138,7 +143,9 @@ export default function LiquidCollection(): ReactElement {
         </nav>
         <div className="liquid-stage-wrap">
           <LiquidScene
-            background={settings.scene}
+            backdrops={liquidBackdrops}
+            backdrop={settings.backdrop}
+            onBackdropChange={(backdrop) => setSettings((current) => ({ ...current, backdrop }))}
             frosted={settings.frosted}
             blur={settings.blur}
             glint={settings.glint}

@@ -5,8 +5,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  width: 700px;
-  max-width: calc(100vw - 48px);
+  width: min(700px, var(--lq-room));
 }
 
 .lqc-testimonials-head {
@@ -17,7 +16,7 @@
 .lqc-testimonials-kicker {
   height: 40px;
   padding: 0 16px 0 13px;
-  font: 500 12.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  font: 600 12.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
 }
 .lqc-testimonials-kicker .lq-content {
   gap: 7px;
@@ -35,10 +34,8 @@
 .lqc-testimonials-arrow {
   width: 40px;
   height: 40px;
-  transition: transform 140ms var(--lq-ease);
-}
-.lqc-testimonials-arrow:active {
-  transform: scale(0.94);
+  --lq-press-scale: 0.94;
+  transition: scale 140ms var(--lq-ease);
 }
 .lqc-testimonials-arrow svg {
   width: 16px;
@@ -98,19 +95,19 @@
 .lqc-quote-text {
   flex: 1;
   margin: 12px 0 0;
-  font: 400 13px / 1.5 var(--font-sans, -apple-system, system-ui, sans-serif);
+  font: 600 13px / 1.5 var(--font-sans, -apple-system, system-ui, sans-serif);
   letter-spacing: -0.005em;
-  color: rgba(255, 255, 255, 0.9);
+  color: #fff;
 }
 .lqc-quote-text::before {
   content: "\201C";
   margin-right: 1px;
-  color: rgba(255, 255, 255, 0.55);
+  color: #fff;
 }
 .lqc-quote-text::after {
   content: "\201D";
   margin-left: 1px;
-  color: rgba(255, 255, 255, 0.55);
+  color: #fff;
 }
 
 .lqc-quote-who {
@@ -136,7 +133,7 @@
     inset 0 0 0 0.5px rgba(255, 255, 255, 0.35),
     0 1px 3px rgba(0, 0, 0, 0.35);
   color: #fff;
-  font: 600 11.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  font: 800 11.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
   letter-spacing: 0.02em;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
@@ -147,15 +144,15 @@
   min-width: 0;
 }
 .lqc-quote-who strong {
-  font: 600 12.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  font: 700 12.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
   color: #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .lqc-quote-who small {
-  font: 400 11px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
-  color: rgba(255, 255, 255, 0.6);
+  font: 600 11px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -175,16 +172,21 @@
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.35);
   cursor: pointer;
+  --lq-press-scale: 0.75;
   transition:
     width 320ms var(--lq-ease),
-    background 200ms ease;
+    background 200ms ease,
+    scale 150ms var(--lq-ease);
 }
 .lqc-testimonials-dot.is-active {
   width: 18px;
   background: #fff;
 }
 
-@media (max-width: 760px) {
+/* Three cards need about 200px each before the quotes turn into columns of two
+   words. Under that the featured card IS the component: the arrows and the dots
+   still walk the whole set, one card at a time. */
+@container lq-stage (max-width: 740px) {
   .lqc-testimonials-row {
     grid-template-columns: 1fr;
   }

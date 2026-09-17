@@ -61,6 +61,7 @@ export function LiquidNotificationStack({
   const nextId = useRef(COPY.length);
   const timers = useRef<number[]>([]);
   const swipe = useRef({ id: -1, startX: 0, dx: 0, el: null as HTMLElement | null });
+  const deckRef = useRef<HTMLDivElement | null>(null);
 
   const r = pill(H.notif, radius);
 
@@ -81,6 +82,21 @@ export function LiquidNotificationStack({
     },
     [pump],
   );
+
+  /* Touch has no hover: enter and leave would fan the deck out and fold it back
+     inside one tap, because the leave arrives with the release. So a tap opens
+     it and the next press outside it closes it, the way a real deck behaves. */
+  useEffect(() => {
+    if (!expanded) return;
+    const close = (event: globalThis.PointerEvent): void => {
+      if (event.pointerType !== 'touch') return;
+      if (event.target instanceof Node && deckRef.current?.contains(event.target)) return;
+      setExpanded(false);
+      pump(600);
+    };
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, [expanded, pump]);
 
   const push = useCallback(() => {
     const id = nextId.current++;
@@ -139,14 +155,22 @@ export function LiquidNotificationStack({
       </LiquidSurface>
 
       <div
+        ref={deckRef}
         className="lqc-notif-deck"
         data-expanded={expanded || undefined}
-        onPointerEnter={() => {
+        onPointerEnter={(event) => {
+          if (event.pointerType === 'touch') return;
           setExpanded(true);
           pump(600); // the deck fans out
         }}
-        onPointerLeave={() => {
+        onPointerLeave={(event) => {
+          if (event.pointerType === 'touch') return;
           setExpanded(false);
+          pump(600);
+        }}
+        onPointerDown={(event) => {
+          if (event.pointerType !== 'touch' || expanded) return;
+          setExpanded(true);
           pump(600);
         }}
       >

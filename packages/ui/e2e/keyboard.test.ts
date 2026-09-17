@@ -463,11 +463,9 @@ test('dialog: dense readable material, centered geometry and reduced motion', as
 test('liquid stepper: the buttons hold the bounds and the value announces itself', async () => {
   const stepper = page.locator('[data-slot="liquid-stepper"]');
   await stepper.scrollIntoViewIfNeeded();
-  // Placed by the script in the middle of its stage, where the stylesheet already had it.
-  const wrapper = stepper.locator('xpath=ancestor::*[@data-slot="liquid-draggable"]');
-  expect(await wrapper.getAttribute('data-placed')).toBe('');
+  // Centred by the interactive layer: a component ships itself, not a positioner.
   const [box, stage] = await Promise.all([
-    wrapper.boundingBox(),
+    stepper.boundingBox(),
     stepper.locator('xpath=ancestor::*[@data-slot="liquid-scene"]').boundingBox(),
   ]);
   if (!box || !stage) throw new Error('nothing to measure');

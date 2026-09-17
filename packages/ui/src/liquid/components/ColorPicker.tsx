@@ -12,7 +12,6 @@ import {
   inner,
   LIQUID_RADIUS,
   type LiquidComponentProps,
-  LiquidDraggable,
   LiquidSurface,
   pill,
   Pipette,
@@ -93,7 +92,8 @@ export function LiquidColorPicker({ radius = LIQUID_RADIUS }: LiquidComponentPro
   }, []);
 
   const bind = (kind: Axis) => ({
-    // data-no-drag: a press here picks a colour, it does not carry the panel
+    // data-no-drag: this gesture is the component's, so the scene must not read
+    // it as a scroll of the backdrop behind it
     'data-no-drag': true,
     onPointerDown: (e: PointerEvent<HTMLDivElement>) => {
       dragging.current = kind;
@@ -120,88 +120,86 @@ export function LiquidColorPicker({ radius = LIQUID_RADIUS }: LiquidComponentPro
   };
 
   return (
-    <LiquidDraggable>
-      <LiquidSurface
-        radius={r}
-        data-slot="liquid-color-picker"
-        className="lqc-color"
-        contentClassName="lq-content-interactive lqc-color-content"
-        role="group"
-        aria-label="Colour picker"
-        style={{ '--lq-inner-r': `${inner(r, 10)}px` }}
-      >
-        {/* the pad: a hue wash, a white-to-transparent saturation ramp and a
+    <LiquidSurface
+      radius={r}
+      data-slot="liquid-color-picker"
+      className="lqc-color"
+      contentClassName="lq-content-interactive lqc-color-content"
+      role="group"
+      aria-label="Colour picker"
+      style={{ '--lq-inner-r': `${inner(r, 10)}px` }}
+    >
+      {/* the pad: a hue wash, a white-to-transparent saturation ramp and a
             transparent-to-black value ramp, stacked */}
-        <div
-          className="lqc-color-pad"
-          role="slider"
-          tabIndex={0}
-          aria-label="Saturation and brightness"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(hsv.v * 100)}
-          aria-valuetext={`Saturation ${Math.round(hsv.s * 100)}%, brightness ${Math.round(hsv.v * 100)}%`}
-          style={{ '--hue': hsv.h } as CSSProperties}
-          onKeyDown={onPadKey}
-          {...bind('pad')}
-        >
-          <span
-            className="lqc-color-knob"
-            style={{ left: `${hsv.s * 100}%`, top: `${(1 - hsv.v) * 100}%`, background: hex }}
-          />
-        </div>
+      <div
+        className="lqc-color-pad"
+        role="slider"
+        tabIndex={0}
+        aria-label="Saturation and brightness"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(hsv.v * 100)}
+        aria-valuetext={`Saturation ${Math.round(hsv.s * 100)}%, brightness ${Math.round(hsv.v * 100)}%`}
+        style={{ '--hue': hsv.h } as CSSProperties}
+        onKeyDown={onPadKey}
+        {...bind('pad')}
+      >
+        <span
+          className="lqc-color-knob"
+          style={{ left: `${hsv.s * 100}%`, top: `${(1 - hsv.v) * 100}%`, background: hex }}
+        />
+      </div>
 
-        <div
-          className="lqc-color-hue"
-          role="slider"
-          tabIndex={0}
-          aria-label="Hue"
-          aria-valuemin={0}
-          aria-valuemax={359}
-          aria-valuenow={hsv.h}
-          onKeyDown={(e) => {
-            const by = e.key === 'ArrowLeft' ? -4 : e.key === 'ArrowRight' ? 4 : 0;
-            if (!by) return;
-            e.preventDefault();
-            setHsv((c) => ({ ...c, h: (c.h + by + 360) % 360 }));
-          }}
-          {...bind('hue')}
-        >
-          <span
-            className="lqc-color-hue-knob"
-            style={{ left: `${(hsv.h / 359) * 100}%`, background: `hsl(${hsv.h} 100% 50%)` }}
-          />
-        </div>
+      <div
+        className="lqc-color-hue"
+        role="slider"
+        tabIndex={0}
+        aria-label="Hue"
+        aria-valuemin={0}
+        aria-valuemax={359}
+        aria-valuenow={hsv.h}
+        onKeyDown={(e) => {
+          const by = e.key === 'ArrowLeft' ? -4 : e.key === 'ArrowRight' ? 4 : 0;
+          if (!by) return;
+          e.preventDefault();
+          setHsv((c) => ({ ...c, h: (c.h + by + 360) % 360 }));
+        }}
+        {...bind('hue')}
+      >
+        <span
+          className="lqc-color-hue-knob"
+          style={{ left: `${(hsv.h / 359) * 100}%`, background: `hsl(${hsv.h} 100% 50%)` }}
+        />
+      </div>
 
-        <div className="lqc-color-foot">
-          <span className="lqc-color-preview" style={{ background: hex }} aria-hidden="true">
-            <Pipette />
+      <div className="lqc-color-foot">
+        <span className="lqc-color-preview" style={{ background: hex }} aria-hidden="true">
+          <Pipette />
+        </span>
+        <span className="lqc-color-values">
+          <span className="lqc-color-hex">{hex.toUpperCase()}</span>
+          <span className="lqc-color-rgb">
+            rgb({rr} {gg} {bb})
           </span>
-          <span className="lqc-color-values">
-            <span className="lqc-color-hex">{hex.toUpperCase()}</span>
-            <span className="lqc-color-rgb">
-              rgb({rr} {gg} {bb})
-            </span>
-          </span>
-        </div>
+        </span>
+      </div>
 
-        <div className="lqc-color-swatches">
-          {SWATCHES.map((sw) => {
-            const swHex = toHex(sw.h, sw.s, sw.v);
-            return (
-              <button
-                key={swHex}
-                type="button"
-                data-no-drag
-                className={`lqc-color-swatch ${swHex === hex ? 'is-active' : ''}`}
-                style={{ background: swHex }}
-                aria-label={swHex}
-                onClick={() => setHsv(sw)}
-              />
-            );
-          })}
-        </div>
-      </LiquidSurface>
-    </LiquidDraggable>
+      <div className="lqc-color-swatches">
+        {SWATCHES.map((sw) => {
+          const swHex = toHex(sw.h, sw.s, sw.v);
+          return (
+            <button
+              key={swHex}
+              type="button"
+              data-no-drag
+              className={`lqc-color-swatch ${swHex === hex ? 'is-active' : ''}`}
+              style={{ background: swHex }}
+              aria-label={swHex}
+              onClick={() => setHsv(sw)}
+            />
+          );
+        })}
+      </div>
+    </LiquidSurface>
   );
 }

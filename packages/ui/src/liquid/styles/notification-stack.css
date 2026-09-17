@@ -13,14 +13,12 @@
 }
 
 .lqc-notif-push {
-  width: 176px;
+  width: min(176px, var(--lq-room));
   height: 52px;
-  font: 600 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  font: 700 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
   letter-spacing: -0.008em;
   flex: 0 0 auto;
-}
-.lqc-notif-push:active {
-  transform: scale(0.972);
+  --lq-press-scale: 0.972;
 }
 
 /* Fixed height, absolutely positioned children: collapsing and expanding the
@@ -28,7 +26,7 @@
    all four share one cached displacement map however they are arranged. */
 .lqc-notif-deck {
   position: relative;
-  width: 296px;
+  width: min(296px, var(--lq-room));
   height: 316px;
   flex: 0 0 auto;
 }
@@ -92,12 +90,12 @@
   min-width: 0;
 }
 .lqc-notif-text strong {
-  font: 600 13.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  font: 700 13.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
   color: #fff;
 }
 .lqc-notif-text span {
-  font: 400 12px / 1.35 var(--font-sans, -apple-system, system-ui, sans-serif);
-  color: rgba(255, 255, 255, 0.72);
+  font: 600 12px / 1.35 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
 }
 
 .lqc-notif-close {
@@ -110,20 +108,24 @@
   flex: 0 0 auto;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.75);
+  color: #fff;
   cursor: pointer;
   opacity: 0;
+  --lq-press-scale: 0.86;
   transition:
     background 150ms ease,
     color 150ms ease,
-    opacity 180ms ease;
+    opacity 180ms ease,
+    scale 150ms var(--lq-ease);
 }
 .lqc-notif-deck[data-expanded] .lqc-notif-close {
   opacity: 1;
 }
-.lqc-notif-close:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
+@media (hover: hover) {
+  .lqc-notif-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
 }
 .lqc-notif-close svg {
   width: 12px;
@@ -138,8 +140,8 @@
   padding: 4px 10px;
   border-radius: 999px;
   background: rgba(10, 11, 15, 0.5);
-  color: rgba(255, 255, 255, 0.72);
-  font: 500 11px / 1 var(--font-mono, ui-monospace, monospace);
+  color: #fff;
+  font: 600 11px / 1 var(--font-mono, ui-monospace, monospace);
   pointer-events: none;
 }
 
@@ -149,8 +151,8 @@
   right: 0;
   top: 24px;
   text-align: center;
-  font: 400 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
-  color: rgba(255, 255, 255, 0.45);
+  font: 600 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
 }
 
 @media (prefers-reduced-motion: reduce) {

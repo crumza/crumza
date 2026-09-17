@@ -2,8 +2,13 @@
    surface is the scene, the surfaces, and the components. Import the styles
    through @crumza/ui/styles.css, which already includes liquid.css. */
 
-export { LiquidDraggable } from './core/draggable';
-export type { LiquidDraggableProps } from './core/draggable';
+export {
+  LIQUID_BACKDROPS,
+  LIQUID_PATTERNS,
+  liquidBackdropKey,
+  liquidBackdropStyle,
+} from './core/backdrops';
+export type { LiquidBackdrop } from './core/backdrops';
 export { LIQUID_OPTICS, LIQUID_RANGES, resolveLiquidParams } from './core/engine';
 export type { LiquidGlassParams, LiquidOptions, LiquidRange } from './core/engine';
 export { inner, LIQUID_RADIUS, LIQUID_RADIUS_MAX, pill } from './core/geometry';

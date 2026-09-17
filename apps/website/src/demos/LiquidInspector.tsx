@@ -1,7 +1,7 @@
-import { LIQUID_RADIUS_MAX, LIQUID_RANGES } from '@crumza/ui/liquid';
+import { LIQUID_RADIUS_MAX, LIQUID_RANGES, liquidBackdropStyle } from '@crumza/ui/liquid';
 import { Switch } from '@crumza/ui/web';
 import type { ReactElement, ReactNode } from 'react';
-import { type LiquidSettings, liquidScenes, withFrosted } from './liquid';
+import { liquidBackdrops, type LiquidSettings, withFrosted } from './liquid';
 
 interface RowProps {
   readonly label: string;
@@ -41,8 +41,10 @@ function Group({ label, children }: { label?: string; children: ReactNode }): Re
 
 /**
  * The only knobs the liquid set exposes: a frosted toggle, blur, glint, tint and
- * radius, plus the scene the glass sits over. Column layout is the catalogue's
- * inspector; row layout sits above a docs demo.
+ * radius, plus the panel of the backdrop strip the glass sits over. The strip
+ * also scrolls by hand, so these thumbnails are a shortcut rather than the only
+ * way there. Column layout is the catalogue's inspector; row layout sits above
+ * a docs demo.
  */
 export function LiquidInspector({
   settings,
@@ -108,19 +110,23 @@ export function LiquidInspector({
           onChange={(radius) => set('radius', radius)}
         />
       </Group>
-      <Group {...(grouped ? { label: 'Scene' } : {})}>
-        <div className="liquid-scenes" role="group" aria-label="Scene">
-          {liquidScenes.map((image) => (
+      <Group {...(grouped ? { label: 'Backdrop' } : {})}>
+        <div className="liquid-scenes" role="group" aria-label="Backdrop">
+          {liquidBackdrops.map((panel, at) => (
             <button
-              key={image.src}
+              key={panel.src ?? panel.css}
               type="button"
               className="liquid-scene-thumb"
-              aria-label={image.label}
-              aria-pressed={settings.scene === image.src}
-              title={image.label}
-              style={{ backgroundImage: `url(${image.src})` }}
-              onClick={() => set('scene', image.src)}
-            />
+              aria-label={panel.label ?? `Backdrop ${at + 1}`}
+              aria-pressed={settings.backdrop === at}
+              title={panel.label}
+              onClick={() => set('backdrop', at)}
+            >
+              {/* the pattern is painted at size in a box three times as wide and
+                  scaled down, so a 44px checker reads as a checker in a 36px
+                  thumbnail instead of as one grey square */}
+              <span className="liquid-scene-thumb-fill" style={liquidBackdropStyle(panel)} />
+            </button>
           ))}
         </div>
       </Group>

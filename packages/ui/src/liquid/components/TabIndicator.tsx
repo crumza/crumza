@@ -5,7 +5,6 @@ import {
   inner,
   LIQUID_RADIUS,
   type LiquidComponentProps,
-  LiquidDraggable,
   LiquidSurface,
   makeClock,
   pill,
@@ -79,36 +78,34 @@ export function LiquidTabIndicator({ radius = LIQUID_RADIUS }: LiquidComponentPr
   });
 
   return (
-    <LiquidDraggable>
-      <LiquidSurface
-        radius={r}
-        data-slot="liquid-tab-indicator"
-        className="lqc-indicator-bar"
-        contentClassName="lq-content-interactive lqc-indicator-content"
-        role="tablist"
-        aria-label="Liquid tabs"
-        style={{ '--lq-inner-r': `${inner(r, 6)}px` }}
-      >
-        {/* the blob sits under the labels, and is a plain element: putting a
+    <LiquidSurface
+      radius={r}
+      data-slot="liquid-tab-indicator"
+      className="lqc-indicator-bar"
+      contentClassName="lq-content-interactive lqc-indicator-content"
+      role="tablist"
+      aria-label="Liquid tabs"
+      style={{ '--lq-inner-r': `${inner(r, 6)}px` }}
+    >
+      {/* the blob sits under the labels, and is a plain element: putting a
             second glass surface here would mean a map per position */}
-        <span ref={blobRef} className="lqc-indicator-blob" aria-hidden="true" />
+      <span ref={blobRef} className="lqc-indicator-blob" aria-hidden="true" />
 
-        {TABS.map((label, i) => (
-          <button
-            key={label}
-            ref={(el) => {
-              tabRefs.current[i] = el;
-            }}
-            type="button"
-            role="tab"
-            aria-selected={i === index}
-            className={`lqc-indicator-tab ${i === index ? 'is-active' : ''}`}
-            onClick={() => setIndex(i)}
-          >
-            {label}
-          </button>
-        ))}
-      </LiquidSurface>
-    </LiquidDraggable>
+      {TABS.map((label, i) => (
+        <button
+          key={label}
+          ref={(el) => {
+            tabRefs.current[i] = el;
+          }}
+          type="button"
+          role="tab"
+          aria-selected={i === index}
+          className={`lqc-indicator-tab ${i === index ? 'is-active' : ''}`}
+          onClick={() => setIndex(i)}
+        >
+          {label}
+        </button>
+      ))}
+    </LiquidSurface>
   );
 }

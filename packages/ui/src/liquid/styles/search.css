@@ -10,8 +10,7 @@
 
 /* Folded, the field is a round glass button; open, it grows into the bar. The
    grow is a width transition on the glass itself (kept in step with GROW in
-   Search.tsx), so the engine rebuilds the rim through it. The transition list
-   repeats the drag shadow's, because a later shorthand would drop it. */
+   Search.tsx), so the engine rebuilds the rim through it. */
 .lqc-search-field {
   width: 52px;
   height: 52px;
@@ -19,11 +18,10 @@
 .lqc-search .lqc-search-field {
   transition:
     width 380ms var(--lq-ease),
-    box-shadow 220ms var(--lq-ease),
-    transform 220ms var(--lq-ease);
+    scale 150ms var(--lq-ease);
 }
 .lqc-search-field[data-open] {
-  width: 296px;
+  width: min(296px, var(--lq-room));
 }
 .lqc-search-field-content {
   justify-content: flex-start;
@@ -47,12 +45,17 @@
   appearance: none;
   border: 0;
   background: transparent;
-  color: rgba(255, 255, 255, 0.6);
+  color: #fff;
   cursor: pointer;
-  transition: color 160ms ease;
+  --lq-press-scale: 0.84;
+  transition:
+    color 160ms ease,
+    scale 150ms var(--lq-ease);
 }
-.lqc-search-toggle:hover {
-  color: rgba(255, 255, 255, 0.9);
+@media (hover: hover) {
+  .lqc-search-toggle:hover {
+    color: #fff;
+  }
 }
 .lqc-search-icon {
   width: 16px;
@@ -68,7 +71,7 @@
   outline: none;
   background: transparent;
   color: #fff;
-  font: 500 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  font: 600 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
   caret-color: #fff;
   opacity: 0;
   transition: opacity 140ms ease;
@@ -78,7 +81,7 @@
   transition: opacity 220ms ease 140ms;
 }
 .lqc-search-field input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .lqc-search-clear {
@@ -92,23 +95,28 @@
   border: 0;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.16);
-  color: rgba(255, 255, 255, 0.85);
+  color: #fff;
   cursor: pointer;
-  transition: background 160ms ease;
+  --lq-press-scale: 0.88;
+  transition:
+    background 160ms ease,
+    scale 150ms var(--lq-ease);
 }
 .lqc-search-clear svg {
   width: 12px;
   height: 12px;
   stroke-width: 2.5;
 }
-.lqc-search-clear:hover {
-  background: rgba(255, 255, 255, 0.26);
+@media (hover: hover) {
+  .lqc-search-clear:hover {
+    background: rgba(255, 255, 255, 0.26);
+  }
 }
 
 /* the results panel changes height as matches come and go: the resize is the
    whole point of the demo, and why the component pumps the scene */
 .lqc-search-results {
-  width: 296px;
+  width: min(296px, var(--lq-room));
   transform-origin: top center;
   opacity: 0;
   transform: translateY(-8px) scale(0.99);
@@ -134,30 +142,34 @@
   appearance: none;
   border: 0;
   background: transparent;
-  color: rgba(255, 255, 255, 0.84);
-  font: 500 13.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
+  font: 600 13.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
   text-align: left;
   padding: 11px 13px;
   border-radius: var(--lq-inner-r, 16px);
   cursor: pointer;
+  --lq-press-scale: 0.985;
   transition:
     background 150ms ease,
-    color 150ms ease;
+    color 150ms ease,
+    scale 150ms var(--lq-ease);
 }
-.lqc-search-item:hover {
-  background: rgba(255, 255, 255, 0.11);
-  color: #fff;
+@media (hover: hover) {
+  .lqc-search-item:hover {
+    background: rgba(255, 255, 255, 0.11);
+    color: #fff;
+  }
 }
 .lqc-search-item mark {
   background: transparent;
   color: #fff;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .lqc-search-empty {
   padding: 13px;
-  font: 400 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
-  color: rgba(255, 255, 255, 0.55);
+  font: 600 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
 }
 
 @media (prefers-reduced-motion: reduce) {
