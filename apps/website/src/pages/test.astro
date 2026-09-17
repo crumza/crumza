@@ -1,0 +1,12 @@
+---
+// /test: the adaptive Liquid Glass material under inspection. The module it
+// exercises lives in packages/ui/src/web/adaptive and is imported here
+// directly, apart from the shipped web index, while it is being proven.
+import Catalog from '../layouts/Catalog.astro';
+import '../../../../packages/ui/src/web/adaptive/adaptive.css';
+import '../adaptive/test.css';
+import { AdaptiveTest } from '../adaptive/AdaptiveTest';
+---
+<Catalog title="Adaptive glass test" description="One material. It reads the appearance, the backdrop and the component, and answers with a face and an ink.">
+  <AdaptiveTest client:load />
+</Catalog>
