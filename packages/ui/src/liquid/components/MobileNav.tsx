@@ -1,4 +1,4 @@
-import { type ReactElement, useState } from 'react';
+import { type PointerEvent, type ReactElement, useState } from 'react';
 import {
   Bell,
   CircleUser,
@@ -29,17 +29,22 @@ const TABS: readonly Tab[] = [
   { label: 'You', Icon: CircleUser },
 ];
 
-/** Ms the pop and the glass behind it take together. Kept in step with
- *  lqc-dock-pop and the pane's transition in mobile-nav.css. */
-const PICK = 560;
+/** Ms a pick takes end to end. Kept in step with lqc-dock-pop and the pane's
+ *  two animations in mobile-nav.css. */
+const PICK = 360;
 
 /**
  * A dock at the foot of the scene, where a thumb can reach it.
  *
- * Choosing is two beats rather than one: the glyph jumps, and the glass slides
- * in under it a moment later, so the tap is answered before the state catches
- * up with it. Nothing else on the bar moves, and no glyph ever changes the size
- * it occupies, so the row stays exactly where it was through all of it.
+ * It answers on the way DOWN. A click arrives on release, which on a phone is
+ * a hundred milliseconds after the finger landed and reads as the glass
+ * chasing the touch rather than meeting it, so the pick is made on pointerdown
+ * and the glass is already moving while the finger is still on it.
+ *
+ * The pane does not slide, it throws: it leaves on a curve that overshoots and
+ * settles, and stretches along the way in proportion to how far it has to go,
+ * the way a run of glass would. The glyph swells and drops back over the same
+ * 360ms, so the two read as one movement rather than a sequence.
  *
  * There is no frame loop here at all. The pane is a transform on one element
  * and the pop is one keyframe on another, both of them above the glass rather
@@ -51,15 +56,24 @@ const PICK = 560;
  */
 export function LiquidMobileNav({ radius = LIQUID_RADIUS }: LiquidComponentProps): ReactElement {
   const { pump } = useLiquidScene();
-  // `tick` is what makes a second tap on the same item pop again: it re-keys
-  // the glyph, and an element that has just mounted runs its animation.
-  const [picked, setPicked] = useState({ at: 0, tick: 0 });
+  // `from` is where the pane is leaving, so the throw can be drawn from there.
+  // `tick` is what makes a second tap on the same item answer again: it re-keys
+  // the pane and the glyph, and an element that has just mounted runs its
+  // animations from the start.
+  const [picked, setPicked] = useState({ at: 0, from: 0, tick: 0 });
 
   const r = pill(H.dock, radius);
 
   const choose = (at: number): void => {
-    setPicked((last) => ({ at, tick: last.tick + 1 }));
+    setPicked((last) => ({ at, from: last.at, tick: last.tick + 1 }));
     pump(PICK + 200); // the pane travels across the glass
+  };
+
+  /* Down, not up. A discrete event renders before the next paint, so the pane
+     is already on its way by the time the finger has finished landing. */
+  const onPointerDown = (event: PointerEvent<HTMLButtonElement>, at: number): void => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    choose(at);
   };
 
   return (
@@ -67,7 +81,14 @@ export function LiquidMobileNav({ radius = LIQUID_RADIUS }: LiquidComponentProps
       className="lqc-dock"
       data-slot="liquid-mobile-nav"
       aria-label="Sections"
-      style={{ '--at': picked.at, '--n': TABS.length } as LiquidCSS}
+      style={
+        {
+          '--at': picked.at,
+          '--from': picked.from,
+          '--dist': Math.abs(picked.at - picked.from),
+          '--n': TABS.length,
+        } as LiquidCSS
+      }
     >
       <LiquidSurface
         radius={r}
@@ -79,7 +100,7 @@ export function LiquidMobileNav({ radius = LIQUID_RADIUS }: LiquidComponentProps
             per item: a pane per position would be a displacement map per
             position, and this is a plain surface for the same reason the tab
             indicator's blob is. */}
-        <span className="lqc-dock-pane" aria-hidden="true" />
+        <span key={picked.tick} className="lqc-dock-pane" aria-hidden="true" />
 
         {TABS.map((tab, i) => (
           <button
@@ -88,7 +109,12 @@ export function LiquidMobileNav({ radius = LIQUID_RADIUS }: LiquidComponentProps
             className="lqc-dock-item"
             aria-current={picked.at === i ? 'page' : undefined}
             aria-label={tab.label}
-            onClick={() => choose(i)}
+            onPointerDown={(event) => onPointerDown(event, i)}
+            // The pointer has already chosen by the time a click lands. A click
+            // with no detail came from the keyboard, and that one is this item's.
+            onClick={(event) => {
+              if (event.detail === 0) choose(i);
+            }}
           >
             <span
               key={picked.at === i ? picked.tick : 'rest'}
