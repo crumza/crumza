@@ -22,7 +22,7 @@ const tabs = [
 </LiquixSurface>
 ```
 
-Every tab is a real `<button role="tab">` inside a `tablist`, so screen readers announce position and state. The buttons are transparent: the bar and the highlight are drawn by the surface's shader on the canvas underneath, and the selected tab is distinguished by the filled capsule and a different label colour, so it survives a screenshot in greyscale.
+Every tab is a real `<button role="tab">` inside a `tablist`, so screen readers announce position and state. The bar is one Tab stop: Left and Right arrows move between tabs and select as they go, Home and End jump to the ends, and the arrows swap in right-to-left text. The buttons are transparent: the bar and the highlight are drawn by the surface's shader on the canvas underneath, and the selected tab is distinguished by the filled capsule and a different label colour, so it survives a screenshot in greyscale.
 
 ## Props
 

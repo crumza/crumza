@@ -36,7 +36,7 @@ So the content exists twice, once as live DOM under the glass and once as a pain
 | className | none | Appended to the host, which is `relative overflow-hidden`. Give it a size |
 | children | none | The scrollable content, under the glass and fully live |
 
-Each `paintKeys` entry keeps its tiles on the GPU. Painting happens again whenever `paint` or the surface's size changes, and a key switch starts the content at the top, the way remounting a scroll container would.
+Each `paintKeys` entry keeps its tiles on the GPU, and the content can be any height: the shader is handed the tiles around the scroll position. Painting happens again whenever `paint` or the surface's size changes, and a key switch starts the content at the top, the way remounting a scroll container would.
 
 ## Shapes and layers
 

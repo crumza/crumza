@@ -1,8 +1,10 @@
 import {
   type ComponentType,
   type CSSProperties,
+  type KeyboardEvent,
   type ReactElement,
   useEffect,
+  useId,
   useRef,
 } from 'react';
 import { cn } from '../cn';
@@ -141,6 +143,9 @@ function Highlight({ index, tabWidth, height, pillClassName }: HighlightProps): 
     if (!element) return;
     const entry = entryRef.current;
     const state = motion.current;
+    // useLiquixBox has just registered the entry with this stage, whatever the
+    // blend was doing before; the loop below takes it from here.
+    mix.current.registered = stage !== null;
 
     let raf = 0;
     const loop = (time: number) => {
@@ -335,11 +340,39 @@ export function LiquixTabs({
   inactiveClassName = 'text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.45)]',
   pillClassName,
 }: LiquixTabsProps): ReactElement {
+  const uid = useId();
   const barWidth = Math.max(0, width - inset * 2);
   const index = Math.max(
     0,
     tabs.findIndex((tab) => tab.id === active),
   );
+
+  // The tablist is one Tab stop; arrows move between tabs and select as they
+  // go, Home and End jump to the ends, and the arrows swap in right-to-left.
+  const handleKey = (event: KeyboardEvent<HTMLDivElement>): void => {
+    const rtl = getComputedStyle(event.currentTarget).direction === 'rtl';
+    const key =
+      rtl && (event.key === 'ArrowRight' || event.key === 'ArrowLeft')
+        ? event.key === 'ArrowRight'
+          ? 'ArrowLeft'
+          : 'ArrowRight'
+        : event.key;
+    const to =
+      key === 'ArrowRight'
+        ? (index + 1) % tabs.length
+        : key === 'ArrowLeft'
+          ? (index - 1 + tabs.length) % tabs.length
+          : key === 'Home'
+            ? 0
+            : key === 'End'
+              ? tabs.length - 1
+              : -1;
+    const next = tabs[to];
+    if (!next) return;
+    event.preventDefault();
+    onChange(next.id);
+    event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]')[to]?.focus();
+  };
 
   return (
     <div
@@ -359,14 +392,20 @@ export function LiquixTabs({
           pillClassName={pillClassName}
         />
 
-        <div role="tablist" aria-label={label} className="relative flex h-full w-full">
+        <div
+          role="tablist"
+          aria-label={label}
+          onKeyDown={handleKey}
+          className="relative flex h-full w-full"
+        >
           {tabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
               role="tab"
-              id={`tab-${tab.id}`}
+              id={`${uid}-tab-${tab.id}`}
               aria-selected={tab.id === active}
+              tabIndex={tab.id === active ? 0 : -1}
               data-slot="liquix-tab"
               data-state={tab.id === active ? 'active' : 'inactive'}
               onClick={() => onChange(tab.id)}

@@ -8,7 +8,13 @@ import {
   useState,
 } from 'react';
 import { cn } from '../cn';
-import { disposePanels, type LiquixPaint, type LiquixStrip, paintPanels } from '../liquix/backdrop';
+import {
+  disposePanels,
+  type LiquixPaint,
+  type LiquixStrip,
+  paintPanels,
+  tileWindow,
+} from '../liquix/backdrop';
 import { defaultLiquixSurfaceParams, type LiquixParams } from '../liquix/params';
 import {
   createGlassRenderer,
@@ -18,6 +24,7 @@ import {
   type PanelRecord,
 } from '../liquix/renderer';
 import { MAX_SHAPES } from '../liquix/shader-lib';
+import { MAX_PANELS } from '../liquix/shaders';
 import { LiquixStageContext, type LiquixShapeEntry, type LiquixStageValue } from '../liquix/stage';
 
 export interface LiquixSurfaceProps {
@@ -64,7 +71,7 @@ interface LoopState {
     corners: Float32Array;
     glows: Float32Array;
   };
-  size: { width: number; height: number; dpr: number };
+  size: { width: number; height: number; dpr: number; blurScale: number };
   accumulator: number;
   lastTime: number;
 }
@@ -108,9 +115,13 @@ export function LiquixSurface({
     [params],
   );
   const settingsRef = useRef(settings);
+  // Keyed on the contents, not the array: a caller who writes the list inline
+  // must not repaint every strip on every render.
+  const keySignature = paintKeys?.length ? paintKeys.join('\u0000') : paintKey;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the signature stands in for the array's contents.
   const keys = useMemo<readonly string[]>(
-    () => (paintKeys?.length ? paintKeys : [paintKey]),
-    [paintKeys, paintKey],
+    () => (paintKeys?.length ? [...paintKeys] : [paintKey]),
+    [keySignature],
   );
   const hostRef = useRef<HTMLDivElement | null>(null);
   const scrollRef = useRef<HTMLElement | null>(null);
@@ -135,7 +146,7 @@ export function LiquixSurface({
       corners: new Float32Array(MAX_SHAPES * 2),
       glows: new Float32Array(MAX_SHAPES),
     },
-    size: { width: 0, height: 0, dpr: 0 },
+    size: { width: 0, height: 0, dpr: 0, blurScale: 0 },
     accumulator: 0,
     lastTime: 0,
   });
@@ -182,13 +193,16 @@ export function LiquixSurface({
     }
     rendererRef.current = renderer;
 
+    let raf = 0;
     const onContextLost = (event: Event) => {
       event.preventDefault();
+      // The canvas is about to unmount; nothing more can be drawn or uploaded.
+      cancelAnimationFrame(raf);
+      rendererRef.current = null;
       setFallback(true);
     };
     canvas.addEventListener('webglcontextlost', onContextLost);
 
-    let raf = 0;
     const loop = (time: number) => {
       raf = requestAnimationFrame(loop);
 
@@ -201,15 +215,17 @@ export function LiquixSurface({
       if (!cssWidth || !cssHeight) return;
 
       const gl = renderer.gl;
+      const { blurScale } = settingsRef.current;
       if (
         state.size.width !== cssWidth ||
         state.size.height !== cssHeight ||
-        state.size.dpr !== dpr
+        state.size.dpr !== dpr ||
+        state.size.blurScale !== blurScale
       ) {
         canvas.width = Math.round(cssWidth * dpr);
         canvas.height = Math.round(cssHeight * dpr);
-        renderer.resize(canvas.width, canvas.height, dpr, settingsRef.current.blurScale);
-        state.size = { width: cssWidth, height: cssHeight, dpr };
+        renderer.resize(canvas.width, canvas.height, dpr, blurScale);
+        state.size = { width: cssWidth, height: cssHeight, dpr, blurScale };
 
         // Holds a copy of the finished canvas so a later layer can refract it.
         // RGB: the colour is all a later pass samples, and the drawing buffer
@@ -292,9 +308,18 @@ export function LiquixSurface({
 
         // The mirror is exactly the canvas, so cover-fitting it is the
         // identity and the pass repaints what was already there, plus glass.
+        // The shader takes at most MAX_PANELS tiles, and a long screen has
+        // more, so it is handed the window of tiles around the scroll position
+        // and a scroll measured from the first of them. Nothing is lost: only
+        // two tiles can ever be on screen at once.
+        const window = tileWindow(
+          scrollRef.current?.scrollTop ?? 0,
+          cssHeight,
+          state.panels.length,
+        );
         const backdrop: readonly PanelRecord[] =
           pass === 0
-            ? state.panels
+            ? state.panels.slice(window.first, window.first + MAX_PANELS)
             : [{ kind: 0, ready: true, texture: state.mirror, aspect: cssWidth / cssHeight }];
 
         renderer.render({
@@ -309,7 +334,7 @@ export function LiquixSurface({
           params: settingsRef.current,
           panels: backdrop,
           kernel: state.kernel,
-          scroll: pass === 0 ? (scrollRef.current?.scrollTop ?? 0) : 0,
+          scroll: pass === 0 ? window.scroll : 0,
           panelHeight: cssHeight,
         });
       });
