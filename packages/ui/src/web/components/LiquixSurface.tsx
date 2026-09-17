@@ -1,0 +1,434 @@
+import {
+  type ReactElement,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { cn } from '../cn';
+import { disposePanels, type LiquixPaint, type LiquixStrip, paintPanels } from '../liquix/backdrop';
+import { defaultLiquixSurfaceParams, type LiquixParams } from '../liquix/params';
+import {
+  createGlassRenderer,
+  gaussianKernel,
+  type GaussianKernel,
+  type GlassRenderer,
+  type PanelRecord,
+} from '../liquix/renderer';
+import { MAX_SHAPES } from '../liquix/shader-lib';
+import { LiquixStageContext, type LiquixShapeEntry, type LiquixStageValue } from '../liquix/stage';
+
+export interface LiquixSurfaceProps {
+  /**
+   * Draws the scrollable content into a 2D context and returns how tall it
+   * came out, in CSS px. Called again whenever `paintKey` or the surface's
+   * size changes. Memoise it: a new function means every strip is repainted.
+   */
+  readonly paint: LiquixPaint;
+  /**
+   * Identifies what `paint` will draw. Every key seen is rasterised once and
+   * kept, so switching between them is a pointer swap rather than an upload,
+   * which is what lets an animation triggered by the switch actually be seen.
+   */
+  readonly paintKey?: string | undefined;
+  /** Every key to rasterise up front. Defaults to `paintKey` alone. */
+  readonly paintKeys?: readonly string[] | undefined;
+  /** Overrides merged over defaultLiquixSurfaceParams. */
+  readonly params?: Partial<LiquixParams> | undefined;
+  /** Rendered under the canvas: for anything that has to sit beneath the glass, a drop shadow above all. */
+  readonly underlay?: ReactNode | undefined;
+  /** Rendered over the canvas: the controls the glass is drawn for. */
+  readonly overlay?: ReactNode | undefined;
+  readonly className?: string | undefined;
+  /** The scrollable content, under the glass and fully live. */
+  readonly children?: ReactNode | undefined;
+}
+
+interface SurfaceSize {
+  readonly width: number;
+  readonly height: number;
+}
+
+interface LoopState {
+  panels: readonly PanelRecord[];
+  strips: Map<string, LiquixStrip>;
+  mirror: WebGLTexture | null;
+  kernel: GaussianKernel;
+  scroll: number;
+  maxScroll: number;
+  arrays: {
+    centers: Float32Array;
+    sizes: Float32Array;
+    corners: Float32Array;
+    glows: Float32Array;
+  };
+  size: { width: number; height: number; dpr: number };
+  accumulator: number;
+  lastTime: number;
+}
+
+const SCROLLER =
+  'absolute inset-0 overflow-y-auto overscroll-contain focus-visible:outline-none [scrollbar-color:var(--color-zinc-300)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-zinc-300 [&::-webkit-scrollbar]:w-1';
+
+/**
+ * A surface that anything made of glass can be put on.
+ *
+ * The content is real DOM in a native scroll container, and the canvas lies
+ * over it as a stencil: the renderer is asked for `transparent`, so every
+ * pixel outside the glass is written at alpha 0 and the elements underneath
+ * show through. With `pointer-events: none` on the canvas they stay
+ * clickable, selectable and findable too.
+ *
+ * The shader cannot sample DOM, so `paint` draws the same content a second
+ * time, off-screen, purely as the backdrop the glass refracts. Nobody sees
+ * that copy; it only has to agree with the DOM.
+ *
+ * Shapes register through useLiquixBox. They are drawn in layers, because the
+ * shader merges everything it is given into one distance field with min(): a
+ * pill inside a bar would be swallowed by it, since inside the bar the bar is
+ * always the deeper shape. So each layer gets its own pass, and every pass
+ * after the first refracts a copy of the canvas the previous one left behind,
+ * which is how a highlight comes to sit on the bar's glass rather than
+ * merging into it.
+ */
+export function LiquixSurface({
+  paint,
+  paintKey = 'default',
+  paintKeys,
+  params,
+  underlay,
+  overlay,
+  className,
+  children,
+}: LiquixSurfaceProps): ReactElement {
+  const settings = useMemo<LiquixParams>(
+    () => ({ ...defaultLiquixSurfaceParams, ...params }),
+    [params],
+  );
+  const settingsRef = useRef(settings);
+  const keys = useMemo<readonly string[]>(
+    () => (paintKeys?.length ? paintKeys : [paintKey]),
+    [paintKeys, paintKey],
+  );
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<HTMLElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const rendererRef = useRef<GlassRenderer | null>(null);
+  const shapesRef = useRef<readonly LiquixShapeEntry[]>([]);
+  const [fallback, setFallback] = useState(false);
+  const [size, setSize] = useState<SurfaceSize>({ width: 0, height: 0 });
+
+  // Everything the frame loop touches, kept off the React render path and read
+  // only from effects, the way LiquixStage holds its own frame state.
+  const stateRef = useRef<LoopState>({
+    panels: [],
+    strips: new Map(),
+    mirror: null,
+    kernel: gaussianKernel(defaultLiquixSurfaceParams.blurRadius),
+    scroll: 0,
+    maxScroll: 0,
+    arrays: {
+      centers: new Float32Array(MAX_SHAPES * 2),
+      sizes: new Float32Array(MAX_SHAPES * 2),
+      corners: new Float32Array(MAX_SHAPES * 2),
+      glows: new Float32Array(MAX_SHAPES),
+    },
+    size: { width: 0, height: 0, dpr: 0 },
+    accumulator: 0,
+    lastTime: 0,
+  });
+
+  useEffect(() => {
+    settingsRef.current = settings;
+    stateRef.current.kernel = gaussianKernel(settings.blurRadius);
+  }, [settings]);
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const { width, height } = entry.contentRect;
+      setSize({ width: Math.round(width), height: Math.round(height) });
+    });
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, []);
+
+  const register = useCallback((entry: LiquixShapeEntry) => {
+    if (!shapesRef.current.includes(entry)) shapesRef.current = [...shapesRef.current, entry];
+  }, []);
+  const unregister = useCallback((entry: LiquixShapeEntry) => {
+    shapesRef.current = shapesRef.current.filter((item) => item !== entry);
+  }, []);
+  const stage = useMemo<LiquixStageValue>(
+    () => ({ register, unregister, fallback }),
+    [register, unregister, fallback],
+  );
+
+  // --- renderer lifecycle and frame loop -------------------------------------
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const state = stateRef.current;
+    const renderer = createGlassRenderer(canvas, { transparent: true });
+    if (!renderer) {
+      setFallback(true);
+      return;
+    }
+    rendererRef.current = renderer;
+
+    const onContextLost = (event: Event) => {
+      event.preventDefault();
+      setFallback(true);
+    };
+    canvas.addEventListener('webglcontextlost', onContextLost);
+
+    let raf = 0;
+    const loop = (time: number) => {
+      raf = requestAnimationFrame(loop);
+
+      const elapsed = state.lastTime ? (time - state.lastTime) / 1000 : 1 / 60;
+      state.lastTime = time;
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const cssWidth = canvas.clientWidth;
+      const cssHeight = canvas.clientHeight;
+      if (!cssWidth || !cssHeight) return;
+
+      const gl = renderer.gl;
+      if (
+        state.size.width !== cssWidth ||
+        state.size.height !== cssHeight ||
+        state.size.dpr !== dpr
+      ) {
+        canvas.width = Math.round(cssWidth * dpr);
+        canvas.height = Math.round(cssHeight * dpr);
+        renderer.resize(canvas.width, canvas.height, dpr, settingsRef.current.blurScale);
+        state.size = { width: cssWidth, height: cssHeight, dpr };
+
+        // Holds a copy of the finished canvas so a later layer can refract it.
+        // RGB: the colour is all a later pass samples, and the drawing buffer
+        // always has at least that. Asking for channels the buffer does not
+        // have is what makes a copy an invalid operation, and a black frame.
+        if (!state.mirror) state.mirror = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, state.mirror);
+        gl.texImage2D(
+          gl.TEXTURE_2D,
+          0,
+          gl.RGB,
+          canvas.width,
+          canvas.height,
+          0,
+          gl.RGB,
+          gl.UNSIGNED_BYTE,
+          null,
+        );
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      }
+
+      // Interaction easing runs on a fixed timestep: clamping a variable
+      // delta would quietly run it in slow motion on a slow frame.
+      const STEP = 1 / 120;
+      state.accumulator = Math.min(0.25, state.accumulator + elapsed);
+      while (state.accumulator >= STEP) {
+        state.accumulator -= STEP;
+        for (const entry of shapesRef.current) {
+          const ease = Math.min(1, STEP * 14);
+          entry.scale += (entry.scaleTarget - entry.scale) * ease;
+          entry.glow += (entry.glowTarget - entry.glow) * ease;
+        }
+      }
+
+      const entries = shapesRef.current;
+      const { centers, sizes, corners, glows } = state.arrays;
+      const canvasBox = canvas.getBoundingClientRect();
+
+      // One pass per layer, lowest first; see the component's note on why.
+      const layers = [...new Set(entries.map((entry) => entry.layer ?? 0))].sort((a, b) => a - b);
+      if (layers.length === 0) layers.push(0);
+
+      layers.forEach((layer, pass) => {
+        const group = entries.filter((entry) => (entry.layer ?? 0) === layer).slice(0, MAX_SHAPES);
+
+        group.forEach((entry, i) => {
+          const rect = entry.el?.getBoundingClientRect();
+          const centerX =
+            (rect ? rect.left + rect.width / 2 : canvasBox.width / 2) - canvasBox.left;
+          const centerY =
+            (rect ? rect.top + rect.height / 2 : canvasBox.height / 2) - canvasBox.top;
+          centers[i * 2] = centerX * dpr;
+          centers[i * 2 + 1] = (cssHeight - centerY) * dpr;
+          sizes[i * 2] = entry.shape.width * entry.scale;
+          sizes[i * 2 + 1] = entry.shape.height * entry.scale;
+          corners[i * 2] = entry.shape.cornerRadius * entry.scale;
+          corners[i * 2 + 1] = entry.shape.roundness;
+          glows[i] = entry.glow;
+        });
+
+        if (pass === 0) {
+          gl.disable(gl.BLEND);
+        } else if (state.mirror) {
+          gl.bindTexture(gl.TEXTURE_2D, state.mirror);
+          gl.copyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, canvas.width, canvas.height);
+          // Every pass after the first composites: outside its own shape it
+          // writes alpha 0, which must leave the layer below standing rather
+          // than replace it.
+          gl.enable(gl.BLEND);
+          gl.blendFuncSeparate(
+            gl.SRC_ALPHA,
+            gl.ONE_MINUS_SRC_ALPHA,
+            gl.ONE,
+            gl.ONE_MINUS_SRC_ALPHA,
+          );
+        }
+
+        // The mirror is exactly the canvas, so cover-fitting it is the
+        // identity and the pass repaints what was already there, plus glass.
+        const backdrop: readonly PanelRecord[] =
+          pass === 0
+            ? state.panels
+            : [{ kind: 0, ready: true, texture: state.mirror, aspect: cssWidth / cssHeight }];
+
+        renderer.render({
+          shapes: {
+            count: group.length,
+            centers,
+            sizes,
+            corners,
+            glows,
+            pull: [0, 0],
+          },
+          params: settingsRef.current,
+          panels: backdrop,
+          kernel: state.kernel,
+          scroll: pass === 0 ? (scrollRef.current?.scrollTop ?? 0) : 0,
+          panelHeight: cssHeight,
+        });
+      });
+    };
+    raf = requestAnimationFrame(loop);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      canvas.removeEventListener('webglcontextlost', onContextLost);
+      if (state.mirror) renderer.gl.deleteTexture(state.mirror);
+      state.mirror = null;
+      for (const strip of state.strips.values()) disposePanels(renderer.gl, strip.panels);
+      state.strips = new Map();
+      state.panels = [];
+      renderer.dispose();
+      rendererRef.current = null;
+    };
+  }, []);
+
+  // --- the strips ------------------------------------------------------------
+  // Redrawn whenever the content or the surface's size changes. Every key is
+  // painted up front so a switch between them costs no upload.
+  const paintKeyRef = useRef(paintKey);
+  useEffect(() => {
+    paintKeyRef.current = paintKey;
+  }, [paintKey]);
+
+  useEffect(() => {
+    const renderer = rendererRef.current;
+    if (!renderer || !size.width || !size.height) return;
+
+    const state = stateRef.current;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const previous = state.strips;
+
+    const strips = new Map<string, LiquixStrip>();
+    for (const key of keys) {
+      strips.set(
+        key,
+        paintPanels(
+          renderer.gl,
+          (ctx, width) => paint(ctx, width, key),
+          size.width,
+          size.height,
+          dpr,
+        ),
+      );
+    }
+    state.strips = strips;
+
+    // The frame loop must never be left holding the textures deleted below:
+    // a repaint with the same key showing is not a switch, so the swap effect
+    // will not run for it.
+    const current = strips.get(paintKeyRef.current);
+    state.panels = current ? current.panels : [];
+    state.maxScroll = current ? Math.max(0, current.contentHeight - size.height) : 0;
+
+    for (const strip of previous.values()) disposePanels(renderer.gl, strip.panels);
+  }, [keys, paint, size.width, size.height]);
+
+  // Switching is a swap: the strip is already on the GPU, so the frame the
+  // click lands on is not the frame that uploads a screen, which is what lets
+  // a highlight's spring actually be seen travelling.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the size is the signal that the strips were rebuilt above.
+  useEffect(() => {
+    const state = stateRef.current;
+    const strip = state.strips.get(paintKey);
+    if (!strip) return;
+    state.panels = strip.panels;
+    state.maxScroll = Math.max(0, strip.contentHeight - state.size.height);
+    state.scroll = 0;
+  }, [paintKey, size.height, size.width]);
+
+  // --- scrolling -------------------------------------------------------------
+  // The container scrolls natively, so text selection, drag-scrolling, the
+  // keyboard and a trackpad all behave the way they do anywhere else, and the
+  // shader simply reads scrollTop. A switch starts the new content at the
+  // top, the way remounting a scroll container would.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the key changing is the event this reacts to.
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [paintKey]);
+
+  return (
+    <LiquixStageContext.Provider value={stage}>
+      <div
+        ref={hostRef}
+        data-slot="liquix-surface"
+        data-fallback={fallback ? '' : undefined}
+        className={cn('relative overflow-hidden', className)}
+      >
+        {/* The content. Real elements, natively scrolled: the glass is over
+            it, not instead of it. */}
+        <section
+          ref={scrollRef}
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: a scroll container is a tab stop so the keyboard can scroll it.
+          tabIndex={0}
+          data-slot="liquix-surface-scroll"
+          className={SCROLLER}
+        >
+          {children}
+        </section>
+
+        {/* Under the glass rather than over it. */}
+        <div className="pointer-events-none absolute inset-0 z-[5]">{underlay}</div>
+
+        {/* The glass. Transparent everywhere it is not, and deaf to the
+            pointer everywhere, so every click lands on the content. */}
+        {!fallback ? (
+          <canvas
+            ref={canvasRef}
+            className="pointer-events-none absolute inset-0 z-10 block h-full w-full"
+          />
+        ) : null}
+
+        {/* Controls, above the glass. Deaf to the pointer as a layer, since it
+            covers the whole surface, so only what it contains takes clicks. */}
+        <div className="pointer-events-none absolute inset-0 z-20">{overlay}</div>
+      </div>
+    </LiquixStageContext.Provider>
+  );
+}

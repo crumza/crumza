@@ -29,6 +29,13 @@ export interface LiquixShapeEntry {
   scaleTarget: number;
   glow: number;
   glowTarget: number;
+  /**
+   * Draw order for hosts that render in passes. A LiquixStage draws every
+   * shape in one pass and ignores it; a LiquixSurface draws each layer over
+   * the last, which is how a pill can sit on a bar of glass rather than merge
+   * into it. Unset means 0.
+   */
+  layer?: number | undefined;
 }
 
 export interface LiquixStageValue {

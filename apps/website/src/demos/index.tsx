@@ -69,6 +69,7 @@ import {
 import type { ComponentType, ReactElement } from 'react';
 import { useState } from 'react';
 import { Frame } from './Frame';
+import { LiquixTabsDemo } from './LiquixTabsDemo';
 
 function ButtonDemo(): ReactElement {
   return (
@@ -823,6 +824,8 @@ const demos: Record<string, ComponentType> = {
   'components/liquix-stage': LiquixStageDemo,
   'components/liquix-capsule': LiquixCapsuleDemo,
   'components/liquix-circle': LiquixCircleDemo,
+  'components/liquix-surface': LiquixTabsDemo,
+  'components/liquix-tabs': LiquixTabsDemo,
   'components/card': CardDemo,
   'components/toolbar': ToolbarDemo,
   'components/tabs': TabsDemo,

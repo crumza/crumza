@@ -73,6 +73,8 @@ export const sidebar: readonly NavGroup[] = [
       { slug: 'components/liquix-stage', label: 'LiquixStage' },
       { slug: 'components/liquix-capsule', label: 'LiquixCapsule' },
       { slug: 'components/liquix-circle', label: 'LiquixCircle' },
+      { slug: 'components/liquix-surface', label: 'LiquixSurface' },
+      { slug: 'components/liquix-tabs', label: 'LiquixTabs' },
     ],
   },
   {
