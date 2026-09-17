@@ -117,7 +117,16 @@ export { useBloom } from './liquix/use-bloom';
 export type { Measured } from './liquix/use-measure';
 export { useMeasure } from './liquix/use-measure';
 export type { LiquixPanel, LiquixParams, LiquixTint, PanelKind } from './liquix/params';
+export type {
+  LiquixMaterial,
+  LiquixPanel,
+  LiquixParams,
+  LiquixScheme,
+  LiquixTint,
+  PanelKind,
+} from './liquix/params';
 export {
+  LIQUIX_MATERIALS,
   PANEL_KINDS,
   defaultLiquixPanels,
   defaultLiquixParams,
@@ -125,6 +134,7 @@ export {
 } from './liquix/params';
 export type { LiquixShape, LiquixShapeEntry, LiquixStageValue } from './liquix/stage';
   frostedLiquixParams,
+  liquixMaterialParams,
 } from './liquix/params';
 export type {
   MenuCheckboxItemProps,

@@ -15,7 +15,13 @@ import {
 } from '../src/web/liquix/params';
 import { tileWindow } from '../src/web/liquix/backdrop';
 import { LiquixCapsule, LiquixCircle, LiquixStage } from '../src/web';
-import { defaultLiquixParams, frostedLiquixParams, PANEL_KINDS } from '../src/web/liquix/params';
+import {
+  defaultLiquixParams,
+  frostedLiquixParams,
+  LIQUIX_MATERIALS,
+  liquixMaterialParams,
+  PANEL_KINDS,
+} from '../src/web/liquix/params';
 import { gaussianKernel } from '../src/web/liquix/renderer';
 import { MAX_SHAPES } from '../src/web/liquix/shader-lib';
 import { FRAGMENT_MAIN, MAX_PANELS } from '../src/web/liquix/shaders';
@@ -102,6 +108,12 @@ describe('liquix stage', () => {
     expect(renderToStaticMarkup(<LiquixStage />)).not.toContain('data-frosted');
   });
 
+  test('the stage draws for the dark scheme until told otherwise, and marks the one it is given', () => {
+    expect(renderToStaticMarkup(<LiquixStage />)).toContain('data-scheme="dark"');
+    expect(renderToStaticMarkup(<LiquixStage scheme="light" />)).toContain('data-scheme="light"');
+    expect(renderToStaticMarkup(<LiquixStage scheme="auto" />)).toContain('data-scheme="dark"');
+  });
+
   test('overrides still win over the frosted material', () => {
     const html = renderToStaticMarkup(
       <LiquixStage frosted params={{ rowGap: 7 }}>
@@ -136,6 +148,31 @@ describe('liquix materials', () => {
     // and the physics are the same glass
     expect(frostedLiquixParams.pullBounce).toBe(defaultLiquixParams.pullBounce);
     expect(frostedLiquixParams.pullSaturation).toBe(defaultLiquixParams.pullSaturation);
+  });
+});
+
+describe('liquix schemes', () => {
+  test('clear dark glass is the reference; clear light lifts a little white and barely dims', () => {
+    expect(liquixMaterialParams(false, 'dark')).toBe(defaultLiquixParams);
+    const light = liquixMaterialParams(false, 'light');
+    expect(light.tint).toEqual({ r: 255, g: 255, b: 255, a: 0.12 });
+    expect(light.overLight).toBeLessThan(defaultLiquixParams.overLight / 2);
+    expect(light.blurRadius).toBe(defaultLiquixParams.blurRadius);
+  });
+
+  test('frosted light is the Dock over a photo; frosted dark is the same frost under smoke', () => {
+    expect(liquixMaterialParams(true, 'light')).toBe(frostedLiquixParams);
+    const dark = liquixMaterialParams(true, 'dark');
+    expect(dark.blurRadius).toBe(frostedLiquixParams.blurRadius);
+    expect(dark.saturation).toBe(frostedLiquixParams.saturation);
+    expect(dark.refThickness).toBe(frostedLiquixParams.refThickness);
+    // a near-black veil, thin enough that the backdrop still shows through
+    expect(dark.tint.r).toBeLessThan(40);
+    expect(dark.tint.a).toBeGreaterThan(0.2);
+    expect(dark.tint.a).toBeLessThan(0.5);
+    // white labels keep the full dimming over bright content
+    expect(dark.overLight).toBe(defaultLiquixParams.overLight);
+    expect(LIQUIX_MATERIALS.frosted.dark).toBe(dark);
   });
 });
 

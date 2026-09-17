@@ -12,10 +12,10 @@ import { cn } from '../cn';
 import {
   type LiquixPanel,
   type LiquixParams,
+  type LiquixScheme,
   PANEL_KINDS,
   defaultLiquixPanels,
-  defaultLiquixParams,
-  frostedLiquixParams,
+  liquixMaterialParams,
 } from '../liquix/params';
 import {
   createGlassRenderer,
@@ -44,6 +44,11 @@ export interface LiquixStageProps {
    *  past reading, saturated up and veiled in milk, under a hairline rim. Off
    *  is the clear glass. Every shape in the stage is the one material. */
   readonly frosted?: boolean | undefined;
+  /** The colour scheme the glass is drawn for: light glass carries dark ink,
+   *  dark glass light ink, and each material has a veil for each. `auto`, the
+   *  default, follows `data-theme` on the document, or the system preference
+   *  when there is none, and keeps following it. */
+  readonly scheme?: LiquixScheme | 'auto' | undefined;
   /** Overrides on top of the material's effect parameters. */
   readonly params?: Partial<LiquixParams> | undefined;
   /** Without it the stage fills the window. */
@@ -112,6 +117,14 @@ function measure(frame: LiquixFrame | undefined): FittedView {
   return fitFrame(frame, window.innerWidth, window.innerHeight);
 }
 
+/** The document's scheme: `data-theme` on the root when it names one, else the system's. */
+function documentScheme(): LiquixScheme {
+  if (typeof document === 'undefined') return 'dark';
+  const theme = document.documentElement.dataset['theme'];
+  if (theme === 'light' || theme === 'dark') return theme;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
 interface PullState {
   inputX: number;
   inputY: number;
@@ -165,14 +178,37 @@ export function LiquixStage({
   children,
   panels = defaultLiquixPanels,
   frosted = false,
+  scheme: schemeProp = 'auto',
   params: paramOverrides,
   frame,
   className,
 }: LiquixStageProps): ReactElement {
-  // The material picks the base; a caller's overrides still win over either.
+  // Server markup and the first client render draw for the dark scheme, the
+  // reference look; `auto` then reads the document on mount and follows it,
+  // so a theme switch on the page re-inks the glass without a remount.
+  const [autoScheme, setAutoScheme] = useState<LiquixScheme>('dark');
+  useEffect(() => {
+    if (schemeProp !== 'auto') return;
+    const update = () => setAutoScheme(documentScheme());
+    update();
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    media.addEventListener('change', update);
+    const observer = new MutationObserver(update);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+    return () => {
+      media.removeEventListener('change', update);
+      observer.disconnect();
+    };
+  }, [schemeProp]);
+  const scheme: LiquixScheme = schemeProp === 'auto' ? autoScheme : schemeProp;
+
+  // The material and the scheme pick the base; a caller's overrides still win.
   const params = useMemo(
-    () => ({ ...(frosted ? frostedLiquixParams : defaultLiquixParams), ...paramOverrides }),
-    [frosted, paramOverrides],
+    () => ({ ...liquixMaterialParams(frosted, scheme), ...paramOverrides }),
+    [frosted, scheme, paramOverrides],
   );
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -550,6 +586,7 @@ export function LiquixStage({
         data-slot="liquix-stage"
         data-framed={view.framed ? '' : undefined}
         data-frosted={frosted ? '' : undefined}
+        data-scheme={scheme}
         className={cn('liquix-stage', className)}
         style={viewportStyle}
       >

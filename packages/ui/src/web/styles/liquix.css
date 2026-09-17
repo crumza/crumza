@@ -100,6 +100,19 @@
     will-change: transform;
   }
 
+  /* Light glass carries dark ink. The shadow under the label flips with it, a
+     pale halo instead of a dark one, and so does the focus ring. The stage
+     writes data-scheme from its prop or from the document's data-theme. */
+  .liquix-stage[data-scheme="light"] .liquix-button {
+    color: #0d0f14;
+  }
+  .liquix-stage[data-scheme="light"] .liquix-button:focus-visible {
+    box-shadow: 0 0 0 2px rgb(13 15 20 / 0.7);
+  }
+  .liquix-stage[data-scheme="light"] .liquix-button__label {
+    filter: drop-shadow(0 1px 3px rgb(255 255 255 / 0.5));
+  }
+
   /* The look without the physics: no refraction, dispersion, glare or
      stretching. Used when the stage has no WebGL2 context, and when there is
      no stage above the shape at all. */
@@ -124,6 +137,14 @@
       inset 0 0 0 1px rgb(255 255 255 / 0.32),
       inset 0 1px 0 rgb(255 255 255 / 0.5),
       0 14px 36px rgb(0 0 0 / 0.3);
+  }
+  /* The dark scheme's frost is smoke rather than milk. */
+  .liquix-stage[data-frosted][data-scheme="dark"] .liquix-button[data-fallback] {
+    background-color: rgb(22 24 30 / 0.3);
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.18),
+      inset 0 1px 0 rgb(255 255 255 / 0.28),
+      0 14px 36px rgb(0 0 0 / 0.35);
   }
   .liquix-button[data-fallback]:hover {
     transform: scale(1.04);
@@ -209,6 +230,9 @@
       background-color: rgb(20 22 29 / 0.92);
       -webkit-backdrop-filter: none;
       backdrop-filter: none;
+    }
+    .liquix-stage[data-scheme="light"] .liquix-button[data-fallback] {
+      background-color: rgb(255 255 255 / 0.94);
     }
     .liquix-stage__label {
       background-color: rgb(0 0 0 / 0.85);

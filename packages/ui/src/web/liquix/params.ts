@@ -144,6 +144,47 @@ export const frostedLiquixParams: LiquixParams = {
   shadowOffsetY: 14,
 };
 
+/** The colour scheme a stage draws for. Light glass carries dark ink, dark glass light ink. */
+export type LiquixScheme = 'light' | 'dark';
+
+/** The two materials, each in both schemes. */
+export type LiquixMaterial = 'clear' | 'frosted';
+
+/**
+ * The material matrix. The defaults above are clear glass in the dark scheme,
+ * the reference studio's look: no veil, white labels, and a dimming over
+ * bright content that protects them. The other three follow from it.
+ *
+ * Light clear glass lifts a little white into the pane and needs far less
+ * dimming, because its labels are dark and read best on a bright surface.
+ * Light frosted glass is the Dock over a photo, the preset above. Dark frosted
+ * glass is the Dock at night: the same softening blur under a smoke of near
+ * black rather than milk, with white labels and the full dimming kept.
+ */
+export const LIQUIX_MATERIALS: Record<LiquixMaterial, Record<LiquixScheme, LiquixParams>> = {
+  clear: {
+    dark: defaultLiquixParams,
+    light: {
+      ...defaultLiquixParams,
+      tint: { r: 255, g: 255, b: 255, a: 0.12 },
+      overLight: 12,
+    },
+  },
+  frosted: {
+    light: frostedLiquixParams,
+    dark: {
+      ...frostedLiquixParams,
+      tint: { r: 22, g: 24, b: 30, a: 0.32 },
+      overLight: 40,
+    },
+  },
+};
+
+/** The base parameters for a material in a scheme; a stage merges its `params` over these. */
+export function liquixMaterialParams(frosted: boolean, scheme: LiquixScheme): LiquixParams {
+  return LIQUIX_MATERIALS[frosted ? 'frosted' : 'clear'][scheme];
+}
+
 /** What a backdrop panel draws. Patterns make refraction and dispersion easy to read. */
 export const PANEL_KINDS = {
   image: 0,
