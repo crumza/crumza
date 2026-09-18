@@ -326,18 +326,25 @@ export interface LiquidSurfaceProps extends HTMLAttributes<HTMLElement> {
   readonly refracted?: ReactNode;
 }
 
-/** What a surface asks of the material, read from three registered properties
+/** What a surface asks of the material, read from four registered properties
  *  on the surface or anything above it, each a multiple of the material's own
  *  value and each 1 by default. `--lq-bend` is how hard it bends the scene at
  *  its rim: a lens that is picked up bends harder, and because the property
  *  transitions it gets there eased. The map is untouched by it, only the
  *  filter's displacement scale moves. `--lq-blur` is how much of the interior
  *  blur it takes, and `--lq-tint` how much of the tint: a loupe wants what it
- *  magnifies kept sharp and its own colour. */
+ *  magnifies kept sharp and its own colour. `--lq-rim` is how deep the bend
+ *  reaches in from the edge. The material's rim was drawn for panes and
+ *  reaches 26px; on a lens a few times that in size it would meet itself in
+ *  the middle and the whole lens would show a stretched sliver of its centre,
+ *  so a small lens takes a rim in proportion to its size. It is the one of the
+ *  four that changes the map, so it is rounded to whole pixels and should be
+ *  set, not transitioned: every value is a map. */
 interface SurfaceTuning {
   readonly bend: number;
   readonly blur: number;
   readonly tint: number;
+  readonly rim: number;
 }
 const tuningOf = (lens: HTMLElement): SurfaceTuning => {
   const styles = getComputedStyle(lens);
@@ -345,7 +352,12 @@ const tuningOf = (lens: HTMLElement): SurfaceTuning => {
     const value = Number.parseFloat(styles.getPropertyValue(name));
     return Number.isFinite(value) && value >= 0 ? value : 1;
   };
-  return { bend: read('--lq-bend'), blur: read('--lq-blur'), tint: read('--lq-tint') };
+  return {
+    bend: read('--lq-bend'),
+    blur: read('--lq-blur'),
+    tint: read('--lq-tint'),
+    rim: read('--lq-rim'),
+  };
 };
 
 interface SurfaceGeometry {
@@ -542,8 +554,11 @@ export function LiquidSurface({
       const bh = resizing ? quantizeMapDim(g.h) : g.h;
       const br = Math.min(L.radius, bw / 2, bh / 2);
 
+      // The rim's inner reach, in whole pixels: a surface can take less of it
+      // than the material gives (see --lq-rim), and every value is its own map.
+      const feather = Math.max(0, Math.round(p.feather * tune.rim));
       const geomKey = `${bw}:${bh}:${br}`;
-      const opticsKey = `${p.splay}:${p.curve}:${p.feather}`;
+      const opticsKey = `${p.splay}:${p.curve}:${feather}`;
 
       if (geomKey !== L.geomKey || opticsKey !== L.opticsKey || !L.mapUrl) {
         const args = [
@@ -554,7 +569,7 @@ export function LiquidSurface({
           br * SS,
           p.splay * SS,
           p.curve,
-          p.feather * SS,
+          feather * SS,
         ] as const;
         const sameGeometry = geomKey === L.geomKey && !!L.mapUrl;
 

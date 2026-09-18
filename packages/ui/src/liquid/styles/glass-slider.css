@@ -81,12 +81,16 @@
 .lqc-slider-thumb {
   /* the press feedback here is the lift, not the scene's dip or its ripple */
   --lq-press-scale: 1;
-  /* The bend, as a share of the material's. The material's rim was drawn for
-     panes: at full depth it pulls the scene in from 24px past the edge of a
-     lens this size and crushes the middle. At rest the lens takes a little
-     over half of it, a 13px bend at the rim and a clear centre; lifted, below,
-     it goes to nine tenths. */
-  --lq-bend: 0.55;
+  /* The rim and the bend, as shares of the material's. The material's rim
+     was drawn for panes: it reaches 26px in from the edge and saturates within
+     a few, so on a 40px lens it would meet itself in the middle and the whole
+     lens would show a stretched sliver of its centre. A quarter of it is an
+     8px ring; inside the ring the scene is straight and a little magnified,
+     and the ring bends it hard, the way the edge of a lens does. The bend is
+     half the material's at rest, 12px at the very edge; lifted, below, it goes
+     to four fifths. */
+  --lq-rim: 0.25;
+  --lq-bend: 0.5;
   position: absolute;
   left: 0;
   top: 50%;
@@ -205,7 +209,7 @@
 }
 .lqc-slider[data-lift] .lqc-slider-thumb {
   --lqc-grow: var(--lqc-slider-lift);
-  --lq-bend: 0.9;
+  --lq-bend: 0.8;
   box-shadow:
     0 2px 5px -2px rgb(0 0 0 / 0.12),
     0 10px 22px -10px rgb(0 0 0 / 0.3);
@@ -234,7 +238,7 @@
   }
   .lqc-slider[data-lift] .lqc-slider-thumb {
     --lqc-grow: 0px;
-    --lq-bend: 0.55;
+    --lq-bend: 0.5;
   }
 }
 

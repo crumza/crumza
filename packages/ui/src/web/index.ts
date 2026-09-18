@@ -116,7 +116,6 @@ export { LIQUIX_LENS, LIQUIX_TIMING, LiquixMotion, shapeFrame } from './liquix/m
 export { useBloom } from './liquix/use-bloom';
 export type { Measured } from './liquix/use-measure';
 export { useMeasure } from './liquix/use-measure';
-export type { LiquixPanel, LiquixParams, LiquixTint, PanelKind } from './liquix/params';
 export type {
   LiquixMaterial,
   LiquixPanel,
@@ -131,11 +130,10 @@ export {
   defaultLiquixPanels,
   defaultLiquixParams,
   defaultLiquixSurfaceParams,
-} from './liquix/params';
-export type { LiquixShape, LiquixShapeEntry, LiquixStageValue } from './liquix/stage';
   frostedLiquixParams,
   liquixMaterialParams,
 } from './liquix/params';
+export type { LiquixShape, LiquixShapeEntry, LiquixStageValue } from './liquix/stage';
 export type {
   MenuCheckboxItemProps,
   MenuContentProps,
@@ -191,24 +189,3 @@ export type { ToolbarProps } from './components/Toolbar';
 export { Toolbar } from './components/Toolbar';
 export type { TooltipProps } from './components/Tooltip';
 export { Tooltip } from './components/Tooltip';
-export type { LiquixPaint, LiquixStrip } from './liquix/backdrop';
-export type { LiquixBoxEntry, LiquixBoxHandle, LiquixBoxShape } from './liquix/box';
-export { useLiquixBox } from './liquix/box';
-export type {
-  LiquixMaterial,
-  LiquixPanel,
-  LiquixParams,
-  LiquixScheme,
-  LiquixTint,
-  PanelKind,
-} from './liquix/params';
-export {
-  defaultLiquixPanels,
-  defaultLiquixParams,
-  defaultLiquixSurfaceParams,
-  frostedLiquixParams,
-  LIQUIX_MATERIALS,
-  liquixMaterialParams,
-  PANEL_KINDS,
-} from './liquix/params';
-export type { LiquixShape, LiquixShapeEntry, LiquixStageValue } from './liquix/stage';

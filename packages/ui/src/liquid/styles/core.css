@@ -186,12 +186,15 @@ button.lq-lens {
 }
 
 /* What a surface asks of the material, as multiples of it. Set any of them on
-   a surface, or on anything above one, and transition it: the engine reads all
-   three on every paint. --lq-bend is how hard it bends the scene at its rim, so
-   a lens that is picked up bends harder and gets there eased; --lq-blur is how
+   a surface, or on anything above one: the engine reads all four on every
+   paint. --lq-bend is how hard it bends the scene at its rim, so a lens that is
+   picked up bends harder and, transitioned, gets there eased; --lq-blur is how
    much of the interior blur it takes and --lq-tint how much of the tint, so a
-   loupe keeps what it magnifies sharp and its own colour. Registered so they
-   can transition. */
+   loupe keeps what it magnifies sharp and its own colour; --lq-rim is how deep
+   the bend reaches in from the edge, so a lens a few times the rim's 26px takes
+   a rim in proportion to its size instead of one that meets itself in the
+   middle. The first three transition; --lq-rim changes the map, so set it and
+   leave it. */
 @property --lq-bend {
   syntax: "<number>";
   inherits: true;
@@ -203,6 +206,11 @@ button.lq-lens {
   initial-value: 1;
 }
 @property --lq-tint {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+@property --lq-rim {
   syntax: "<number>";
   inherits: true;
   initial-value: 1;

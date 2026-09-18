@@ -12,16 +12,11 @@ import {
   defaultLiquixParams,
   defaultLiquixSurfaceParams,
   PANEL_KINDS,
-} from '../src/web/liquix/params';
-import { tileWindow } from '../src/web/liquix/backdrop';
-import { LiquixCapsule, LiquixCircle, LiquixStage } from '../src/web';
-import {
-  defaultLiquixParams,
   frostedLiquixParams,
   LIQUIX_MATERIALS,
   liquixMaterialParams,
-  PANEL_KINDS,
 } from '../src/web/liquix/params';
+import { tileWindow } from '../src/web/liquix/backdrop';
 import { gaussianKernel } from '../src/web/liquix/renderer';
 import { MAX_SHAPES } from '../src/web/liquix/shader-lib';
 import { FRAGMENT_MAIN, MAX_PANELS } from '../src/web/liquix/shaders';

@@ -750,8 +750,8 @@ test('liquid glass slider: the lens lifts and follows the finger across the rail
   expect(Math.round(thumb.width)).toBe(64);
   expect(await cap.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
   expect(await lens.locator('feImage').first().getAttribute('href')).toStartWith('data:image/png');
-  // a little over half the material's bend at rest: 60 times 0.55
-  expect(await bend()).toBe(33);
+  // half the material's bend at rest: 60 times 0.5
+  expect(await bend()).toBe(30);
   // a quarter of its 2.5px interior blur and a third of its 20% tint: what the
   // lens magnifies stays sharp and keeps its colour
   expect(await lens.locator('.lq-blur').evaluate((el) => getComputedStyle(el).filter)).toBe(
@@ -785,7 +785,7 @@ test('liquid glass slider: the lens lifts and follows the finger across the rail
   });
   await page.waitForFunction(() => {
     const disp = document.querySelector('[data-slot="liquid-glass-slider"] feDisplacementMap');
-    return Number(disp?.getAttribute('scale')) === 54;
+    return Number(disp?.getAttribute('scale')) === 48;
   });
 
   // Carried across the whole rail: the value climbs with the finger and reaches the end.
@@ -808,7 +808,7 @@ test('liquid glass slider: the lens lifts and follows the finger across the rail
   await settled();
   await page.waitForFunction(() => {
     const disp = document.querySelector('[data-slot="liquid-glass-slider"] feDisplacementMap');
-    return Number(disp?.getAttribute('scale')) === 33;
+    return Number(disp?.getAttribute('scale')) === 30;
   });
   await page.waitForFunction(
     (w) =>
