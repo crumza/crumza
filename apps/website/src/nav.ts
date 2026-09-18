@@ -75,6 +75,13 @@ export const sidebar: readonly NavGroup[] = [
       { slug: 'components/liquix-circle', label: 'LiquixCircle' },
       { slug: 'components/liquix-surface', label: 'LiquixSurface' },
       { slug: 'components/liquix-tabs', label: 'LiquixTabs' },
+      { slug: 'components/liquix-segmented-control', label: 'LiquixSegmentedControl' },
+      { slug: 'components/liquix-button', label: 'LiquixButton' },
+      { slug: 'components/liquix-field', label: 'LiquixField' },
+      { slug: 'components/liquix-switch', label: 'LiquixSwitch' },
+      { slug: 'components/liquix-menu', label: 'LiquixMenu' },
+      { slug: 'components/liquix-popover', label: 'LiquixPopover' },
+      { slug: 'components/liquix-toast', label: 'LiquixToast' },
     ],
   },
   {

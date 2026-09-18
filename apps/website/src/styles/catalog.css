@@ -78,6 +78,11 @@
 .catalog-body .field:focus-visible {
   outline: none;
 }
+/* So do the liquix controls on a surface: each draws its own ring, on its own
+   shape. The blanket outline would put a rectangle inside a round trough. */
+.catalog-body [data-slot="liquix-surface"] :focus-visible {
+  outline: none;
+}
 .site-sidebar {
   position: sticky;
   top: 0;

@@ -36,6 +36,25 @@ export interface LiquixShapeEntry {
    */
   alpha?: number | undefined;
   /**
+   * How much of a lens the shape is, 1 by default. A LiquixSurface scales the
+   * rim, the refraction and the dispersion of the shape's pass by it and
+   * frosts the body as it falls, so glass can dissolve rather than switch off.
+   * A LiquixStage ignores it.
+   */
+  clarity?: number | undefined;
+  /**
+   * A drop shadow for the shape's pass, in the units of the surface's
+   * shadowFactor, 0 by default. A LiquixSurface draws it as alpha outside the
+   * glass, so it can sit under a lifted shape. A LiquixStage ignores it.
+   */
+  shadow?: number | undefined;
+  /**
+   * How deep the lens rim of this shape's pass is, in CSS px. A LiquixSurface
+   * gives a pass the deepest rim any of its shapes asks for, its refThickness
+   * at least; unset means that default. A LiquixStage ignores it.
+   */
+  bevel?: number | undefined;
+  /**
    * Draw order for hosts that render in passes. A LiquixStage draws every
    * shape in one pass and ignores it; a LiquixSurface draws each layer over
    * the last, which is how a pill can sit on a bar of glass rather than merge

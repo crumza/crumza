@@ -69,6 +69,15 @@ import {
 import type { ComponentType, ReactElement } from 'react';
 import { useState } from 'react';
 import { Frame } from './Frame';
+import {
+  LiquixButtonDemo,
+  LiquixFieldDemo,
+  LiquixMenuDemo,
+  LiquixPopoverDemo,
+  LiquixSegmentedDemo,
+  LiquixSwitchDemo,
+  LiquixToastDemo,
+} from './LiquixControlDemos';
 import { LiquixTabsDemo } from './LiquixTabsDemo';
 
 function ButtonDemo(): ReactElement {
@@ -826,6 +835,13 @@ const demos: Record<string, ComponentType> = {
   'components/liquix-circle': LiquixCircleDemo,
   'components/liquix-surface': LiquixTabsDemo,
   'components/liquix-tabs': LiquixTabsDemo,
+  'components/liquix-segmented-control': LiquixSegmentedDemo,
+  'components/liquix-button': LiquixButtonDemo,
+  'components/liquix-field': LiquixFieldDemo,
+  'components/liquix-switch': LiquixSwitchDemo,
+  'components/liquix-menu': LiquixMenuDemo,
+  'components/liquix-popover': LiquixPopoverDemo,
+  'components/liquix-toast': LiquixToastDemo,
   'components/card': CardDemo,
   'components/toolbar': ToolbarDemo,
   'components/tabs': TabsDemo,

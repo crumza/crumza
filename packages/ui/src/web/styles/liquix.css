@@ -120,19 +120,70 @@
     transform: scale(0.97);
   }
 
-  /* The parked highlight of LiquixTabs. Translucent over a blur rather than
-     opaque, so the bar's glass and the content behind still show through
-     softly while it rests. The glass pill it cross-fades with is drawn on the
-     canvas underneath. */
-  .liquix-tabs__pill {
-    background-color: rgb(212 212 216 / 0.72);
+  /* The liquix controls on a surface: LiquixTabs, LiquixSegmentedControl,
+     LiquixSwitch, LiquixButton, LiquixMenu, LiquixPopover, LiquixField and
+     LiquixToast. Their glass is drawn by the
+     surface's shader on the canvas underneath; these are the parts the DOM
+     draws, and the look the glass falls back to away from a surface. */
+
+  /* The resting highlight the glass settles into: translucent over a blur
+     rather than opaque, so the glass and the content behind still show
+     through softly while it rests. */
+  .liquix-pill {
+    background-color: rgb(212 212 216 / 0.6);
     -webkit-backdrop-filter: blur(12px) saturate(1.4);
     backdrop-filter: blur(12px) saturate(1.4);
   }
-  [data-transparency="reduce"] .liquix-tabs__pill {
-    background-color: rgb(212 212 216);
+  /* A knob that rests white: a switch, a slider thumb. */
+  .liquix-knob {
+    background-color: rgb(255 255 255 / 0.96);
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.18),
+      0 2px 8px rgb(0 0 0 / 0.14);
+  }
+  /* Labels on glass over any picture: white with a drop shadow. */
+  .liquix-ink {
+    color: #fff;
+    filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.45));
+  }
+
+  /* No shader: the same shapes and motion in CSS liquid glass, blurred and
+     tinted like the shader's default with a rim highlight, without the
+     refraction. A pane is a bar, a panel, a field; a lens is a moving piece,
+     a capsule, a knob, a thumb. */
+  .liquix-glass-pane,
+  .liquix-glass-lens {
+    -webkit-backdrop-filter: blur(14px) saturate(1.5);
+    backdrop-filter: blur(14px) saturate(1.5);
+  }
+  .liquix-glass-pane {
+    background-color: rgb(18 22 30 / 0.42);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.32),
+      inset 0 -1px 0 rgb(255 255 255 / 0.1),
+      0 0 0 1px rgb(255 255 255 / 0.14),
+      0 8px 28px rgb(0 0 0 / 0.22);
+  }
+  .liquix-glass-lens {
+    background-color: rgb(255 255 255 / 0.16);
+    box-shadow:
+      inset 0 1.5px 1px rgb(255 255 255 / 0.85),
+      inset 0 -1.5px 1px rgb(255 255 255 / 0.3),
+      0 0 0 1px rgb(255 255 255 / 0.28),
+      0 6px 18px rgb(0 0 0 / 0.18);
+  }
+  [data-transparency="reduce"] :is(.liquix-pill, .liquix-glass-pane, .liquix-glass-lens) {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+  }
+  [data-transparency="reduce"] .liquix-pill {
+    background-color: rgb(212 212 216);
+  }
+  [data-transparency="reduce"] .liquix-glass-pane {
+    background-color: rgb(18 22 30 / 0.94);
+  }
+  [data-transparency="reduce"] .liquix-glass-lens {
+    background-color: rgb(255 255 255 / 0.92);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -152,10 +203,18 @@
       -webkit-backdrop-filter: none;
       backdrop-filter: none;
     }
-    .liquix-tabs__pill {
-      background-color: rgb(212 212 216);
+    :is(.liquix-pill, .liquix-glass-pane, .liquix-glass-lens) {
       -webkit-backdrop-filter: none;
       backdrop-filter: none;
+    }
+    .liquix-pill {
+      background-color: rgb(212 212 216);
+    }
+    .liquix-glass-pane {
+      background-color: rgb(18 22 30 / 0.94);
+    }
+    .liquix-glass-lens {
+      background-color: rgb(255 255 255 / 0.92);
     }
   }
 }
