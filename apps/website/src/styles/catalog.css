@@ -58,7 +58,8 @@
   font-weight: 500;
   letter-spacing: -0.025em;
 }
-.catalog-body :is(button, input, select, textarea) {
+/* The liquid stage is excluded: its components carry their own type and focus styles. */
+.catalog-body :is(button, input, select, textarea):not(.lq-stage *) {
   font-family: inherit;
   font-size: 13px;
 }
@@ -69,7 +70,7 @@
 .catalog-body a:hover {
   color: var(--c-fg-strong);
 }
-.catalog-body :focus-visible {
+.catalog-body :focus-visible:not(.lq-stage *) {
   outline: 2px solid var(--c-focus);
   outline-offset: 4px;
 }
@@ -387,6 +388,193 @@
   overflow: auto;
   margin: 24px 0;
 }
+/* Liquid glass showcase. The stage is the dark refracting scene from the package;
+   everything around it is site chrome at 12 and 13px. */
+.liquid-section {
+  border-top: 1px solid var(--c-line);
+  margin-top: 32px;
+  padding-top: 24px;
+}
+.liquid-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 24px;
+  padding-bottom: 18px;
+}
+.liquid-head > div {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.liquid-head h2 {
+  font-size: 16px;
+}
+.liquid-count,
+.liquid-head p {
+  color: var(--c-muted);
+  font-size: 12px;
+}
+.liquid-count {
+  font-family: ui-monospace, monospace;
+}
+.liquid-grid {
+  display: grid;
+  grid-template-columns: 184px minmax(0, 1fr) 268px;
+  gap: 20px;
+  align-items: start;
+}
+.liquid-nav > div {
+  margin-bottom: 18px;
+}
+.liquid-nav h3,
+.liquid-group h3 {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--c-muted);
+  margin: 0 0 6px;
+}
+.liquid-nav h3 {
+  padding: 0 10px;
+}
+.liquid-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.liquid-nav-item {
+  text-align: left;
+  padding: 6px 10px;
+  border: 0;
+  background: none;
+  border-radius: var(--r-control);
+  color: var(--c-muted-strong);
+  cursor: pointer;
+}
+.liquid-nav-item:hover {
+  background: var(--c-hover);
+  color: var(--c-fg-active);
+}
+.liquid-nav-item[aria-pressed="true"] {
+  background: var(--c-pressed);
+  color: var(--c-fg-active);
+}
+.liquid-stage-wrap {
+  min-width: 0;
+}
+.liquid-stage {
+  min-height: 520px;
+  border-radius: var(--r-panel);
+}
+.docs-demo .liquid-stage {
+  border-radius: var(--r-panel);
+}
+.liquid-inspector {
+  display: grid;
+  gap: 22px;
+  align-content: start;
+}
+.liquid-group {
+  display: grid;
+  gap: 8px;
+}
+.liquid-row {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 10px;
+  color: var(--c-muted-strong);
+  font-size: 12px;
+}
+.liquid-row input[type="range"] {
+  width: 100%;
+  accent-color: var(--c-fg-mid);
+}
+.liquid-row input[type="color"] {
+  width: 100%;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--c-line-strong);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+}
+.liquid-row output {
+  text-align: right;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--c-muted);
+}
+.liquid-scenes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.liquid-scene-thumb {
+  position: relative;
+  overflow: hidden;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-control);
+  background: none;
+  cursor: pointer;
+  opacity: 0.6;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12);
+}
+.liquid-scene-thumb-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 300%;
+  height: 300%;
+  transform: scale(calc(1 / 3));
+  transform-origin: top left;
+  background-size: cover;
+  background-position: center;
+}
+.liquid-scene-thumb:hover {
+  opacity: 1;
+}
+.liquid-scene-thumb[aria-pressed="true"] {
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--c-fg-strong);
+}
+/* The row layout above a docs demo: the same knobs, laid out like the material controls. */
+.liquid-controls {
+  gap: 14px 22px;
+}
+.liquid-controls .liquid-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 22px;
+}
+.liquid-controls .liquid-row {
+  display: flex;
+  gap: 9px;
+}
+.liquid-controls .liquid-row input[type="range"] {
+  width: 90px;
+}
+.liquid-controls .liquid-row input[type="color"] {
+  width: 36px;
+}
+.liquid-controls .liquid-row output {
+  text-align: left;
+  min-width: 25px;
+}
+.liquid-controls .liquid-scenes {
+  display: flex;
+}
+.liquid-controls .liquid-scene-thumb {
+  width: 36px;
+  height: 24px;
+}
 .empty-state {
   padding: 50px 0;
   color: var(--c-muted);
@@ -637,6 +825,19 @@
 @media (max-width: 1100px) {
   .site-sidebar {
     gap: 4px 12px;
+  }
+  .liquid-grid {
+    grid-template-columns: 1fr;
+  }
+  .liquid-nav-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .liquid-nav > div {
+    margin-bottom: 10px;
+  }
+  .liquid-stage {
+    min-height: 460px;
   }
   .collection-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

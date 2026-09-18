@@ -495,6 +495,7 @@ export function createGlassRenderer(
         u_glareOppositeFactor: params.glareOppositeFactor / 100,
         u_glareAngle: (params.glareAngle * Math.PI) / 180,
         u_blurEdge: params.blurEdge ? 1 : 0,
+        u_saturation: params.saturation / 100,
         u_overLight: params.overLight / 100,
         u_overLightPoint: params.overLightPoint / 100,
         u_step: params.step,

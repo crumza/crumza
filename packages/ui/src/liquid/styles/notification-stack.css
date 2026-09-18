@@ -1,0 +1,170 @@
+/* LiquidNotificationStack: geometry and motion only; the material is .lq-lens (core)
+
+   Fills the stage and lays its own pieces out inside it. */
+
+.lqc-notif-field {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.lqc-notif-push {
+  width: min(176px, var(--lq-room));
+  height: 52px;
+  font: 700 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  letter-spacing: -0.008em;
+  flex: 0 0 auto;
+  --lq-press-scale: 0.972;
+}
+
+/* Fixed height, absolutely positioned children: collapsing and expanding the
+   deck is then pure transform on each card, and no card ever changes SIZE, so
+   all four share one cached displacement map however they are arranged. */
+.lqc-notif-deck {
+  position: relative;
+  width: min(296px, var(--lq-room));
+  height: 316px;
+  flex: 0 0 auto;
+}
+
+.lqc-notif-slot {
+  --deck-y: 0px;
+  --deck-scale: 1;
+  --deck-z: 1;
+  --deck-fade: 1;
+  --open-y: 0px;
+  --swipe: 0px;
+  --swipe-fade: 1;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: var(--deck-z);
+  transform: translate(var(--swipe), var(--deck-y)) scale(var(--deck-scale));
+  opacity: calc(var(--deck-fade) * var(--swipe-fade));
+  transition:
+    transform 380ms var(--lq-ease),
+    opacity 300ms var(--lq-ease);
+}
+.lqc-notif-deck[data-expanded] .lqc-notif-slot {
+  transform: translate(var(--swipe), var(--open-y)) scale(1);
+  opacity: var(--swipe-fade);
+}
+/* the cards past the visible three, while the deck is closed */
+.lqc-notif-slot[data-buried] {
+  opacity: 0;
+  pointer-events: none;
+}
+.lqc-notif-slot.is-leaving {
+  opacity: 0;
+  transform: translate(var(--swipe), var(--open-y)) scale(0.94);
+}
+
+.lqc-notif {
+  height: 68px; /* keep in step with DECK_ROW (68 + 8 gap) in NotificationStack.tsx */
+  width: 100%;
+  /* Every card is transparent glass over the same image, so an offset alone
+     does not separate them: a soft edge shadow is what makes the layering legible. */
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.14),
+    0 10px 22px -12px rgba(0, 0, 0, 0.55);
+}
+/* fanned out, a card can be thrown off the side, so it offers the grab */
+.lqc-notif-deck[data-expanded] .lqc-notif {
+  cursor: grab;
+}
+.lqc-notif-deck[data-expanded] .lqc-notif:active {
+  cursor: grabbing;
+}
+
+.lqc-notif-content {
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 12px 0 16px;
+  text-align: left;
+}
+.lqc-notif-deck[data-expanded] .lqc-notif {
+  cursor: grab;
+}
+
+.lqc-notif-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.lqc-notif-text strong {
+  font: 700 13.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
+}
+.lqc-notif-text span {
+  font: 600 12px / 1.35 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
+}
+
+.lqc-notif-close {
+  appearance: none;
+  border: 0;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  --lq-press-scale: 0.86;
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    opacity 180ms ease,
+    scale 150ms var(--lq-ease);
+}
+.lqc-notif-deck[data-expanded] .lqc-notif-close {
+  opacity: 1;
+}
+@media (hover: hover) {
+  .lqc-notif-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+}
+.lqc-notif-close svg {
+  width: 12px;
+  height: 12px;
+}
+
+.lqc-notif-count {
+  position: absolute;
+  left: 50%;
+  top: 104px;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(10, 11, 15, 0.5);
+  color: #fff;
+  font: 600 11px / 1 var(--font-mono, ui-monospace, monospace);
+  pointer-events: none;
+}
+
+.lqc-notif-empty {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 24px;
+  text-align: center;
+  font: 600 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lqc-notif-slot {
+    transition-duration: 1ms;
+  }
+}

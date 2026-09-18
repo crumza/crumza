@@ -7,7 +7,7 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "astro dev --host 127.0.0.1 --port 4325",
+    "dev": "astro dev --host 0.0.0.0 --port 4325",
     "build": "astro build",
     "preview": "astro preview --port 4321",
     "check": "astro check",

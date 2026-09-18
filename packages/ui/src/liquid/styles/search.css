@@ -1,0 +1,205 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component transitions. */
+/* LiquidSearch: geometry and motion only; the material is .lq-lens (core) */
+
+.lqc-search {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* Folded, the field is a round glass button; open, it grows into the bar. The
+   grow is a width transition on the glass itself (kept in step with GROW in
+   Search.tsx), so the engine rebuilds the rim through it. */
+.lqc-search-field {
+  width: 52px;
+  height: 52px;
+}
+.lqc-search .lqc-search-field {
+  transition:
+    width 380ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+.lqc-search-field[data-open] {
+  width: min(296px, var(--lq-room));
+}
+.lqc-search-field-content {
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 0 18px;
+  transition: padding 380ms var(--lq-ease);
+}
+.lqc-search-field[data-open] .lqc-search-field-content {
+  padding: 0 16px;
+}
+
+/* the icon is the button that opens the field, and stays as its glyph */
+.lqc-search-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  --lq-press-scale: 0.84;
+  transition:
+    color 160ms ease,
+    scale 150ms var(--lq-ease);
+}
+@media (hover: hover) {
+  .lqc-search-toggle:hover {
+    color: #fff;
+  }
+}
+/* Folded, the whole round face is the button: a 52px target a thumb can find,
+   rather than a 16px glyph in the middle of one. Open, it shrinks back to the
+   glyph so the rest of the bar belongs to the field. */
+.lqc-search-field:not([data-open]) .lqc-search-toggle {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  border-radius: 999px;
+}
+
+.lqc-search-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* the input arrives once the bar has made room for it, and leaves first */
+.lqc-search-field input {
+  cursor: text;
+  flex: 1 1 0;
+  min-width: 0;
+  width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #fff;
+  font: 600 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  caret-color: #fff;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+.lqc-search-field[data-open] input {
+  opacity: 1;
+  transition: opacity 220ms ease 140ms;
+}
+.lqc-search-field input::placeholder {
+  color: rgba(255, 255, 255, 0.72);
+}
+/* Folded, the field is not there for the reader, and it must not be there for
+   the pointer either: opacity below 1 gives it a stacking context, so it paints
+   over the toggle behind it and would swallow every press on the round face. */
+.lqc-search-field:not([data-open]) input {
+  pointer-events: none;
+}
+
+.lqc-search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  appearance: none;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  cursor: pointer;
+  --lq-press-scale: 0.88;
+  transition:
+    background 160ms ease,
+    scale 150ms var(--lq-ease);
+}
+.lqc-search-clear svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2.5;
+}
+@media (hover: hover) {
+  .lqc-search-clear:hover {
+    background: rgba(255, 255, 255, 0.26);
+  }
+}
+
+/* the results panel changes height as matches come and go: the resize is the
+   whole point of the demo, and why the component pumps the scene */
+.lqc-search-results {
+  width: min(296px, var(--lq-room));
+  transform-origin: top center;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.99);
+  transition:
+    opacity 180ms var(--lq-ease),
+    transform 220ms var(--lq-ease);
+}
+.lqc-search-results.is-shown {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 240ms var(--lq-ease),
+    transform 320ms var(--lq-ease);
+}
+
+.lqc-search-list {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.lqc-search-item {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font: 600 13.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  text-align: left;
+  padding: 11px 13px;
+  border-radius: var(--lq-inner-r, 16px);
+  cursor: pointer;
+  --lq-press-scale: 0.985;
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    scale 150ms var(--lq-ease);
+}
+@media (hover: hover) {
+  .lqc-search-item:hover {
+    background: rgba(255, 255, 255, 0.11);
+    color: #fff;
+  }
+}
+.lqc-search-item mark {
+  background: transparent;
+  color: #fff;
+  font-weight: 800;
+}
+
+.lqc-search-empty {
+  padding: 13px;
+  font: 600 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lqc-search .lqc-search-field,
+  .lqc-search-field-content,
+  .lqc-search-field input,
+  .lqc-search-results,
+  .lqc-search-item {
+    transition: none !important;
+  }
+  .lqc-search-results {
+    opacity: 1;
+    transform: none;
+  }
+}

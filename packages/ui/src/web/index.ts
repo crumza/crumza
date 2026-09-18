@@ -116,12 +116,22 @@ export { LIQUIX_LENS, LIQUIX_TIMING, LiquixMotion, shapeFrame } from './liquix/m
 export { useBloom } from './liquix/use-bloom';
 export type { Measured } from './liquix/use-measure';
 export { useMeasure } from './liquix/use-measure';
-export type { LiquixPanel, LiquixParams, LiquixTint, PanelKind } from './liquix/params';
+export type {
+  LiquixMaterial,
+  LiquixPanel,
+  LiquixParams,
+  LiquixScheme,
+  LiquixTint,
+  PanelKind,
+} from './liquix/params';
 export {
+  LIQUIX_MATERIALS,
   PANEL_KINDS,
   defaultLiquixPanels,
   defaultLiquixParams,
   defaultLiquixSurfaceParams,
+  frostedLiquixParams,
+  liquixMaterialParams,
 } from './liquix/params';
 export type { LiquixShape, LiquixShapeEntry, LiquixStageValue } from './liquix/stage';
 export type {
@@ -167,10 +177,10 @@ export { Switch } from './components/Switch';
 export type { TabPanelProps, TabProps, TabsProps } from './components/Tabs';
 export { Tab, TabList, TabPanel, Tabs } from './components/Tabs';
 export { Textarea } from './components/Textarea';
-export { TimePicker } from './components/TimePicker';
-export type { TimePickerProps } from './components/TimePicker';
 export type { ColorPair, ThemeProps } from './components/Theme';
 export { Theme } from './components/Theme';
+export type { TimePickerProps } from './components/TimePicker';
+export { TimePicker } from './components/TimePicker';
 export type { ToasterProps, ToastFn, ToastOptions } from './components/Toast';
 export { Toaster, toast } from './components/Toast';
 export type { ToggleProps } from './components/Toggle';

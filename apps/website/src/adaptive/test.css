@@ -1,0 +1,250 @@
+/* /test: layout for the adaptive material inspection. Type stays on the
+   site's 12/13/16px scale. Colour comes from the material; nothing here
+   paints a foreground. */
+
+.test-root {
+  display: grid;
+  gap: 34px;
+  padding-bottom: 40px;
+}
+.test-root h2 {
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  margin: 0 0 6px;
+}
+.test-lede {
+  max-width: 68ch;
+  margin: 0 0 16px;
+  color: var(--c-muted-strong);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* controls */
+.test-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 22px;
+  padding: 12px 0 18px;
+  border-bottom: 1px solid var(--c-line);
+}
+.test-control {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  color: var(--c-muted-strong);
+}
+.test-control select {
+  padding: 4px 6px;
+  border-radius: var(--r-control);
+  background: var(--c-surface);
+  border: 1px solid var(--c-line-strong);
+  color: var(--c-fg);
+}
+.test-control input[type="range"] {
+  width: 90px;
+  accent-color: var(--c-fg-mid);
+}
+.test-control output {
+  min-width: 32px;
+  font-variant-numeric: tabular-nums;
+}
+.test-switches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  font-size: 12px;
+}
+
+/* backdrops */
+.test-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.test-rows {
+  display: grid;
+  gap: 16px;
+}
+.test-backdrop {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 460px;
+  border-radius: var(--r-surface);
+  overflow: clip;
+  isolation: isolate;
+}
+.test-backdrop-row {
+  min-height: 0;
+  grid-template-rows: auto auto;
+}
+.test-backdrop-label {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 18px 0;
+  font-size: 12px;
+  opacity: 0.8;
+}
+.test-stage {
+  display: grid;
+  place-items: center;
+  padding: 24px 18px;
+}
+.test-stage[data-scale="large"] {
+  align-items: stretch;
+}
+.test-backdrop-foot {
+  display: grid;
+  gap: 8px;
+  padding: 0 18px 16px;
+}
+.test-note {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.75;
+}
+.test-readout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.test-readout div {
+  display: flex;
+  gap: 5px;
+}
+.test-readout dt {
+  opacity: 0.7;
+}
+.test-readout dd {
+  margin: 0;
+}
+
+/* specimens */
+.test-toolbar {
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.test-card {
+  display: grid;
+  gap: 16px;
+  width: min(100%, 320px);
+  padding: 20px;
+}
+.test-card-head {
+  display: grid;
+  gap: 4px;
+}
+.test-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+.test-muted {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted-foreground);
+  line-height: 1.5;
+}
+.test-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+}
+.test-row-end {
+  justify-content: flex-end;
+  gap: 8px;
+}
+.test-panel {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  width: 100%;
+  padding: 18px;
+}
+.test-nav {
+  display: grid;
+  gap: 2px;
+}
+.test-nav-item {
+  justify-content: space-between;
+  width: 100%;
+}
+.test-nav-item[aria-current="page"] {
+  background: var(--muted);
+}
+.test-dialog {
+  display: grid;
+  gap: 12px;
+  width: min(92vw, 380px);
+  padding: 22px;
+}
+
+/* sampling */
+.test-sampling {
+  min-height: 300px;
+  display: block;
+}
+.test-pill {
+  position: absolute;
+  padding: 9px 14px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* sheet */
+.test-sheet {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 16px;
+  padding: 16px 18px 20px;
+}
+.test-sheet-input {
+  width: 160px;
+}
+.test-sheet-tabs {
+  gap: 0;
+}
+.test-sheet-card {
+  display: grid;
+  gap: 8px;
+  width: 260px;
+  padding: 14px 16px;
+}
+.test-toolbar-group {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+}
+
+/* notes */
+.test-notes ol {
+  max-width: 68ch;
+  margin: 0;
+  padding-inline-start: 20px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--c-fg);
+}
+.test-notes li + li {
+  margin-top: 10px;
+}
+.test-notes strong {
+  font-weight: 500;
+}
+
+@media (max-width: 1100px) {
+  .test-grid {
+    grid-template-columns: 1fr;
+  }
+}

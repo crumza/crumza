@@ -1,0 +1,556 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: accessibility overrides must win over the material. */
+/* Adaptive Liquid Glass.
+
+   One material, read through layers. Import after crumza.css. It touches only
+   surfaces inside an adaptive scope (a GlassBackground, or a surface carrying
+   data-glass-adaptive), so nothing outside the scope changes.
+
+   Layers, top to bottom:
+   1. appearance    theme tokens say what the page is probably like
+                    (--glass-theme-luminance) and what light and dark faces
+                    and inks look like.
+   2. background    a context declares what is actually behind the glass:
+                    --glass-backdrop-luminance, 0 (black) to 1 (white).
+                    Unset, it falls back to the theme.
+   3. component     variant (regular, clear), scale (small, medium, large),
+                    glint and frost pick the translucency and how far the
+                    surface may follow its backdrop (--glass-adapt).
+   4. material      the arithmetic: an effective lightness, a polarity (light
+                    face and dark ink, or the reverse), separation for large
+                    surfaces that must not flip, dimming for clear glass
+                    over bright content.
+   5. foreground    ink tokens derived from the polarity, and the theme's
+                    foreground family remapped to them for the subtree.
+   6. accessibility reduced transparency, more contrast, reduced motion and
+                    forced colours each replace one layer, not the system.
+
+   Nested surfaces (a button in a panel) inherit the panel's polarity and are
+   painted as fills: the material never stacks two blurred panes. */
+
+/* The same layer order Tailwind v4 declares. Stating it here means this file
+   may be imported before or after the application stylesheet without the
+   components layer ever landing ahead of base. */
+@layer theme, base, components, utilities;
+
+/* Registered so the numbers are animatable and readable from JS. */
+@property --glass-ink-polarity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+@property --glass-polarity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+@property --glass-surface-luminance {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+@property --glass-separation {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+@property --glass-dimming {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@layer components {
+  /* 1. Appearance. The theme's assumption about the page, and the two faces. */
+  :root,
+  [data-theme="light"] {
+    --glass-theme-luminance: 0.96;
+    --glass-face-light: oklch(0.99 0.003 220);
+    --glass-face-dark: oklch(0.22 0.008 250);
+    --glass-ink-dark: oklch(0.16 0 0);
+    --glass-ink-light: oklch(0.985 0 0);
+  }
+  [data-theme="dark"] {
+    --glass-theme-luminance: 0.12;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --glass-theme-luminance: 0.12;
+    }
+  }
+
+  /* 3. Component defaults. Set on the scope so every surface inside inherits
+     them; a data attribute on a surface or a subtree overrides. */
+  [data-glass-adaptive] {
+    /* translucency, by variant */
+    --glass-regular-opacity: 0.56;
+    --glass-regular-blur: 14px;
+    --glass-regular-saturate: 160%;
+    --glass-regular-smoke: 0.06;
+    --glass-clear-opacity: 0.12;
+    --glass-clear-blur: 5px;
+    --glass-clear-saturate: 135%;
+    --glass-clear-smoke: 0.03;
+    --glass-opacity: var(--glass-regular-opacity);
+    --glass-blur: var(--glass-regular-blur);
+    --glass-saturate: var(--glass-regular-saturate);
+    --glass-smoke: var(--glass-regular-smoke);
+    --glass-dimming-gain: 0;
+    --glass-shadow: var(--material-shadow);
+    /* scale: how far the surface follows its backdrop, and how much of the
+       disagreement it converts into body instead */
+    --glass-adapt: 1;
+    --glass-separation-gain: 0;
+    --glass-separation-opacity: 0.45;
+    /* glint, frost, tint */
+    --glass-glint: 1;
+    --glass-frost-opacity: 0;
+    --glass-frost-blur: 0px;
+    --glass-tint: transparent;
+    --glass-tint-amount: 0;
+    --glass-tint-luminance: 0.5;
+  }
+  [data-glass-variant="clear"] {
+    --glass-opacity: var(--glass-clear-opacity);
+    --glass-blur: var(--glass-clear-blur);
+    --glass-saturate: var(--glass-clear-saturate);
+    --glass-smoke: var(--glass-clear-smoke);
+    --glass-dimming-gain: 1;
+    --glass-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+  }
+  [data-glass-variant="regular"] {
+    --glass-opacity: var(--glass-regular-opacity);
+    --glass-blur: var(--glass-regular-blur);
+    --glass-saturate: var(--glass-regular-saturate);
+    --glass-smoke: var(--glass-regular-smoke);
+    --glass-dimming-gain: 0;
+    --glass-shadow: var(--material-shadow);
+  }
+  /* Unlabelled surfaces: a control is small, a pane is medium. */
+  [data-glass-adaptive] .glass,
+  [data-glass-adaptive].glass {
+    --glass-adapt: 0.7;
+    --glass-separation-gain: 0.4;
+  }
+  [data-glass-adaptive][data-glass-scale="small"],
+  [data-glass-adaptive] [data-glass-scale="small"] {
+    --glass-adapt: 1;
+    --glass-separation-gain: 0;
+  }
+  [data-glass-adaptive][data-glass-scale="medium"],
+  [data-glass-adaptive] [data-glass-scale="medium"] {
+    --glass-adapt: 0.7;
+    --glass-separation-gain: 0.4;
+  }
+  [data-glass-adaptive][data-glass-scale="large"],
+  [data-glass-adaptive] [data-glass-scale="large"] {
+    --glass-adapt: 0.25;
+    --glass-separation-gain: 1;
+  }
+  [data-glass-glint="0"] {
+    --glass-glint: 0;
+  }
+  [data-glass-frosted] {
+    --glass-frost-opacity: 0.22;
+    --glass-frost-blur: 12px;
+    --glass-saturate: 120%;
+  }
+
+  /* 2 + 4 + 5 on the scope itself: content sitting directly on the backdrop
+     (a label, a switch) reads the backdrop with nothing between. */
+  [data-glass-adaptive] {
+    --_L: var(--glass-backdrop-luminance, var(--glass-theme-luminance));
+    --glass-polarity: clamp(0, calc((var(--_L) - 0.5) * 24 + 0.5), 1);
+    --glass-ink-polarity: clamp(0, calc((var(--_L) - 0.5) * 400 + 0.5), 1);
+    --glass-surface-luminance: var(--_L);
+  }
+
+  /* 5. Foreground. Ink tokens from the polarity, then the theme's foreground
+     family pointed at them, so every nested control follows without knowing. */
+  [data-glass-adaptive],
+  :is([data-glass-adaptive], [data-glass-adaptive] *):is(.glass, .crumza-surface) {
+    --glass-foreground-primary: color-mix(
+      in oklab,
+      var(--glass-ink-dark) calc(var(--glass-ink-polarity) * 100%),
+      var(--glass-ink-light)
+    );
+    --glass-foreground-secondary: color-mix(
+      in oklab,
+      var(--glass-foreground-primary) 64%,
+      transparent
+    );
+    --glass-foreground-tertiary: color-mix(
+      in oklab,
+      var(--glass-foreground-primary) 46%,
+      transparent
+    );
+    --glass-foreground-quaternary: color-mix(
+      in oklab,
+      var(--glass-foreground-primary) 24%,
+      transparent
+    );
+    --glass-face: color-mix(
+      in oklab,
+      var(--glass-face-dark),
+      var(--glass-face-light) calc(var(--glass-polarity) * 100%)
+    );
+    --foreground: var(--glass-foreground-primary);
+    --muted-foreground: var(--glass-foreground-secondary);
+    --foreground-tertiary: var(--glass-foreground-tertiary);
+    --foreground-quaternary: var(--glass-foreground-quaternary);
+    --card: var(--glass-face);
+    --card-foreground: var(--glass-foreground-primary);
+    --muted: color-mix(in oklab, var(--glass-foreground-primary) 8%, transparent);
+    --border: color-mix(in oklab, var(--glass-foreground-primary) 12%, transparent);
+    --input: color-mix(in oklab, var(--glass-foreground-primary) 18%, transparent);
+    --ring: var(--glass-foreground-primary);
+  }
+  /* The scope's own text follows its backdrop. Surfaces set their colour in
+     the material rules, and a brand tone keeps its supplied foreground. */
+  [data-glass-adaptive]:not(.glass, .crumza-surface) {
+    color: var(--foreground);
+  }
+
+  /* 4. Material. Every top-level adaptive surface. Brand tones and the fill
+     variants of Button keep their own colour pairs; solid keeps its face. */
+  :is([data-glass-adaptive], [data-glass-adaptive] *):is(.glass, .crumza-surface):not(
+    [data-tone="primary"],
+    [data-tone="secondary"],
+    [data-tone="destructive"],
+    [data-variant="muted"],
+    [data-variant="secondary"],
+    [data-variant="ghost"],
+    [data-variant="link"],
+    [data-variant="bordered"],
+    [data-variant="outline"],
+    [data-material="solid"],
+    .lens
+  ) {
+    --_L: var(--glass-backdrop-luminance, var(--glass-theme-luminance));
+    --_Lt: var(--glass-theme-luminance);
+    --_drift: calc(var(--_L) - var(--_Lt));
+    /* how far this surface follows the backdrop away from the theme */
+    --_Leff: calc(var(--_Lt) + var(--_drift) * var(--glass-adapt));
+    /* the disagreement a steady surface converts into body */
+    --_mismatch: max(var(--_drift), calc(-1 * var(--_drift)));
+    --glass-separation: calc(var(--_mismatch) * var(--glass-separation-gain));
+    /* clear glass over bright content: a veil, not an opaque pane */
+    --glass-dimming: calc(clamp(0, (var(--_L) - 0.6) * 1.5, 1) * var(--glass-dimming-gain));
+    /* the face's lightness once the tint cast and the veil are in */
+    --_Lface: calc(
+      (
+        var(--_Leff) *
+        (1 - var(--glass-tint-amount)) +
+        var(--glass-tint-luminance) *
+        var(--glass-tint-amount)
+      ) *
+      (1 - var(--glass-dimming) * 0.35)
+    );
+    --glass-surface-luminance: var(--_Lface);
+    /* 1: light face, dark ink. 0: dark face, light ink. The face steps softly
+       across the middle; the ink steps hard, because a grey ink on a grey
+       backdrop is the one thing the material must never produce. */
+    --glass-polarity: clamp(0, calc((var(--_Lface) - 0.5) * 24 + 0.5), 1);
+    --glass-ink-polarity: clamp(0, calc((var(--_Lface) - 0.5) * 400 + 0.5), 1);
+    /* how close the backdrop sits to the middle, where neither ink has much
+       to stand on: the haze thickens there so the face does the separating */
+    --_ambiguity: clamp(0, calc(1 - max(var(--_Lface) - 0.5, 0.5 - var(--_Lface)) * 3), 1);
+
+    /* translucency */
+    --_alpha: clamp(
+      0.06,
+      calc(
+        var(--glass-opacity) +
+        var(--glass-frost-opacity) +
+        var(--glass-separation) *
+        var(--glass-separation-opacity) -
+        (var(--glass-intensity) - 0.5) *
+        0.36
+      ),
+      0.94
+    );
+    /* ink-coloured haze: smoke over bright content, milk over dark */
+    --_smoke: clamp(
+      0,
+      calc(var(--glass-smoke) + var(--glass-dimming) * 0.22 + var(--_ambiguity) * 0.12),
+      calc(0.98 - var(--_alpha))
+    );
+    --_face-cast: color-mix(
+      in oklab,
+      var(--glass-face),
+      var(--glass-tint) calc(var(--glass-tint-amount) * 100%)
+    );
+    --_surface: color-mix(
+      in oklab,
+      var(--_face-cast) calc(var(--_alpha) * 100%),
+      var(--glass-foreground-primary) calc(var(--_smoke) * 100%)
+    );
+    --_ink: var(--glass-foreground-primary);
+    --_blur: calc(var(--glass-blur) + var(--glass-frost-blur));
+    --_sheen: calc(var(--glass-glint) * 0.12 * var(--glass-polarity));
+    --material-rim: calc(0.2 + var(--glass-glint) * 0.4);
+    --material-bevel: calc(var(--glass-glint) * 0.4);
+
+    color: var(--_ink);
+    border-color: color-mix(in oklab, var(--glass-foreground-primary) 12%, transparent);
+    background:
+      linear-gradient(165deg, rgb(255 255 255 / var(--_sheen)), transparent 42%), var(--_surface);
+    -webkit-backdrop-filter: blur(var(--_blur)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(var(--_blur)) saturate(var(--glass-saturate));
+    box-shadow: var(--glass-shadow);
+  }
+  /* Small, continuous. Reduced motion zeroes --motion-scale. Overlays keep
+     their own discrete enter and exit transitions. */
+  :is([data-glass-adaptive], [data-glass-adaptive] *):is(.glass, .crumza-surface):not(
+    .dialog-content,
+    .menu-content,
+    .popover-content,
+    .toast,
+    .lens
+  ) {
+    transition:
+      background-color calc(220ms * var(--motion-scale)) var(--ease-standard),
+      color calc(220ms * var(--motion-scale)) var(--ease-standard),
+      border-color calc(220ms * var(--motion-scale)) var(--ease-standard),
+      box-shadow calc(220ms * var(--motion-scale)) var(--ease-standard),
+      backdrop-filter calc(260ms * var(--motion-scale)) var(--ease-standard),
+      transform 100ms ease-out;
+  }
+  /* Frost ends at a hairline: no bevel band, a quiet rim. */
+  [data-glass-frosted]:is(.glass, .crumza-surface),
+  [data-glass-frosted] :is(.glass, .crumza-surface) {
+    --material-bevel: 0;
+    --material-rim: 0.3;
+  }
+  /* The fill variants of Button carry the polarity's ink and a faint fill. */
+  :is([data-glass-adaptive], [data-glass-adaptive] *).crumza-button:is(
+    [data-variant="muted"],
+    [data-variant="secondary"],
+    [data-variant="ghost"],
+    [data-variant="bordered"],
+    [data-variant="outline"]
+  ) {
+    color: var(--glass-foreground-primary);
+  }
+  /* Solid stays opaque, in the polarity of its context. */
+  :is([data-glass-adaptive], [data-glass-adaptive] *):is(
+    .glass,
+    .crumza-surface
+  )[data-material="solid"] {
+    --_surface: var(--glass-face);
+    --_ink: var(--glass-foreground-primary);
+  }
+
+  /* Nested surfaces are fills. They inherit the pane's polarity and ink rather
+     than reading the backdrop again, so a button never flips against the card
+     it sits in, and no second blur is stacked on the first. Top-layer
+     overlays opened from inside a pane are panes of their own. */
+  .glass
+  :is([data-glass-adaptive], [data-glass-adaptive] *):is(.glass, .crumza-surface):not(
+    [popover],
+    dialog,
+    .lens,
+    [data-tone="primary"],
+    [data-tone="secondary"],
+    [data-tone="destructive"],
+    [data-variant="muted"],
+    [data-variant="secondary"],
+    [data-variant="ghost"],
+    [data-variant="link"],
+    [data-variant="bordered"],
+    [data-variant="outline"]
+  ) {
+    --glass-polarity: inherit;
+    --glass-ink-polarity: inherit;
+    --glass-surface-luminance: inherit;
+    --glass-separation: inherit;
+    --glass-dimming: inherit;
+    --glass-foreground-primary: inherit;
+    --glass-foreground-secondary: inherit;
+    --glass-foreground-tertiary: inherit;
+    --glass-foreground-quaternary: inherit;
+    --glass-face: inherit;
+    --foreground: inherit;
+    --muted-foreground: inherit;
+    --foreground-tertiary: inherit;
+    --foreground-quaternary: inherit;
+    --card: inherit;
+    --card-foreground: inherit;
+    --muted: inherit;
+    --border: inherit;
+    --input: inherit;
+    --ring: inherit;
+    --material-optics: none;
+    --_surface: color-mix(in oklab, var(--glass-foreground-primary) 9%, transparent);
+    --_ink: var(--glass-foreground-primary);
+    color: var(--_ink);
+    background: var(--_surface);
+    border-color: color-mix(in oklab, var(--glass-foreground-primary) 10%, transparent);
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .glass
+    :is([data-glass-adaptive], [data-glass-adaptive] *):is(.glass, .crumza-surface):not(
+      [popover],
+      dialog,
+      .lens,
+      [data-tone="primary"],
+      [data-tone="secondary"],
+      [data-tone="destructive"],
+      [data-variant="muted"],
+      [data-variant="secondary"],
+      [data-variant="ghost"],
+      [data-variant="link"],
+      [data-variant="bordered"],
+      [data-variant="outline"]
+    )::before {
+    opacity: calc(var(--material-rim) * 0.35);
+  }
+  /* Ghost and link stay air inside a pane; the other fill variants keep their
+     own fills, which the remapped tokens already put in the pane's polarity. */
+  .glass
+  :is([data-glass-adaptive], [data-glass-adaptive] *).crumza-button:is(
+    [data-variant="ghost"],
+    [data-variant="link"]
+  ) {
+    --_surface: transparent;
+    border-color: transparent;
+  }
+  @media (hover: hover) {
+    .glass
+      :is([data-glass-adaptive], [data-glass-adaptive] *).crumza-surface:hover:not(
+        :disabled,
+        [data-tone="primary"],
+        [data-tone="secondary"],
+        [data-tone="destructive"],
+        [data-variant="muted"],
+        [data-variant="secondary"],
+        [data-variant="ghost"],
+        [data-variant="link"],
+        [data-variant="bordered"],
+        [data-variant="outline"]
+      ) {
+      background: color-mix(in oklab, var(--glass-foreground-primary) 14%, transparent);
+    }
+  }
+
+  /* Overlays. A dialog or toast is centred on the window, not on the region
+     that opened it, so it reads the theme again. Menus and popovers hang from
+     their trigger, over the same backdrop, and stay with the context. All are
+     medium surfaces unless told otherwise. */
+  :is([data-glass-adaptive], [data-glass-adaptive] *):is(.dialog-content, .toast) {
+    --glass-backdrop-luminance: initial;
+  }
+  :is([data-glass-adaptive], [data-glass-adaptive] *):is(
+    .dialog-content,
+    .menu-content,
+    .popover-content,
+    .toast
+  ):not([data-glass-scale]) {
+    --glass-adapt: 0.7;
+    --glass-separation-gain: 0.4;
+  }
+  :is([data-glass-adaptive], [data-glass-adaptive] *):is(
+    .dialog-content,
+    .menu-content,
+    .popover-content,
+    .toast
+  ) {
+    --glass-opacity: 0.9;
+  }
+
+  /* 6. Accessibility. Each preference swaps one layer. */
+  /* Reduced transparency: an opaque face in the same polarity; the blur goes. */
+  [data-transparency="reduce"]
+  :is([data-glass-adaptive], [data-glass-adaptive] *):is(.glass, .crumza-surface),
+  [data-transparency="reduce"]:is([data-glass-adaptive], [data-glass-adaptive] *):is(
+    .glass,
+    .crumza-surface
+  ) {
+    --_alpha: 0.97;
+    --_smoke: 0.02;
+    --_sheen: 0;
+    background: var(--_surface) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    :is([data-glass-adaptive], [data-glass-adaptive] *):is(.glass, .crumza-surface) {
+      --_alpha: 0.97;
+      --_smoke: 0.02;
+      --_sheen: 0;
+      background: var(--_surface) !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+    }
+  }
+  /* More contrast: the polarity becomes a hard step, the face nearly opaque,
+     the secondary inks rise. */
+  [data-contrast="more"]
+  :is([data-glass-adaptive], [data-glass-adaptive] *):is(.glass, .crumza-surface),
+  [data-contrast="more"]:is([data-glass-adaptive], [data-glass-adaptive] *):is(
+    .glass,
+    .crumza-surface
+  ) {
+    --glass-polarity: var(--glass-ink-polarity);
+    --_alpha: 0.96;
+    --_smoke: 0.02;
+    --glass-foreground-secondary: color-mix(
+      in oklab,
+      var(--glass-foreground-primary) 82%,
+      transparent
+    );
+    --glass-foreground-tertiary: color-mix(
+      in oklab,
+      var(--glass-foreground-primary) 66%,
+      transparent
+    );
+    --material-rim: 0.2;
+    --material-bevel: 0;
+    background: var(--_surface) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  @media (prefers-contrast: more) {
+    :is([data-glass-adaptive], [data-glass-adaptive] *):is(.glass, .crumza-surface) {
+      --glass-polarity: clamp(0, calc((var(--_Lface) - 0.5) * 1000 + 0.5), 1);
+      --_alpha: 0.96;
+      --_smoke: 0.02;
+      --glass-foreground-secondary: color-mix(
+        in oklab,
+        var(--glass-foreground-primary) 82%,
+        transparent
+      );
+      --glass-foreground-tertiary: color-mix(
+        in oklab,
+        var(--glass-foreground-primary) 66%,
+        transparent
+      );
+      --material-rim: 0.2;
+      --material-bevel: 0;
+      background: var(--_surface) !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+    }
+  }
+  /* Without backdrop filters the face carries the whole job. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    :is([data-glass-adaptive], [data-glass-adaptive] *):is(.glass, .crumza-surface) {
+      --_alpha: 0.94;
+    }
+  }
+  /* Forced colours: appearance.css already paints Canvas and CanvasText. Only
+     the remapped ink tokens need to stand down so nested text follows. */
+  @media (forced-colors: active) {
+    [data-glass-adaptive],
+    :is([data-glass-adaptive], [data-glass-adaptive] *):is(.glass, .crumza-surface) {
+      --foreground: CanvasText;
+      --muted-foreground: GrayText;
+      --card: Canvas;
+      --border: ButtonText;
+      --input: ButtonText;
+      --ring: Highlight;
+      color: CanvasText;
+    }
+  }
+}

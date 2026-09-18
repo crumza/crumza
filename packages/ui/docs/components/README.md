@@ -30,9 +30,24 @@
 | [Badge](/docs/components/badge) | a small fact | `<span>` |
 | [Kbd](/docs/components/kbd) | a key cap | `<kbd>` |
 | [Separator](/docs/components/separator) | a hairline | `<div>` |
+| [LiquidScene](/docs/liquid) | a refracting stage for the liquid components | `<div>` + one frame driver |
+| [LiquidPricingCard](/docs/components/liquid-pricing-card) | a plan card with a billing switch | `<button role="switch">` |
+| [LiquidTestimonials](/docs/components/liquid-testimonials) | quotes with a featured card | `<section>` |
+| [LiquidHeader](/docs/components/liquid-header) | a nav bar with sliding menus | `<button aria-expanded>`, `role="menu"` |
+| [LiquidMobileNav](/docs/components/liquid-mobile-nav) | a dock at the foot of the scene | `<nav>`, `aria-current` |
+| [LiquidTabIndicator](/docs/components/liquid-tab-indicator) | tabs with a travelling indicator | `role="tablist"` |
+| [LiquidSearch](/docs/components/liquid-search) | a search field with live matches | native input, `role="listbox"` |
+| [LiquidStepper](/docs/components/liquid-stepper) | a minus/plus counter | two `<button>`s |
+| [LiquidGlassToggle](/docs/components/liquid-glass-toggle) | on/off with a lens for a thumb | `<button role="switch">` |
+| [LiquidGlassSlider](/docs/components/liquid-glass-slider) | a number in a range, with a lens for a thumb | `role="slider"` |
+| [LiquidColorPicker](/docs/components/liquid-color-picker) | picking a colour | `role="slider"` |
+| [LiquidNotificationStack](/docs/components/liquid-notification-stack) | a deck of dismissable notices | `role="status"` |
+| [LiquidContextMenu](/docs/components/liquid-context-menu) | a right-click menu | `role="menu"` |
+| [LiquidGallery](/docs/components/liquid-gallery) | an image carousel | `aria-roledescription="carousel"` |
 | [LiquixStage](/docs/components/liquix-stage) | the WebGL2 host for shader-drawn glass | `<canvas>` + `<div>` |
 | [LiquixCapsule](/docs/components/liquix-capsule) | a shader-drawn capsule action | `<button>` |
 | [LiquixCircle](/docs/components/liquix-circle) | a shader-drawn icon action | `<button>` |
+| [LiquixFrosted](/docs/components/liquix-frosted) | the frosted material for the liquix shapes | a `frosted` stage |
 
 Every component sets `data-slot="<name>"` on its root and accepts `className`, which is merged
 last so your utilities win.

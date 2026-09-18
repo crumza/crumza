@@ -459,3 +459,464 @@ test('dialog: dense readable material, centered geometry and reduced motion', as
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.evaluate(() => document.documentElement.setAttribute('data-material', 'solid'));
 });
+
+test('liquid stepper: the buttons hold the bounds and the value announces itself', async () => {
+  const stepper = page.locator('[data-slot="liquid-stepper"]');
+  await stepper.scrollIntoViewIfNeeded();
+  // Centred by the interactive layer: a component ships itself, not a positioner.
+  const [box, stage] = await Promise.all([
+    stepper.boundingBox(),
+    stepper.locator('xpath=ancestor::*[@data-slot="liquid-scene"]').boundingBox(),
+  ]);
+  if (!box || !stage) throw new Error('nothing to measure');
+  expect(Math.abs(box.x + box.width / 2 - (stage.x + stage.width / 2))).toBeLessThan(2);
+  expect(Math.abs(box.y + box.height / 2 - (stage.y + stage.height / 2))).toBeLessThan(2);
+  const value = stepper.locator('[aria-live="polite"]');
+  const decrease = stepper.getByRole('button', { name: 'Decrease' });
+  const increase = stepper.getByRole('button', { name: 'Increase' });
+  expect(await value.textContent()).toBe('3');
+  for (let i = 0; i < 3; i++) await decrease.click();
+  expect(await value.textContent()).toBe('0');
+  expect(await decrease.isDisabled()).toBe(true);
+  await increase.click();
+  expect(await value.textContent()).toBe('1');
+  expect(await decrease.isDisabled()).toBe(false);
+  // The engine painted: the surface's filter is fed a displacement map built on a canvas.
+  await stepper.locator('feImage').first().waitFor({ state: 'attached' });
+  expect(await stepper.locator('feImage').first().getAttribute('href')).toStartWith(
+    'data:image/png',
+  );
+});
+
+test('liquid tab indicator: a press selects the tab and the indicator settles under it', async () => {
+  const bar = page.locator('[data-slot="liquid-tab-indicator"]');
+  await bar.scrollIntoViewIfNeeded();
+  await bar.getByRole('tab', { name: 'Sheen' }).click();
+  expect(await bar.getByRole('tab', { name: 'Sheen' }).getAttribute('aria-selected')).toBe('true');
+  expect(await bar.getByRole('tab', { name: 'Optics' }).getAttribute('aria-selected')).toBe(
+    'false',
+  );
+  // The blob is moved by the scene's frame driver, not React, so wait for it to land.
+  await page.waitForFunction(() => {
+    const root = document.querySelector('[data-slot="liquid-tab-indicator"]');
+    const blob = root?.querySelector('.lqc-indicator-blob');
+    const tab = root?.querySelector('[role="tab"][aria-selected="true"]');
+    if (!blob || !tab) return false;
+    const a = blob.getBoundingClientRect();
+    const b = tab.getBoundingClientRect();
+    return Math.abs(a.left - b.left) < 1.5 && Math.abs(a.width - b.width) < 1.5;
+  });
+  // A frosted scene marks itself, and its glass carries the material's heavy,
+  // saturated interior blur.
+  const stage = bar.locator('xpath=ancestor::*[@data-slot="liquid-scene"]');
+  expect(await stage.getAttribute('data-frosted')).toBe('');
+  const blurLayer = bar.locator('.lq-blur');
+  const interior = await blurLayer.evaluate((el) => getComputedStyle(el).filter);
+  expect(interior).toContain('blur(14px)');
+  expect(interior).toContain('saturate(1.25)');
+  // The backdrop blur only stands in before the engine's first paint; the clone carries it now.
+  expect(await blurLayer.evaluate((el) => getComputedStyle(el).backdropFilter)).toBe('none');
+});
+
+test('liquid mobile nav: a tap picks on the way down; a hold lifts the pane, a drag carries it and the release picks', async () => {
+  const dock = page.locator('[data-slot="liquid-mobile-nav"]');
+  await dock.scrollIntoViewIfNeeded();
+  const item = (name: string) => dock.getByRole('button', { name });
+  const centre = async (name: string): Promise<{ x: number; y: number }> => {
+    const b = await item(name).boundingBox();
+    if (!b) throw new Error(`${name} has no box`);
+    return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+  };
+  const paneAt = (): Promise<string> =>
+    dock.locator('.lqc-dock-pane').evaluate((el) => getComputedStyle(el).translate);
+
+  // A tap chooses on pointerdown, before the release.
+  const inbox = await centre('Inbox');
+  await page.mouse.move(inbox.x, inbox.y);
+  await page.mouse.down();
+  expect(await item('Inbox').getAttribute('aria-current')).toBe('page');
+  await page.mouse.up();
+  expect(await dock.getAttribute('data-drag')).toBeNull();
+
+  // A hold lifts: the dock marks the drag, the slot under the finger is hot,
+  // the pane has grown and the glyph under it has grown with it.
+  await page.mouse.down();
+  await page.waitForFunction(() =>
+    document.querySelector('[data-slot="liquid-mobile-nav"]')?.hasAttribute('data-drag'),
+  );
+  expect(await item('Inbox').getAttribute('data-hot')).toBe('');
+  await page.waitForFunction(() => {
+    const dockEl = document.querySelector('[data-slot="liquid-mobile-nav"]');
+    const pane = dockEl?.querySelector('.lqc-dock-pane');
+    const icon = dockEl?.querySelector('[data-hot] .lqc-dock-icon');
+    if (!pane || !icon) return false;
+    return (
+      getComputedStyle(pane).scale.startsWith('1.14') && getComputedStyle(icon).scale === '1.3'
+    );
+  });
+
+  // The pane follows the finger one to one, in slots, and the swell moves to
+  // the glyph it is over; the pick itself has not moved yet.
+  const explore = await centre('Explore');
+  await page.mouse.move(explore.x, inbox.y, { steps: 8 });
+  expect(await paneAt()).toBe('100%');
+  expect(await item('Explore').getAttribute('data-hot')).toBe('');
+  expect(await item('Inbox').getAttribute('aria-current')).toBe('page');
+
+  // Past the end it gets heavy: a third of the pull, a third of a slot at most.
+  const home = await centre('Home');
+  const slot = explore.x - home.x;
+  await page.mouse.move(home.x - 3 * slot, inbox.y, { steps: 4 });
+  expect(await paneAt()).toBe('-35%');
+  expect(await item('Home').getAttribute('data-hot')).toBe('');
+
+  // Let go: the drag is over, the nearest slot is the pick, and the pane
+  // springs onto it from where the finger left it.
+  await page.mouse.up();
+  expect(await dock.getAttribute('data-drag')).toBeNull();
+  expect(await dock.locator('[data-hot]').count()).toBe(0);
+  expect(await item('Home').getAttribute('aria-current')).toBe('page');
+  await page.waitForFunction(
+    () =>
+      getComputedStyle(
+        document.querySelector('[data-slot="liquid-mobile-nav"] .lqc-dock-pane') as Element,
+      ).translate === '0%',
+  );
+  // The pane never lost the finger to a pan: the items refuse touch actions.
+  expect(await item('Home').evaluate((el) => getComputedStyle(el).touchAction)).toBe('none');
+});
+
+test('liquid glass toggle: a tap flips it, a hold lifts the lens, a drag decides by position and the thumb settles white', async () => {
+  const toggle = page.getByRole('switch', { name: 'Wi-Fi' });
+  await toggle.scrollIntoViewIfNeeded();
+  const thumb = toggle.locator('.lqc-toggle-thumb');
+  const cap = toggle.locator('.lqc-toggle-cap');
+  const xVar = (): Promise<string> =>
+    toggle.evaluate((el) => (el as HTMLElement).style.getPropertyValue('--x'));
+  const width = async (): Promise<number> => {
+    const b = await thumb.boundingBox();
+    if (!b) throw new Error('the thumb has no box');
+    return b.width;
+  };
+  const centre = async (): Promise<{ x: number; y: number }> => {
+    const b = await thumb.boundingBox();
+    if (!b) throw new Error('the thumb has no box');
+    return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+  };
+  // Settled: no drag property left on the root, nothing lifted, the cap back to white.
+  const settled = (): Promise<unknown> =>
+    page.waitForFunction(() => {
+      const el = document.querySelector<HTMLElement>(
+        '[data-slot="liquid-glass-toggle"][aria-label="Wi-Fi"]',
+      );
+      const white = el?.querySelector('.lqc-toggle-cap');
+      if (!el || !white) return false;
+      return (
+        !el.style.getPropertyValue('--x') &&
+        !el.hasAttribute('data-lift') &&
+        getComputedStyle(white).opacity === '1'
+      );
+    });
+
+  // At rest: off, a 26px white thumb, no glass to see, and the lens under it
+  // already fed by the engine, for when it is lifted.
+  expect(await toggle.getAttribute('aria-checked')).toBe('false');
+  expect(await xVar()).toBe('');
+  expect(await cap.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+  expect(Math.round(await width())).toBe(26);
+  expect(await thumb.locator('feImage').first().getAttribute('href')).toStartWith('data:image/png');
+  // A drag along it is the control: the button refuses touch actions.
+  expect(await toggle.evaluate((el) => getComputedStyle(el).touchAction)).toBe('none');
+
+  // A tap flips it, and the thumb travels the 32px on the spring and settles.
+  await toggle.click();
+  expect(await toggle.getAttribute('aria-checked')).toBe('true');
+  await settled();
+  expect(await thumb.evaluate((el) => getComputedStyle(el).translate)).toStartWith('32px');
+
+  // A hold lifts it: the root marks the lift, the cap clears and the thumb has
+  // grown 3px off the track.
+  const at = await centre();
+  await page.mouse.move(at.x, at.y);
+  await page.mouse.down();
+  await page.waitForFunction(() =>
+    document
+      .querySelector('[data-slot="liquid-glass-toggle"][aria-label="Wi-Fi"]')
+      ?.hasAttribute('data-lift'),
+  );
+  await page.waitForFunction(() => {
+    const el = document.querySelector('[data-slot="liquid-glass-toggle"][aria-label="Wi-Fi"]');
+    const white = el?.querySelector('.lqc-toggle-cap');
+    const lens = el?.querySelector('.lqc-toggle-thumb');
+    if (!white || !lens) return false;
+    return (
+      getComputedStyle(white).opacity === '0' &&
+      Math.round(lens.getBoundingClientRect().width) === 29
+    );
+  });
+
+  // It follows the finger one to one, in travel units: 40px left of on is past
+  // the off end, where it gets heavy, so it sits a little short of zero.
+  await page.mouse.move(at.x - 40, at.y, { steps: 6 });
+  const pulled = Number(await xVar());
+  expect(pulled).toBeLessThan(0);
+  expect(pulled).toBeGreaterThan(-0.15);
+  expect(await toggle.getAttribute('aria-checked')).toBe('true'); // it decides on release
+
+  // Let go: short of half way is off, the lift is over, and the thumb settles
+  // back to white on its side.
+  await page.mouse.up();
+  expect(await toggle.getAttribute('aria-checked')).toBe('false');
+  expect(await toggle.getAttribute('data-lift')).toBeNull();
+  await settled();
+  expect(await thumb.evaluate((el) => getComputedStyle(el).translate)).toStartWith('0px');
+  expect(Math.round(await width())).toBe(26);
+
+  // A drag that stops short of half way leaves it where it was.
+  const from = await centre();
+  await page.mouse.move(from.x, from.y);
+  await page.mouse.down();
+  await page.mouse.move(from.x + 9, from.y, { steps: 4 });
+  await page.mouse.up();
+  await settled();
+  expect(await toggle.getAttribute('aria-checked')).toBe('false');
+
+  // Keyboard: Space flips it, the arrows set it, and each travels on the spring.
+  await toggle.focus();
+  await page.keyboard.press('Space');
+  expect(await toggle.getAttribute('aria-checked')).toBe('true');
+  await settled();
+  await page.keyboard.press('ArrowLeft');
+  expect(await toggle.getAttribute('aria-checked')).toBe('false');
+  await settled();
+
+  // A disabled switch takes nothing.
+  const airplane = page.getByRole('switch', { name: 'Airplane mode' });
+  expect(await airplane.isDisabled()).toBe(true);
+  await airplane.click({ force: true });
+  expect(await airplane.getAttribute('aria-checked')).toBe('false');
+
+  // Reduced motion: the value still flips, and the thumb is simply on the other
+  // side, with no spring left running and nothing grown.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await toggle.focus();
+  await page.keyboard.press('ArrowRight');
+  expect(await toggle.getAttribute('aria-checked')).toBe('true');
+  await settled();
+  expect(await thumb.evaluate((el) => getComputedStyle(el).translate)).toStartWith('32px');
+  await page.keyboard.press('ArrowLeft');
+  await settled();
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+});
+
+test('liquid glass slider: the lens lifts and follows the finger across the rail, a rail press moves the value there, keys step it, and it settles white', async () => {
+  const slider = page.locator('[data-slot="liquid-glass-slider"]');
+  await slider.scrollIntoViewIfNeeded();
+  const lens = page.getByRole('slider', { name: 'Brightness' });
+  const cap = slider.locator('.lqc-slider-cap');
+  const now = async (): Promise<number> => Number(await lens.getAttribute('aria-valuenow'));
+  const box = async (
+    l: Locator,
+  ): Promise<{ x: number; y: number; width: number; height: number }> => {
+    const b = await l.boundingBox();
+    if (!b) throw new Error('nothing to measure');
+    return b;
+  };
+  // Settled: no drag property left on the root, nothing lifted, the cap back to its resting white.
+  const settled = (): Promise<unknown> =>
+    page.waitForFunction(() => {
+      const el = document.querySelector<HTMLElement>('[data-slot="liquid-glass-slider"]');
+      const white = el?.querySelector('.lqc-slider-cap');
+      if (!el || !white) return false;
+      return (
+        !el.style.getPropertyValue('--x') &&
+        !el.hasAttribute('data-lift') &&
+        getComputedStyle(white).opacity === '1'
+      );
+    });
+  const bend = (): Promise<number> =>
+    lens
+      .locator('feDisplacementMap')
+      .first()
+      .evaluate((el) => Number(el.getAttribute('scale')));
+
+  // At rest: the lens is a capsule near seven times the rail's height, glass at the
+  // material's own bend, a copy of the rail riding inside it.
+  expect(await now()).toBe(40);
+  const rail = await box(slider.locator('.lqc-slider-rail'));
+  const thumb = await box(lens);
+  expect(Math.round(rail.height)).toBe(6);
+  expect(Math.round(thumb.height)).toBe(40);
+  expect(Math.round(thumb.width)).toBe(64);
+  expect(await cap.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+  expect(await lens.locator('feImage').first().getAttribute('href')).toStartWith('data:image/png');
+  // half the material's bend at rest: 60 times 0.5
+  expect(await bend()).toBe(30);
+  // a quarter of its 2.5px interior blur and a third of its 20% tint: what the
+  // lens magnifies stays sharp and keeps its colour
+  expect(await lens.locator('.lq-blur').evaluate((el) => getComputedStyle(el).filter)).toBe(
+    'blur(0.625px)',
+  );
+  expect(await lens.locator('.lq-tint').evaluate((el) => getComputedStyle(el).opacity)).toBe(
+    '0.07',
+  );
+  expect(await slider.locator('.lq-refraction .lqc-slider-echo').count()).toBe(1);
+  expect(await slider.evaluate((el) => getComputedStyle(el).touchAction)).toBe('none');
+
+  // Picked up: the root marks the lift, the rim's milk thins, the lens has grown,
+  // and it bends the scene harder: the filter's displacement scale ramps up.
+  const at = { x: thumb.x + thumb.width / 2, y: thumb.y + thumb.height / 2 };
+  await page.mouse.move(at.x, at.y);
+  await page.mouse.down();
+  await page.waitForFunction(() =>
+    document.querySelector('[data-slot="liquid-glass-slider"]')?.hasAttribute('data-lift'),
+  );
+  await page.waitForFunction(() => {
+    const el = document.querySelector('[data-slot="liquid-glass-slider"]');
+    const white = el?.querySelector('.lqc-slider-cap');
+    const grown = el?.querySelector('.lqc-slider-thumb');
+    if (!white || !grown) return false;
+    const b = grown.getBoundingClientRect();
+    return (
+      getComputedStyle(white).opacity === '0.5' &&
+      Math.round(b.width) === 68 &&
+      Math.round(b.height) === 44
+    );
+  });
+  await page.waitForFunction(() => {
+    const disp = document.querySelector('[data-slot="liquid-glass-slider"] feDisplacementMap');
+    return Number(disp?.getAttribute('scale')) === 48;
+  });
+
+  // Carried across the whole rail: the value climbs with the finger and reaches the end.
+  const control = await box(slider);
+  const seen: number[] = [];
+  for (let i = 1; i <= 8; i++) {
+    await page.mouse.move(at.x + (i * control.width) / 8, at.y, { steps: 3 });
+    seen.push(await now());
+  }
+  for (let i = 1; i < seen.length; i++) expect(seen[i]).toBeGreaterThanOrEqual(seen[i - 1] ?? 0);
+  expect(seen[seen.length - 1]).toBe(100);
+  // past the end the value holds there
+  await page.mouse.move(control.x + control.width + 60, at.y, { steps: 2 });
+  expect(await now()).toBe(100);
+
+  // Let go: the lift is over, the lens eases onto its step at the far end and its
+  // bend settles back to the material's.
+  await page.mouse.up();
+  expect(await slider.getAttribute('data-lift')).toBeNull();
+  await settled();
+  await page.waitForFunction(() => {
+    const disp = document.querySelector('[data-slot="liquid-glass-slider"] feDisplacementMap');
+    return Number(disp?.getAttribute('scale')) === 30;
+  });
+  await page.waitForFunction(
+    (w) =>
+      getComputedStyle(
+        document.querySelector('[data-slot="liquid-glass-slider"] .lqc-slider-thumb') as Element,
+      ).translate.startsWith(`${w}px`),
+    Math.round(control.width - 64),
+  );
+
+  // A press on the rail puts the value there at once: a quarter along is 25.
+  await page.mouse.click(control.x + 32 + 0.25 * (control.width - 64), at.y);
+  expect(Math.abs((await now()) - 25)).toBeLessThanOrEqual(1);
+  await settled();
+
+  // Keyboard: a step, a tenth of the range, and either end; each eases and settles.
+  await lens.focus();
+  const before = await now();
+  await page.keyboard.press('ArrowRight');
+  expect(await now()).toBe(before + 1);
+  await page.keyboard.press('PageUp');
+  expect(await now()).toBe(before + 11);
+  await page.keyboard.press('End');
+  expect(await now()).toBe(100);
+  await page.keyboard.press('Home');
+  expect(await now()).toBe(0);
+  await page.keyboard.press('ArrowLeft');
+  expect(await now()).toBe(0);
+  await settled();
+
+  // Reduced motion: it still lifts and still drags, but nothing grows.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const home = await box(lens);
+  await page.mouse.move(home.x + home.width / 2, home.y + home.height / 2);
+  await page.mouse.down();
+  await page.waitForFunction(() =>
+    document.querySelector('[data-slot="liquid-glass-slider"]')?.hasAttribute('data-lift'),
+  );
+  expect(Math.round((await box(lens)).width)).toBe(64);
+  await page.mouse.move(home.x + home.width / 2 + 40, home.y + home.height / 2, { steps: 3 });
+  expect(await now()).toBeGreaterThan(0);
+  await page.mouse.up();
+  await settled();
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+});
+
+test('liquid search: a round button grows into the field, and folds back when empty', async () => {
+  const search = page.locator('[data-slot="liquid-search"]');
+  await search.scrollIntoViewIfNeeded();
+  const fieldWidth = (): Promise<number> =>
+    page.evaluate(
+      () =>
+        document
+          .querySelector('[data-slot="liquid-search"] .lqc-search-field')
+          ?.getBoundingClientRect().width ?? 0,
+    );
+  const focusedTag = (): Promise<string | undefined> =>
+    page.evaluate(() => document.activeElement?.tagName);
+  // Folded: a 52px round button, the field disabled behind it.
+  expect(await fieldWidth()).toBeCloseTo(52, 0);
+  expect(await search.getByRole('textbox', { name: 'Search' }).isDisabled()).toBe(true);
+  await search.getByRole('button', { name: 'Search' }).click();
+  // The grow is a width transition; it lands on the full bar with the field focused.
+  await page.waitForFunction(
+    () =>
+      Math.abs(
+        (document
+          .querySelector('[data-slot="liquid-search"] .lqc-search-field')
+          ?.getBoundingClientRect().width ?? 0) - 296,
+      ) < 1,
+  );
+  expect(await focusedTag()).toBe('INPUT');
+  await search.getByRole('textbox', { name: 'Search' }).fill('ra');
+  const list = search.getByRole('listbox');
+  await visible(list);
+  expect(await list.getByRole('option').count()).toBe(2);
+  expect(await list.getByRole('option').first().textContent()).toBe('Refraction map');
+  // Clearing keeps the bar open and the field focused; Escape folds it back to the button.
+  await search.getByRole('button', { name: 'Clear' }).click();
+  await gone(list);
+  expect(await search.getByRole('textbox', { name: 'Search' }).inputValue()).toBe('');
+  expect(await focusedTag()).toBe('INPUT');
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(
+    () =>
+      (document
+        .querySelector('[data-slot="liquid-search"] .lqc-search-field')
+        ?.getBoundingClientRect().width ?? 0) < 53,
+  );
+  expect(await focusedTag()).toBe('BUTTON');
+});
+
+test('liquid notifications: the deck fans out on hover and the cross dismisses its card', async () => {
+  const stack = page.locator('[data-slot="liquid-notification-stack"]');
+  await stack.scrollIntoViewIfNeeded();
+  expect(await stack.getByRole('status').count()).toBe(3);
+  await stack.locator('.lqc-notif-deck').hover();
+  await page.waitForFunction(() =>
+    document
+      .querySelector('[data-slot="liquid-notification-stack"] .lqc-notif-deck')
+      ?.hasAttribute('data-expanded'),
+  );
+  // The card captures the pointer for swipes; a press on the cross must stay a click.
+  await stack.getByRole('button', { name: 'Dismiss Map rebuilt' }).click();
+  await page.waitForFunction(
+    () =>
+      document.querySelectorAll('[data-slot="liquid-notification-stack"] [role="status"]')
+        .length === 2,
+  );
+  expect(await stack.getByText('Map rebuilt').count()).toBe(0);
+  await page.mouse.move(2, 2);
+});

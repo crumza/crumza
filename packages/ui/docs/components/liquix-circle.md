@@ -25,6 +25,8 @@ Passing `width` or `height` does not make the shape a rectangle. Whichever arriv
 
 ## Rules
 
+The material is the stage's: set `frosted` on [LiquixStage](/docs/components/liquix-stage) and every shape in it takes [LiquixFrosted](/docs/components/liquix-frosted), the Dock's frosted glass, with the same label, focus ring and physics.
+
 Render it inside [LiquixStage](/docs/components/liquix-stage); without one it falls back to a CSS approximation with no refraction, dispersion, glare or stretching.
 
 It is an icon target, so it needs an accessible name: `aria-label`, or visible text a screen reader can read. A glyph like ★ is not a name.

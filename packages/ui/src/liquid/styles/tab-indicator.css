@@ -1,0 +1,60 @@
+/* LiquidTabIndicator: geometry and motion only; the material is .lq-lens (core) */
+
+.lqc-indicator-bar {
+  /* explicit, like every other bar in the set: a content-sized surface would
+     shrink-wrap differently per label and the blob's travel would change with it */
+  width: min(340px, var(--lq-room));
+  height: 52px;
+}
+.lqc-indicator-content {
+  position: relative;
+  align-items: stretch;
+  gap: 0;
+  padding: 6px;
+}
+
+/* The blob is a plain element inside a surface that never resizes, which is
+   what lets it animate freely: the engine is not involved at all. Positioned
+   from the left edge of the content box and moved entirely by transform. */
+.lqc-indicator-blob {
+  position: absolute;
+  /* left is 0, not the 6px padding: the component translates by the tab's
+     offsetLeft, which is measured from the padding box and already carries it */
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  border-radius: var(--lq-inner-r, 16px);
+  background: rgba(255, 255, 255, 0.9);
+  transform-origin: center;
+  will-change: transform, width;
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.35);
+}
+
+.lqc-indicator-tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  padding: 0;
+  border-radius: var(--lq-inner-r, 16px);
+  color: #fff;
+  font: 600 13.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  --lq-press-scale: 0.94;
+  /* the label crosses to dark as the blob arrives under it */
+  transition:
+    color 220ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+@media (hover: hover) {
+  .lqc-indicator-tab:hover:not(.is-active) {
+    color: #fff;
+  }
+}
+.lqc-indicator-tab.is-active {
+  color: #16181d;
+  text-shadow: none;
+}

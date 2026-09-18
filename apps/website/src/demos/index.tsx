@@ -66,6 +66,21 @@ import {
   Tooltip,
   toast,
 } from '@crumza/ui/web';
+import {
+  LiquidColorPicker,
+  LiquidContextMenu,
+  LiquidGallery,
+  LiquidGlassSlider,
+  LiquidGlassToggle,
+  LiquidHeader,
+  LiquidMobileNav,
+  LiquidNotificationStack,
+  LiquidPricingCard,
+  LiquidSearch,
+  LiquidStepper,
+  LiquidTabIndicator,
+  LiquidTestimonials,
+} from '@crumza/ui/liquid';
 import type { ComponentType, ReactElement } from 'react';
 import { useState } from 'react';
 import { Frame } from './Frame';
@@ -79,6 +94,8 @@ import {
   LiquixToastDemo,
 } from './LiquixControlDemos';
 import { LiquixTabsDemo } from './LiquixTabsDemo';
+import { liquidGalleryImages } from './liquid';
+import { LiquidFrame } from './LiquidFrame';
 
 function ButtonDemo(): ReactElement {
   return (
@@ -801,13 +818,26 @@ function SkeletonDemo(): ReactElement {
  * article. The frame runs the real component, shader and all, and each page
  * shows the shape it documents.
  */
-function LiquixFrame({ shape, title }: { shape?: string; title: string }): ReactElement {
+function LiquixFrame({
+  shape,
+  frosted,
+  title,
+}: {
+  shape?: string;
+  frosted?: boolean;
+  title: string;
+}): ReactElement {
+  const query = new URLSearchParams();
+  if (shape) query.set('shape', shape);
+  if (frosted) query.set('frosted', '');
+  const search = query.toString().replace(/=(&|$)/g, '$1');
   return (
     <div className="demo-embed">
-      <iframe src={shape ? `/demos/liquix?shape=${shape}` : '/demos/liquix'} title={title} loading="lazy" />
+      <iframe src={search ? `/demos/liquix?${search}` : '/demos/liquix'} title={title} loading="lazy" />
       <p>
         Hover or press the shape, and scroll inside the frame to move the backdrop behind the glass.
-        Needs WebGL2; without it the shape falls back to CSS.
+        {frosted ? ' The switch in the corner toggles the material.' : ''} Needs WebGL2; without it
+        the shape falls back to CSS.
       </p>
     </div>
   );
@@ -823,6 +853,59 @@ function LiquixCapsuleDemo(): ReactElement {
 
 function LiquixCircleDemo(): ReactElement {
   return <LiquixFrame shape="circle" title="A liquix circle over a scrolling backdrop" />;
+}
+
+function LiquixFrostedDemo(): ReactElement {
+  return <LiquixFrame frosted title="Two liquix shapes in the frosted material over a scrolling backdrop" />;
+}
+
+/* Liquid glass: every demo is one component on a refracting stage, with the five knobs above. */
+function LiquidHeaderDemo(): ReactElement {
+  return <LiquidFrame>{(r) => <LiquidHeader radius={r} />}</LiquidFrame>;
+}
+function LiquidPricingCardDemo(): ReactElement {
+  return <LiquidFrame height={520}>{(r) => <LiquidPricingCard radius={r} />}</LiquidFrame>;
+}
+function LiquidTestimonialsDemo(): ReactElement {
+  return <LiquidFrame height={480}>{(r) => <LiquidTestimonials radius={r} />}</LiquidFrame>;
+}
+function LiquidMobileNavDemo(): ReactElement {
+  return <LiquidFrame height={460}>{(r) => <LiquidMobileNav radius={r} />}</LiquidFrame>;
+}
+function LiquidTabIndicatorDemo(): ReactElement {
+  return <LiquidFrame height={360}>{(r) => <LiquidTabIndicator radius={r} />}</LiquidFrame>;
+}
+function LiquidSearchDemo(): ReactElement {
+  return <LiquidFrame>{(r) => <LiquidSearch radius={r} />}</LiquidFrame>;
+}
+function LiquidStepperDemo(): ReactElement {
+  return <LiquidFrame height={320}>{(r) => <LiquidStepper radius={r} />}</LiquidFrame>;
+}
+function LiquidGlassToggleDemo(): ReactElement {
+  return (
+    <LiquidFrame height={320}>{(r) => <LiquidGlassToggle radius={r} aria-label="Wi-Fi" />}</LiquidFrame>
+  );
+}
+function LiquidGlassSliderDemo(): ReactElement {
+  return (
+    <LiquidFrame height={320}>
+      {(r) => <LiquidGlassSlider radius={r} defaultValue={40} aria-label="Brightness" />}
+    </LiquidFrame>
+  );
+}
+function LiquidColorPickerDemo(): ReactElement {
+  return <LiquidFrame height={480}>{(r) => <LiquidColorPicker radius={r} />}</LiquidFrame>;
+}
+function LiquidNotificationStackDemo(): ReactElement {
+  return <LiquidFrame height={480}>{(r) => <LiquidNotificationStack radius={r} />}</LiquidFrame>;
+}
+function LiquidContextMenuDemo(): ReactElement {
+  return <LiquidFrame>{(r) => <LiquidContextMenu radius={r} />}</LiquidFrame>;
+}
+function LiquidGalleryDemo(): ReactElement {
+  return (
+    <LiquidFrame>{(r) => <LiquidGallery radius={r} images={liquidGalleryImages} />}</LiquidFrame>
+  );
 }
 
 /** Which live demo sits above which docs page. Slugs match the docs/ file paths. */
@@ -842,6 +925,7 @@ const demos: Record<string, ComponentType> = {
   'components/liquix-menu': LiquixMenuDemo,
   'components/liquix-popover': LiquixPopoverDemo,
   'components/liquix-toast': LiquixToastDemo,
+  'components/liquix-frosted': LiquixFrostedDemo,
   'components/card': CardDemo,
   'components/toolbar': ToolbarDemo,
   'components/tabs': TabsDemo,
@@ -873,6 +957,20 @@ const demos: Record<string, ComponentType> = {
   'components/skeleton': SkeletonDemo,
   'components/separator': FactsDemo,
   material: GlassDemo,
+  liquid: LiquidHeaderDemo,
+  'components/liquid-pricing-card': LiquidPricingCardDemo,
+  'components/liquid-testimonials': LiquidTestimonialsDemo,
+  'components/liquid-header': LiquidHeaderDemo,
+  'components/liquid-mobile-nav': LiquidMobileNavDemo,
+  'components/liquid-tab-indicator': LiquidTabIndicatorDemo,
+  'components/liquid-search': LiquidSearchDemo,
+  'components/liquid-stepper': LiquidStepperDemo,
+  'components/liquid-glass-toggle': LiquidGlassToggleDemo,
+  'components/liquid-glass-slider': LiquidGlassSliderDemo,
+  'components/liquid-color-picker': LiquidColorPickerDemo,
+  'components/liquid-notification-stack': LiquidNotificationStackDemo,
+  'components/liquid-context-menu': LiquidContextMenuDemo,
+  'components/liquid-gallery': LiquidGalleryDemo,
 };
 
 export function hasDemo(slug: string): boolean {

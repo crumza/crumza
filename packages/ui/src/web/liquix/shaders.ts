@@ -195,6 +195,7 @@ uniform float u_glareFactor;
 uniform float u_glareHardness;
 uniform float u_glareAngle;
 uniform int u_blurEdge;
+uniform float u_saturation;     // 1 leaves the backdrop's colour alone
 uniform float u_overLight;      // how hard to dim over a bright backdrop
 uniform float u_overLightPoint; // backdrop luminance the dimming centres on
 uniform int u_step;
@@ -265,6 +266,13 @@ vec3 adaptToBackdrop(vec3 color, vec3 backdrop) {
   float luma = dot(backdrop, vec3(0.2126, 0.7152, 0.0722));
   float amount = smoothstep(u_overLightPoint - 0.18, u_overLightPoint + 0.18, luma);
   return color * (1.0 - u_overLight * amount);
+}
+
+// Saturation about the pixel's own luminance, so a lift brightens nothing:
+// the frosted material's colour survives its blur and its veil this way.
+vec3 saturateBackdrop(vec3 color) {
+  float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
+  return max(mix(vec3(luma), color, u_saturation), 0.0);
 }
 
 // Three samples per surface point, each channel refracted by its own index.
@@ -370,6 +378,7 @@ void main() {
         offset,
         u_refDispersion
       );
+      refracted.rgb = saturateBackdrop(refracted.rgb);
 
       outColor = mix(refracted, vec4(u_tint.rgb, 1.0), u_tint.a * 0.8);
       outColor.rgb = adaptToBackdrop(outColor.rgb, refracted.rgb);

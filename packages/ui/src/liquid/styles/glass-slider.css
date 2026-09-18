@@ -1,0 +1,250 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion and reduced-transparency overrides must win over the component transitions. */
+/* LiquidGlassSlider: geometry and motion only; the material is .lq-lens (core)
+
+   A thin rail and an oversized lens. The rail is a plain bar; the lens is a
+   pane of the scene's glass, and inside its refraction layer rides a copy of
+   the rail, so the glass bends the rail it sits on along with the scene.
+
+   GlassSlider.tsx marks the root [data-lift] while a finger has the lens and
+   writes its position to --x, 0 to 1 along the travel; at rest the position is
+   --v, from the value. The rail's fill, the lens and the copy of the rail inside
+   it all read the same property, so one write moves all three.
+
+   Lifted, the lens bends harder: --lq-bend is the material's depth multiplier,
+   the engine reads it on every paint, and it transitions, so the refraction
+   deepens eased. Nothing over the glass but a breath of milk at the rim and one
+   soft light; the middle of the lens is the scene.
+
+   The root is a size container, so every position here is a fraction of its
+   own width and nothing is measured. Sizes arrive as custom properties from the
+   component, and the lens only ever changes size by layout: a transform scale
+   on a lens would carry its clone of the scene off the scene behind it. */
+
+.lqc-slider {
+  --lqc-slider-travel: calc(100cqw - var(--lqc-slider-thumb-w));
+  /* where the lens' left edge is: along the travel, less half of what the lift added */
+  --lqc-slider-at: calc(
+    var(--x, var(--v, 0)) *
+    var(--lqc-slider-travel) -
+    var(--lqc-grow, 0px) /
+    2
+  );
+  /* where the rail is filled to: the lens' centre */
+  --lqc-slider-to: calc(
+    var(--x, var(--v, 0)) *
+    var(--lqc-slider-travel) +
+    var(--lqc-slider-thumb-w) /
+    2
+  );
+  position: relative;
+  container-type: inline-size;
+  width: min(280px, var(--lq-room));
+  height: var(--lqc-slider-hit);
+  /* a drag along the rail is the control: the browser must not read it as a pan */
+  touch-action: none;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.lqc-slider[data-disabled] {
+  opacity: 0.45;
+}
+
+/* The rail: thin, translucent, filled to the lens. */
+.lqc-slider-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: var(--lqc-slider-rail);
+  translate: 0 -50%;
+  border-radius: var(--lqc-slider-r);
+  background: rgb(255 255 255 / 0.26);
+  box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.16);
+  overflow: hidden;
+}
+.lqc-slider-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--lqc-slider-to);
+  background: rgb(255 255 255 / 0.85);
+  transition: width 180ms var(--lq-ease);
+}
+
+/* The lens.
+
+   A plain wrapper carries the box, the travel and the shadow; the pane inside
+   fills it. Grown about its centre while lifted. The translate eases when the
+   value moves it (a key, a controlled change, the settle after a release) and
+   not at all while a finger has it, when anything but one to one reads as lag. */
+.lqc-slider-thumb {
+  /* the press feedback here is the lift, not the scene's dip or its ripple */
+  --lq-press-scale: 1;
+  /* The rim and the bend, as shares of the material's. The material's rim
+     was drawn for panes: it reaches 26px in from the edge and saturates within
+     a few, so on a 40px lens it would meet itself in the middle and the whole
+     lens would show a stretched sliver of its centre. A quarter of it is an
+     8px ring; inside the ring the scene is straight and a little magnified,
+     and the ring bends it hard, the way the edge of a lens does. The bend is
+     half the material's at rest, 12px at the very edge; lifted, below, it goes
+     to four fifths. */
+  --lq-rim: 0.25;
+  --lq-bend: 0.5;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: calc(var(--lqc-slider-thumb-w) + var(--lqc-grow, 0px));
+  height: calc(var(--lqc-slider-thumb-h) + var(--lqc-grow, 0px));
+  border-radius: var(--lqc-slider-r);
+  translate: var(--lqc-slider-at) -50%;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.08),
+    0 3px 8px -3px rgb(0 0 0 / 0.16);
+  outline: none;
+  will-change: translate;
+  transition:
+    translate 180ms var(--lq-ease),
+    width 200ms var(--lq-ease),
+    height 200ms var(--lq-ease),
+    box-shadow 240ms var(--lq-ease),
+    --lq-bend 260ms var(--lq-ease);
+}
+.lqc-slider-thumb:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 0.6);
+  outline-offset: 3px;
+}
+/* A finger has it: the ring is the keyboard's, and a lifted lens is not being keyed. */
+.lqc-slider[data-lift] .lqc-slider-thumb:focus-visible {
+  outline: none;
+}
+.lqc-slider-thumb[data-tap]::after,
+.lqc-slider-thumb[data-press="on"]::after {
+  display: none;
+}
+.lqc-slider-lens {
+  position: absolute;
+  inset: 0;
+}
+/* A lens keeps what it magnifies sharp and its own colour: on clear glass it
+   takes a quarter of the material's interior blur, enough to smooth the bent
+   pixels and no more, and a third of its tint, so an edge passing under it
+   bends rather than softens and the scene keeps its colour through the middle.
+   Frosted glass keeps its frost and its milk, which are the material. */
+.lq-stage:not([data-frosted]) .lqc-slider-thumb {
+  --lq-blur: 0.25;
+  --lq-tint: 0.35;
+}
+.lqc-slider-lens-content {
+  border-radius: inherit;
+}
+
+/* Over the glass, bottom to top: the sheen, then the cap.
+
+   The sheen is one soft light along the top of the capsule. It is placed from
+   the lens' position along the rail, so as the lens travels the light moves
+   across it the way a fixed light would move across a lens carried under it.
+   The cap is not a fill: it is clear through the middle and carries a breath of
+   milk out at the rim, the glow a thick edge of glass has. The bright upper rim
+   and the shade along the lower edge are the material's own glint layer, which
+   is under these and shows through. */
+.lqc-slider-sheen,
+.lqc-slider-cap {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.lqc-slider-sheen {
+  background: radial-gradient(
+    ellipse 56% 38% at calc(34% + var(--x, var(--v, 0)) * 32%) 8%,
+    rgb(255 255 255 / 0.42),
+    rgb(255 255 255 / 0.1) 55%,
+    rgb(255 255 255 / 0) 100%
+  );
+  opacity: 0.28;
+  transition: opacity 260ms var(--lq-ease);
+}
+.lqc-slider-cap {
+  background: radial-gradient(
+    ellipse 72% 72% at 50% 50%,
+    rgb(255 255 255 / 0) 56%,
+    rgb(255 255 255 / 0.03) 76%,
+    rgb(255 255 255 / 0.12) 100%
+  );
+  opacity: 1;
+  transition: opacity 260ms var(--lq-ease);
+}
+
+/* The rail as the lens sees it: a copy in the lens' own coordinates, so it
+   lies exactly over the real rail and moves against the lens as the lens moves
+   along it. It lives in the pane's refraction layer, so the engine magnifies it
+   with the scene and bends it at the rim. */
+.lqc-slider-echo {
+  position: absolute;
+  left: calc(-1 * var(--lqc-slider-at));
+  top: calc((var(--lqc-slider-thumb-h) + var(--lqc-grow, 0px) - var(--lqc-slider-rail)) / 2);
+  width: 100cqw;
+  height: var(--lqc-slider-rail);
+  border-radius: var(--lqc-slider-r);
+  background: rgb(255 255 255 / 0.26);
+  box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.16);
+  overflow: hidden;
+  transition: left 180ms var(--lq-ease);
+}
+.lqc-slider-echo-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--lqc-slider-to);
+  background: rgb(255 255 255 / 0.85);
+  transition: width 180ms var(--lq-ease);
+}
+
+/* Lifted. Everything that eased now follows the finger directly; the lens
+   grows a little off the rail, bends the scene harder, its shadow drops away,
+   the rim's milk thins and the light comes up. */
+.lqc-slider[data-lift] .lqc-slider-fill,
+.lqc-slider[data-lift] .lqc-slider-echo,
+.lqc-slider[data-lift] .lqc-slider-echo-fill {
+  transition: none;
+}
+.lqc-slider[data-lift] .lqc-slider-thumb {
+  --lqc-grow: var(--lqc-slider-lift);
+  --lq-bend: 0.8;
+  box-shadow:
+    0 2px 5px -2px rgb(0 0 0 / 0.12),
+    0 10px 22px -10px rgb(0 0 0 / 0.3);
+  transition:
+    width 200ms var(--lq-ease),
+    height 200ms var(--lq-ease),
+    box-shadow 240ms var(--lq-ease),
+    --lq-bend 260ms var(--lq-ease);
+}
+.lqc-slider[data-lift] .lqc-slider-cap {
+  opacity: 0.5;
+}
+.lqc-slider[data-lift] .lqc-slider-sheen {
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* It still lifts and still follows the finger; nothing grows or eases on the way. */
+  .lqc-slider-thumb,
+  .lqc-slider-fill,
+  .lqc-slider-echo,
+  .lqc-slider-echo-fill,
+  .lqc-slider-sheen,
+  .lqc-slider-cap {
+    transition: none !important;
+  }
+  .lqc-slider[data-lift] .lqc-slider-thumb {
+    --lqc-grow: 0px;
+    --lq-bend: 0.5;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  /* Core gives every pane an opaque fill here; the lens takes a white one. */
+  .lqc-slider-lens {
+    background: #fff;
+  }
+}

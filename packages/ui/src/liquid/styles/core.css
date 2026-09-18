@@ -1,0 +1,432 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component transitions. */
+/* Liquid core: the engine's layer styles.
+
+   Companion to scene.tsx. Geometry (sizes, offsets, clips,
+   blur, tint, glint) is written by the engine at paint time; everything
+   structural lives here. Component-specific styling never does: each
+   component ships its own stylesheet. */
+
+:root {
+  /* one shared curve: short, damped, never applied to the material's optics */
+  --lq-ease: cubic-bezier(0.33, 1, 0.68, 1);
+  /* and one that carries past its mark and comes back, for the few things that
+     are thrown rather than moved */
+  --lq-spring: cubic-bezier(0.34, 1.32, 0.56, 1);
+}
+
+.lq-stage {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  user-select: none;
+  -webkit-user-select: none;
+  background: #0a0b0f;
+
+  /* A component answers to the SCENE, not to the window. The same stepper sits
+     in a 1280px page and in a 558px panel beside an inspector, so a viewport
+     media query would tell it the wrong thing about the room it has. Every
+     width in the set is min(its natural size, --lq-room), and every layout
+     change in the set is a @container query on this name. */
+  container-type: inline-size;
+  container-name: lq-stage;
+  /* The margin a surface keeps from the rim of its own stage. */
+  --lq-gutter: 16px;
+  --lq-room: calc(100cqw - 2 * var(--lq-gutter));
+}
+
+/* The strip takes the vertical drag so it can scroll; pinch and horizontal
+   panning stay with the browser, and track.ts hands the page back whatever the
+   strip cannot absorb, so an inline scene never traps the reader. */
+.lq-stage[data-strip] {
+  touch-action: pan-x pinch-zoom;
+  cursor: grab;
+}
+.lq-stage[data-strip][data-scrolling] {
+  cursor: grabbing;
+}
+
+/* the refracted subject */
+.lq-scene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.lq-scene-bg,
+.lq-refraction-scene .lq-scene-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* The scrolling strip of backdrops. One offset drives the real strip and every
+   refracted clone of it, because --lq-scroll is set on the stage and both
+   inherit it from there: nothing has to be kept in sync. It moves by `top`
+   rather than by a transform, because a transform inside the filtered subtree
+   is the one thing WebKit will not filter reliably. */
+.lq-strip {
+  position: absolute;
+  top: var(--lq-scroll, 0px);
+  left: 0;
+  right: 0;
+  height: calc(var(--lq-panels, 1) * 100%);
+}
+.lq-panel {
+  position: relative;
+  height: calc(100% / var(--lq-panels, 1));
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+/* a caption in the corner, the way the liquix stage labels its panels */
+.lq-panel-label {
+  position: absolute;
+  left: 22px;
+  bottom: 24px;
+  max-width: 70%;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.4);
+  font: 700 12px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #fff;
+}
+
+/* Interactive layer: glass surfaces live here, never inside .lq-scene.
+
+   It also places what it holds. A component is centred by the scene rather than
+   by a positioner of its own, so the markup a component ships is the component
+   and nothing else. `safe` is what happens when a component is taller than the
+   stage it was given: it aligns to the top rather than losing its head and its
+   feet to the clip in equal measure. */
+.lq-layer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-items: safe center;
+  justify-items: safe center;
+}
+
+/* Every component arrives: it rises the last few pixels into place and fades
+   up, so a scene assembles rather than being there already. Only the layer's
+   own children, so a menu or a panel that has its own entrance is not animated
+   twice. Deliberately opacity and translate alone: the box never changes size,
+   so the arrival re-uses the displacement map the surface was born with. */
+.lq-layer > * {
+  animation: lq-arrive 560ms var(--lq-ease) both;
+}
+@keyframes lq-arrive {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+}
+
+/* the cloned scene held inside each surface; positioned (never transformed) so
+   it lines up pixel-for-pixel with the real scene behind the surface */
+.lq-refraction-scene {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+}
+
+/* the glass surface itself */
+
+.lq-lens {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate; /* contain the tint blend mode to the surface contents */
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #fff;
+  -webkit-tap-highlight-color: transparent;
+  transition: scale 150ms var(--lq-ease);
+  /* The scene offers a grab, because its backdrop scrolls. The glass does not
+     move, so it must not inherit that offer; what is interactive inside it says
+     so for itself. */
+  cursor: default;
+}
+
+button.lq-lens {
+  cursor: pointer;
+}
+
+/* Composited inner layers (a filtered subtree, a blended layer) escape the
+   parent's overflow+border-radius clip in WebKit and show square corners.
+   clip-path on this wrapper clips them reliably, and unlike clipping .lq-lens
+   directly, it leaves the outer shadow intact. It also passes the lens radius
+   down, so the tint and glint layers that inherit theirs from it draw their
+   inset strokes round the corner rather than being cut off at it. */
+.lq-clip {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+/* standalone blur, deliberately NOT chained onto the url() filter, which
+   Safari over-blurs */
+.lq-blur {
+  position: absolute;
+  inset: 0;
+  will-change: filter;
+}
+
+.lq-refraction {
+  position: absolute;
+  transform-origin: top left;
+  pointer-events: none; /* a visual clone; input passes through to the surface */
+  will-change: filter;
+}
+
+/* What a surface asks of the material, as multiples of it. Set any of them on
+   a surface, or on anything above one: the engine reads all four on every
+   paint. --lq-bend is how hard it bends the scene at its rim, so a lens that is
+   picked up bends harder and, transitioned, gets there eased; --lq-blur is how
+   much of the interior blur it takes and --lq-tint how much of the tint, so a
+   loupe keeps what it magnifies sharp and its own colour; --lq-rim is how deep
+   the bend reaches in from the edge, so a lens a few times the rim's 26px takes
+   a rim in proportion to its size instead of one that meets itself in the
+   middle. The first three transition; --lq-rim changes the map, so set it and
+   leave it. */
+@property --lq-bend {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+@property --lq-blur {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+@property --lq-tint {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+@property --lq-rim {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+/* a surface's own refracted content (LiquidSurface's `refracted`): laid out in
+   the lens window over the clone of the scene, and bent through the same filter */
+.lq-refracted {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+}
+
+/* glass tint, blended over the refraction, beneath the glint */
+.lq-tint {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+/* specular bevel: a composited layer rather than an SVG pass; the glint
+   control drives intensity through opacity */
+.lq-glint {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 1px 1px 2.5px rgba(255, 255, 255, 0.55),
+    inset -1.5px -1.5px 4px rgba(0, 0, 0, 0.22);
+}
+
+.lq-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+/* interactive content (menu items, links) opts back in */
+.lq-content-interactive {
+  pointer-events: auto;
+}
+
+/* press feedback
+
+   Glass that does not answer a finger reads as a picture of a button. press.ts
+   marks what was pressed and where it was touched; the rest is here.
+
+   How far a control gives is the component's call, through --lq-press-scale: a
+   22px swatch and a 296px card cannot shrink by the same amount. How LONG it
+   takes is the component's too, in its own transition list, because a rule
+   broad enough to set it here would replace the transitions components declare
+   for their own colour and background. */
+.lq-stage
+:is(
+  button,
+  a[href],
+  [role="tab"],
+  [role="menuitem"],
+  [role="menuitemradio"],
+  [role="menuitemcheckbox"],
+  [role="option"],
+  [role="switch"],
+  [role="slider"],
+  [data-lq-press]
+) {
+  -webkit-tap-highlight-color: transparent;
+}
+/* No double-tap delay on anything that is a tap. Sliders are left out: they set
+   touch-action themselves, because a drag across them is the control. */
+.lq-stage
+:is(
+  button,
+  a[href],
+  [role="tab"],
+  [role="menuitem"],
+  [role="menuitemradio"],
+  [role="menuitemcheckbox"],
+  [role="option"],
+  [role="switch"]
+) {
+  touch-action: manipulation;
+}
+
+.lq-stage [data-press="on"] {
+  scale: var(--lq-press-scale, 0.96);
+}
+
+/* The light spreads from the point the finger landed on and keeps going after
+   the release: the ripple records the touch, not the hold. It is drawn as a
+   background on ::after, so the control's own border-radius clips it and no
+   child of the control is ever clipped along with it. */
+@property --lq-tap-size {
+  syntax: "<length>";
+  initial-value: 0px;
+  inherits: false;
+}
+.lq-stage [data-tap]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle closest-side,
+    rgba(255, 255, 255, 0.5),
+    rgba(255, 255, 255, 0.16) 58%,
+    rgba(255, 255, 255, 0) 72%
+  );
+  background-repeat: no-repeat;
+  background-size: var(--lq-tap-size) var(--lq-tap-size);
+  background-position: calc(var(--lq-tap-x, 50%) - var(--lq-tap-size) / 2)
+    calc(var(--lq-tap-y, 50%) - var(--lq-tap-size) / 2);
+  animation: lq-tap 540ms var(--lq-ease) both;
+}
+@keyframes lq-tap {
+  from {
+    --lq-tap-size: 0px;
+    opacity: 0.85;
+  }
+  to {
+    --lq-tap-size: var(--lq-tap-reach, 0px);
+    opacity: 0;
+  }
+}
+
+.lq-housing {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* Frosted glass
+
+   The scene's frosted toggle. The engine does the optics (a softening blur of
+   the clone, a little saturation, the milk of the veil, a whisper of a rim);
+   what makes it read as the Dock's material rather than as blurred clear glass
+   is here.
+
+   The tint stops multiplying and lies over the blur as a veil, so the white
+   the material rests on frosts to milk where clear glass would show no change
+   at all. The bevel gives way to a hairline: one pixel of light round the
+   whole rim, a touch brighter along the top edge where the light lands, with a
+   shade under the bottom edge. A faint sheen falls down the face and the
+   surface lifts a little from the backdrop. Nothing here is dense: the scene
+   behind the pane stays a picture, not a colour. The glint slider still drives
+   the rim and the sheen through the layer's opacity, so glint 0 is a plain
+   frosted pane. */
+.lq-stage[data-frosted] .lq-tint {
+  mix-blend-mode: normal;
+}
+.lq-stage[data-frosted] .lq-glint {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.03) 50%,
+    rgba(255, 255, 255, 0)
+  );
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+}
+/* Elevation for a pane that sits on the scene; a pane inside another pane
+   (a button in a card) stays flush, the way a control on a system material does. */
+.lq-stage[data-frosted] .lq-lens:not(.lq-lens .lq-lens) {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    0 12px 32px -12px rgba(0, 0, 0, 0.4);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .lq-blur,
+  .lq-refraction {
+    display: none;
+  }
+  .lq-lens {
+    background: rgba(28, 28, 30, 0.9);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lq-lens {
+    transition: none !important;
+  }
+  .lq-layer > * {
+    animation: none !important;
+  }
+  /* The press still answers, it just does not travel: a flat highlight for the
+     length of the press instead of a scale and a spreading ripple. */
+  .lq-stage [data-press="on"] {
+    scale: 1;
+  }
+  .lq-stage [data-tap]::after {
+    animation: none;
+  }
+  .lq-stage [data-press="on"]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    border-radius: inherit;
+    pointer-events: none;
+    background: rgba(255, 255, 255, 0.16);
+  }
+}

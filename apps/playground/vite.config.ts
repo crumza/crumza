@@ -9,6 +9,7 @@ export default defineConfig({
     alias: {
       '@crumza/ui/styles.css': fileURLToPath(new URL('../../packages/ui/src/web/styles/crumza.css', import.meta.url)),
       '@crumza/ui/web': fileURLToPath(new URL('../../packages/ui/src/web/index.ts', import.meta.url)),
+      '@crumza/ui/liquid': fileURLToPath(new URL('../../packages/ui/src/liquid/index.ts', import.meta.url)),
       '@crumza/ui': fileURLToPath(new URL('../../packages/ui/src/index.ts', import.meta.url)),
     },
   },

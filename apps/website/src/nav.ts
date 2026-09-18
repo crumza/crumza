@@ -21,6 +21,25 @@ export const sidebar: readonly NavGroup[] = [
     ],
   },
   {
+    title: 'Liquid glass',
+    items: [
+      { slug: 'liquid', label: 'LiquidScene' },
+      { slug: 'components/liquid-pricing-card', label: 'LiquidPricingCard' },
+      { slug: 'components/liquid-testimonials', label: 'LiquidTestimonials' },
+      { slug: 'components/liquid-header', label: 'LiquidHeader' },
+      { slug: 'components/liquid-mobile-nav', label: 'LiquidMobileNav' },
+      { slug: 'components/liquid-tab-indicator', label: 'LiquidTabIndicator' },
+      { slug: 'components/liquid-search', label: 'LiquidSearch' },
+      { slug: 'components/liquid-stepper', label: 'LiquidStepper' },
+      { slug: 'components/liquid-glass-toggle', label: 'LiquidGlassToggle' },
+      { slug: 'components/liquid-glass-slider', label: 'LiquidGlassSlider' },
+      { slug: 'components/liquid-color-picker', label: 'LiquidColorPicker' },
+      { slug: 'components/liquid-notification-stack', label: 'LiquidNotification\u00adStack' },
+      { slug: 'components/liquid-context-menu', label: 'LiquidContextMenu' },
+      { slug: 'components/liquid-gallery', label: 'LiquidGallery' },
+    ],
+  },
+  {
     title: 'Chrome',
     items: [
       { slug: 'components/glass', label: 'Glass' },
@@ -82,6 +101,7 @@ export const sidebar: readonly NavGroup[] = [
       { slug: 'components/liquix-menu', label: 'LiquixMenu' },
       { slug: 'components/liquix-popover', label: 'LiquixPopover' },
       { slug: 'components/liquix-toast', label: 'LiquixToast' },
+      { slug: 'components/liquix-frosted', label: 'LiquixFrosted' },
     ],
   },
   {

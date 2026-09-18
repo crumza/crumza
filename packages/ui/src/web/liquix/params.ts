@@ -35,6 +35,9 @@ export interface LiquixParams {
   readonly blurRadius: number;
   /** True: the whole shape reads the blurred backdrop. */
   readonly blurEdge: boolean;
+  /** Percent saturation of the backdrop seen through the glass. 100 leaves it
+   *  as it is; a system material lifts it so colour survives blur and veil. */
+  readonly saturation: number;
   /** Blur passes run at this fraction of canvas resolution. */
   readonly blurScale: number;
   /** Growth along the pull axis at full pull. */
@@ -84,6 +87,7 @@ export const defaultLiquixParams: LiquixParams = {
   glareAngle: -45,
   blurRadius: 8,
   blurEdge: true,
+  saturation: 100,
   blurScale: 0.4,
   pullStretch: 0.05,
   pullSquash: 0.04,
@@ -99,6 +103,87 @@ export const defaultLiquixParams: LiquixParams = {
   shadowOffsetY: 10,
   step: 4,
 };
+
+/* LiquixFrosted
+   ------------------------------------------------------------------------
+   The frosted material, documented at docs/components/liquix-frosted.md. A
+   stage with `frosted` set merges its `params` over this preset instead of
+   over the defaults above. */
+
+/**
+ * The frosted material: the glass of the macOS Dock.
+ *
+ * The backdrop stays visible through it, its colour intact and its detail
+ * softened rather than erased, lifted by a little milk rather than dimmed to a
+ * slab; `overLight` still dims it where the backdrop is bright, a touch less
+ * than clear glass does, so the white labels keep their contrast the way the
+ * Dock greys over a white desktop. The bevel narrows to a few pixels with
+ * almost no dispersion, because frost diffuses the light a clear edge would
+ * bend, and the Fresnel and glare bands close down to the hairline a frosted
+ * pane shows at its rim: a wide bevel here reads as a thick frame, and a dense
+ * veil reads as paint, and a frosted pane must have neither. The overscroll
+ * physics are the same glass; the shadow sits a little softer and lower.
+ */
+export const frostedLiquixParams: LiquixParams = {
+  ...defaultLiquixParams,
+  refThickness: 6,
+  refDistance: 0.02,
+  refDispersion: 1.5,
+  fresnelRange: 12,
+  fresnelHardness: 30,
+  fresnelFactor: 24,
+  glareRange: 12,
+  glareFactor: 30,
+  glareOppositeFactor: 40,
+  blurRadius: 20,
+  saturation: 125,
+  overLight: 30,
+  tint: { r: 255, g: 255, b: 255, a: 0.2 },
+  shadowExpand: 30,
+  shadowFactor: 22,
+  shadowOffsetY: 14,
+};
+
+/** The colour scheme a stage draws for. Light glass carries dark ink, dark glass light ink. */
+export type LiquixScheme = 'light' | 'dark';
+
+/** The two materials, each in both schemes. */
+export type LiquixMaterial = 'clear' | 'frosted';
+
+/**
+ * The material matrix. The defaults above are clear glass in the dark scheme,
+ * the reference studio's look: no veil, white labels, and a dimming over
+ * bright content that protects them. The other three follow from it.
+ *
+ * Light clear glass lifts a little white into the pane and needs far less
+ * dimming, because its labels are dark and read best on a bright surface.
+ * Light frosted glass is the Dock over a photo, the preset above. Dark frosted
+ * glass is the Dock at night: the same softening blur under a smoke of near
+ * black rather than milk, with white labels and the full dimming kept.
+ */
+export const LIQUIX_MATERIALS: Record<LiquixMaterial, Record<LiquixScheme, LiquixParams>> = {
+  clear: {
+    dark: defaultLiquixParams,
+    light: {
+      ...defaultLiquixParams,
+      tint: { r: 255, g: 255, b: 255, a: 0.12 },
+      overLight: 12,
+    },
+  },
+  frosted: {
+    light: frostedLiquixParams,
+    dark: {
+      ...frostedLiquixParams,
+      tint: { r: 22, g: 24, b: 30, a: 0.32 },
+      overLight: 40,
+    },
+  },
+};
+
+/** The base parameters for a material in a scheme; a stage merges its `params` over these. */
+export function liquixMaterialParams(frosted: boolean, scheme: LiquixScheme): LiquixParams {
+  return LIQUIX_MATERIALS[frosted ? 'frosted' : 'clear'][scheme];
+}
 
 /** What a backdrop panel draws. Patterns make refraction and dispersion easy to read. */
 export const PANEL_KINDS = {
