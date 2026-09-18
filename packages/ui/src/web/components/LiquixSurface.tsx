@@ -15,7 +15,7 @@ import {
   paintPanels,
   tileWindow,
 } from '../liquix/backdrop';
-import { defaultLiquixSurfaceParams, type LiquixParams } from '../liquix/params';
+import { defaultLiquixSurfaceParams, type LiquixParams, type LiquixTint } from '../liquix/params';
 import {
   createGlassRenderer,
   gaussianKernel,
@@ -61,7 +61,6 @@ interface SurfaceSize {
 interface LoopState {
   panels: readonly PanelRecord[];
   strips: Map<string, LiquixStrip>;
-  mirror: WebGLTexture | null;
   kernel: GaussianKernel;
   scroll: number;
   maxScroll: number;
@@ -75,6 +74,19 @@ interface LoopState {
   size: { width: number; height: number; dpr: number; blurScale: number };
   accumulator: number;
   lastTime: number;
+}
+
+/** The tint a shape reaches at zero clarity: a milky, frosted body, whatever colour the glass is. */
+const FROST: LiquixTint = { r: 255, g: 255, b: 255, a: 0.5 };
+
+/** `from` at 0, `to` at 1, per channel. */
+function mixTint(from: LiquixTint, to: LiquixTint, t: number): LiquixTint {
+  return {
+    r: from.r + (to.r - from.r) * t,
+    g: from.g + (to.g - from.g) * t,
+    b: from.b + (to.b - from.b) * t,
+    a: from.a + (to.a - from.a) * t,
+  };
 }
 
 const SCROLLER =
@@ -96,10 +108,10 @@ const SCROLLER =
  * Shapes register through useLiquixBox. They are drawn in layers, because the
  * shader merges everything it is given into one distance field with min(): a
  * pill inside a bar would be swallowed by it, since inside the bar the bar is
- * always the deeper shape. So each layer gets its own pass, and every pass
- * after the first refracts a copy of the canvas the previous one left behind,
- * which is how a highlight comes to sit on the bar's glass rather than
- * merging into it.
+ * always the deeper shape. So each layer gets its own pass, composited over
+ * the passes before it, which is how a highlight comes to sit on the bar's
+ * glass rather than merging into it. Every layer refracts the content itself,
+ * not the glass below: a lens on a lens would show the lower rim inside it.
  */
 export function LiquixSurface({
   paint,
@@ -137,7 +149,6 @@ export function LiquixSurface({
   const stateRef = useRef<LoopState>({
     panels: [],
     strips: new Map(),
-    mirror: null,
     kernel: gaussianKernel(defaultLiquixSurfaceParams.blurRadius),
     scroll: 0,
     maxScroll: 0,
@@ -228,28 +239,6 @@ export function LiquixSurface({
         canvas.height = Math.round(cssHeight * dpr);
         renderer.resize(canvas.width, canvas.height, dpr, blurScale);
         state.size = { width: cssWidth, height: cssHeight, dpr, blurScale };
-
-        // Holds a copy of the finished canvas so a later layer can refract it.
-        // RGB: the colour is all a later pass samples, and the drawing buffer
-        // always has at least that. Asking for channels the buffer does not
-        // have is what makes a copy an invalid operation, and a black frame.
-        if (!state.mirror) state.mirror = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, state.mirror);
-        gl.texImage2D(
-          gl.TEXTURE_2D,
-          0,
-          gl.RGB,
-          canvas.width,
-          canvas.height,
-          0,
-          gl.RGB,
-          gl.UNSIGNED_BYTE,
-          null,
-        );
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       }
 
       // Interaction easing runs on a fixed timestep: clamping a variable
@@ -274,14 +263,36 @@ export function LiquixSurface({
       if (layers.length === 0) layers.push(0);
 
       layers.forEach((layer, pass) => {
-        const group = entries.filter((entry) => (entry.layer ?? 0) === layer).slice(0, MAX_SHAPES);
+        // A shape is drawn only while it has an element, a size and any alpha
+        // at all. Without an element, a panel that has closed say, it would
+        // sit at the canvas centre; without alpha it draws nothing itself but
+        // would still own the pixels nearest it and cut them out of the
+        // shapes around it, and its clarity would frost the whole pass.
+        const group = entries
+          .filter(
+            (entry) =>
+              (entry.layer ?? 0) === layer &&
+              entry.el !== null &&
+              entry.shape.width > 0 &&
+              entry.shape.height > 0 &&
+              (entry.alpha ?? 1) > 0,
+          )
+          .slice(0, MAX_SHAPES);
 
+        // The pass has the deepest lens rim any of its shapes asks for, the
+        // surface's own at least; it is only as much of a lens as its least
+        // clear shape, and carries the deepest shadow any shape asks for.
+        const base = settingsRef.current;
+        let bevel = base.refThickness;
+        let clarity = 1;
+        let shadow = base.shadowFactor;
         group.forEach((entry, i) => {
+          bevel = Math.max(bevel, entry.bevel ?? 0);
+          clarity = Math.min(clarity, entry.clarity ?? 1);
+          shadow = Math.max(shadow, entry.shadow ?? 0);
           const rect = entry.el?.getBoundingClientRect();
-          const centerX =
-            (rect ? rect.left + rect.width / 2 : canvasBox.width / 2) - canvasBox.left;
-          const centerY =
-            (rect ? rect.top + rect.height / 2 : canvasBox.height / 2) - canvasBox.top;
+          const centerX = rect ? rect.left + rect.width / 2 - canvasBox.left : canvasBox.width / 2;
+          const centerY = rect ? rect.top + rect.height / 2 - canvasBox.top : canvasBox.height / 2;
           centers[i * 2] = centerX * dpr;
           centers[i * 2 + 1] = (cssHeight - centerY) * dpr;
           sizes[i * 2] = entry.shape.width * entry.scale;
@@ -294,12 +305,10 @@ export function LiquixSurface({
 
         if (pass === 0) {
           gl.disable(gl.BLEND);
-        } else if (state.mirror) {
-          gl.bindTexture(gl.TEXTURE_2D, state.mirror);
-          gl.copyTexSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 0, 0, canvas.width, canvas.height);
-          // Every pass after the first composites: outside its own shape it
-          // writes alpha 0, which must leave the layer below standing rather
-          // than replace it.
+        } else {
+          // Every pass after the first composites over the last: outside its
+          // own shape it writes alpha 0, which must leave the layer below
+          // standing rather than replace it.
           gl.enable(gl.BLEND);
           gl.blendFuncSeparate(
             gl.SRC_ALPHA,
@@ -309,8 +318,9 @@ export function LiquixSurface({
           );
         }
 
-        // The mirror is exactly the canvas, so cover-fitting it is the
-        // identity and the pass repaints what was already there, plus glass.
+        // Every layer refracts the content itself, never the glass below it:
+        // a shape laid on another is a lens on the same page, not a lens
+        // looking at a lens, which would show the lower shape's rim inside it.
         // The shader takes at most MAX_PANELS tiles, and a long screen has
         // more, so it is handed the window of tiles around the scroll position
         // and a scroll measured from the first of them. Nothing is lost: only
@@ -320,10 +330,10 @@ export function LiquixSurface({
           cssHeight,
           state.panels.length,
         );
-        const backdrop: readonly PanelRecord[] =
-          pass === 0
-            ? state.panels.slice(window.first, window.first + MAX_PANELS)
-            : [{ kind: 0, ready: true, texture: state.mirror, aspect: cssWidth / cssHeight }];
+        const backdrop: readonly PanelRecord[] = state.panels.slice(
+          window.first,
+          window.first + MAX_PANELS,
+        );
 
         renderer.render({
           shapes: {
@@ -335,10 +345,22 @@ export function LiquixSurface({
             alphas,
             pull: [0, 0],
           },
-          params: settingsRef.current,
+          params: {
+            ...base,
+            refThickness: bevel,
+            shadowFactor: shadow,
+            // A shape losing clarity keeps its silhouette but stops bending
+            // and shining, and its body turns milky: frosted glass, on the
+            // way to no glass at all.
+            refDistance: base.refDistance * clarity,
+            refDispersion: base.refDispersion * clarity,
+            fresnelFactor: base.fresnelFactor * clarity,
+            glareFactor: base.glareFactor * clarity,
+            tint: mixTint(FROST, base.tint, clarity),
+          },
           panels: backdrop,
           kernel: state.kernel,
-          scroll: pass === 0 ? window.scroll : 0,
+          scroll: window.scroll,
           panelHeight: cssHeight,
         });
       });
@@ -348,8 +370,6 @@ export function LiquixSurface({
     return () => {
       cancelAnimationFrame(raf);
       canvas.removeEventListener('webglcontextlost', onContextLost);
-      if (state.mirror) renderer.gl.deleteTexture(state.mirror);
-      state.mirror = null;
       for (const strip of state.strips.values()) disposePanels(renderer.gl, strip.panels);
       state.strips = new Map();
       state.panels = [];

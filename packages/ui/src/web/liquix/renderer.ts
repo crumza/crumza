@@ -423,6 +423,7 @@ export function createGlassRenderer(
       u_pullSquash: params.pullSquash,
     } satisfies Record<string, UniformValue>;
 
+    const shadowPosition = [-params.shadowOffsetX * size.dpr, params.shadowOffsetY * size.dpr];
     const kinds = new Int32Array(MAX_PANELS);
     const ready = new Int32Array(MAX_PANELS);
     const aspects = new Float32Array(MAX_PANELS).fill(1);
@@ -447,8 +448,11 @@ export function createGlassRenderer(
         u_panelReady: ready,
         u_panelAspect: aspects,
         u_shadowExpand: params.shadowExpand,
-        u_shadowFactor: params.shadowFactor / 100,
-        u_shadowPosition: [-params.shadowOffsetX * size.dpr, params.shadowOffsetY * size.dpr],
+        // A stencilled canvas draws the shadow in the glass pass instead: a
+        // darkening baked into the backdrop would be cut away outside the
+        // glass and survive only where the glass refracts it, as a dirty ring.
+        u_shadowFactor: transparent ? 0 : params.shadowFactor / 100,
+        u_shadowPosition: shadowPosition,
       },
       panelTextures,
     );
@@ -495,6 +499,9 @@ export function createGlassRenderer(
         u_overLightPoint: params.overLightPoint / 100,
         u_step: params.step,
         u_cutout: transparent ? 1 : 0,
+        u_shadowExpand: params.shadowExpand,
+        u_shadowFactor: transparent ? params.shadowFactor / 100 : 0,
+        u_shadowPosition: shadowPosition,
       },
       [
         ['u_bg', bgTarget.texture],

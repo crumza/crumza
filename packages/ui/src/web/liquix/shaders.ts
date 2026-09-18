@@ -204,6 +204,12 @@ uniform int u_step;
 // shape itself covers it. The backdrop is still sampled either way, it is the
 // thing being refracted, it just stops being drawn.
 uniform int u_cutout;
+// The drop shadow, drawn here only on a stencilled canvas: as alpha outside the
+// silhouette, since nothing outside it survives otherwise. An opaque canvas
+// has it in the backdrop pass instead.
+uniform float u_shadowExpand;
+uniform float u_shadowFactor;
+uniform vec2 u_shadowPosition;
 
 // Gradient of the SDF. Deliberately unnormalised: its length falls off where
 // the field flattens (shape interior, blob neck), and sdfSlope() turns that
@@ -237,11 +243,12 @@ float refractionEdgeFactor(float depth) {
 // Shared falloff for the Fresnel rim and the glare band: 1 at the silhouette,
 // decaying inwards over the range, with hardness widening the plateau.
 float rimFalloff(float merged, float resCssY, float range, float hardness) {
-  return clamp(
-    pow(1.0 + merged * resCssY / 1500.0 * pow(500.0 / max(range, 0.01), 2.0) + hardness, 5.0),
-    0.0,
-    1.0
-  );
+  // Clamped before the power, not after: the base goes negative a few px in
+  // from the rim, and pow() of a negative base is undefined in GLSL. Some
+  // implementations return the magnitude, which would flood the interior with
+  // highlight and leave a seam where the normal flips at the centre line.
+  float base = 1.0 + merged * resCssY / 1500.0 * pow(500.0 / max(range, 0.01), 2.0) + hardness;
+  return pow(clamp(base, 0.0, 1.0), 5.0);
 }
 
 /**
@@ -337,14 +344,20 @@ void main() {
     alpha = u_shapeAlpha[owner];
 
     if (edgeFactor <= 0.0) {
-      // Flat interior: blurred backdrop plus tint, no bending.
-      outColor = texture(u_blurredBg, v_uv);
-      outColor = mix(outColor, vec4(u_tint.rgb, 1.0), u_tint.a * 0.8);
-      outColor.rgb = adaptToBackdrop(outColor.rgb, outColor.rgb);
+      // Flat interior: blurred backdrop plus tint, no bending. Brightness is
+      // judged on the backdrop itself, as the bevel does, so the two meet
+      // without a step where the bevel runs out.
+      vec4 blurred = texture(u_blurredBg, v_uv);
+      outColor = mix(blurred, vec4(u_tint.rgb, 1.0), u_tint.a * 0.8);
+      outColor.rgb = adaptToBackdrop(outColor.rgb, blurred.rgb);
       outColor.rgb *= 1.0 + 0.10 * glow;
     } else {
       vec2 normal = getNormal(gl_FragCoord.xy);
       float slope = sdfSlope(normal);
+      // On a shape's centre line the field is flat and the gradient is zero;
+      // normalising that would give NaN and a dark seam. The direction there
+      // does not matter, since slope fades the highlights out anyway.
+      vec2 facing = length(normal) > 1e-6 ? normalize(normal) : vec2(0.0, 1.0);
       // Keeps the offset circular on a non-square canvas.
       vec2 aspectFix = vec2(u_resolution.y / u_resolution.x, 1.0);
       vec2 offset = -normal * edgeFactor * u_refDistance * u_dpr * aspectFix;
@@ -376,7 +389,7 @@ void main() {
       // Glare: a directional highlight that rides the normal angle, so it
       // stays put as the shape moves and stretches.
       float glareGeo = rimFalloff(merged, resCssY, u_glareRange, u_glareHardness);
-      float glareAngle = (vec2ToAngle(normalize(normal)) - PI / 4.0 + u_glareAngle) * 2.0;
+      float glareAngle = (vec2ToAngle(facing) - PI / 4.0 + u_glareAngle) * 2.0;
       bool farSide =
         (glareAngle > PI * 1.5 && glareAngle < PI * 3.5) || glareAngle < -PI * 0.5;
       float glare =
@@ -406,6 +419,23 @@ void main() {
   float coverage = 1.0 - smoothstep(-0.001, 0.001, merged);
   outColor = mix(outColor, texture(u_bg, v_uv), 1.0 - coverage);
 
-  fragColor = vec4(outColor.rgb, u_cutout > 0 ? coverage * alpha : 1.0);
+  if (u_cutout == 0) {
+    fragColor = vec4(outColor.rgb, 1.0);
+    return;
+  }
+
+  // Outside the glass the canvas is clear but for the shape's drop shadow: a
+  // black layer whose alpha is full inside the shifted silhouette and falls
+  // off exponentially beyond it. The glass is composited over that shadow.
+  float shade = 0.0;
+  if (u_shadowFactor > 0.0) {
+    float shifted = mainSDF(gl_FragCoord.xy, u_shadowPosition);
+    shade = exp(-1.0 / u_shadowExpand * max(shifted, 0.0) * resCssY) * 0.6 * u_shadowFactor;
+  }
+  float glassAlpha = coverage * alpha;
+  float shadowAlpha = shade * (1.0 - coverage);
+  float outAlpha = glassAlpha + shadowAlpha * (1.0 - glassAlpha);
+  vec3 rgb = outAlpha > 0.0 ? outColor.rgb * glassAlpha / outAlpha : vec3(0.0);
+  fragColor = vec4(rgb, outAlpha);
 }
 `;

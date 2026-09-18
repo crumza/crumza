@@ -136,12 +136,13 @@ describe('liquix surface', () => {
 
   test('the surface defaults keep the shared pipeline but cut its physics and shadow', () => {
     expect(defaultLiquixSurfaceParams.refFactor).toBe(defaultLiquixParams.refFactor);
-    expect(defaultLiquixSurfaceParams.tint).toEqual({ r: 255, g: 255, b: 255, a: 0.14 });
-    expect(defaultLiquixSurfaceParams.blurRadius).toBe(4);
+    expect(defaultLiquixSurfaceParams.tint).toEqual({ r: 18, g: 22, b: 30, a: 0.45 });
+    expect(defaultLiquixSurfaceParams.blurRadius).toBe(6);
+    expect(defaultLiquixSurfaceParams.refDispersion).toBe(3);
     expect(defaultLiquixSurfaceParams.blurEdge).toBe(false);
-    // The bevel reaches the centre of the default 56px bar: the whole bar is a lens.
-    expect(defaultLiquixSurfaceParams.refThickness).toBe(28);
-    expect(defaultLiquixSurfaceParams.overLight).toBe(defaultLiquixParams.overLight);
+    // The bending lives in a rim, not the body: a pane of glass, not a lens.
+    expect(defaultLiquixSurfaceParams.refThickness).toBe(10);
+    expect(defaultLiquixSurfaceParams.overLight).toBe(50);
     expect(defaultLiquixSurfaceParams.pullStretch).toBe(0);
     expect(defaultLiquixSurfaceParams.pullSquash).toBe(0);
     expect(defaultLiquixSurfaceParams.pullShift).toBe(0);
@@ -162,7 +163,9 @@ describe('liquix surface', () => {
 
   test('the glass pass can punch everything outside the shape to alpha 0', () => {
     expect(FRAGMENT_MAIN).toContain('uniform int u_cutout;');
-    expect(FRAGMENT_MAIN).toContain('u_cutout > 0 ? coverage * alpha : 1.0');
+    expect(FRAGMENT_MAIN).toContain('float glassAlpha = coverage * alpha;');
+    // The shadow is alpha outside the glass on a stencilled canvas only.
+    expect(FRAGMENT_MAIN).toContain('float shadowAlpha = shade * (1.0 - coverage);');
   });
 
   test('a shape on a stencilled canvas can fade by its own alpha', () => {
@@ -185,13 +188,19 @@ describe('liquix tabs', () => {
     );
     expect(html).toContain('role="tablist"');
     expect(html).toContain('aria-label="Sections"');
+    // The bar is dragged, so it must keep the browser's touch gestures off itself.
+    expect(html).toMatch(/role="tablist"[^>]*class="[^"]*touch-none select-none/);
     expect(html.match(/role="tab"/g)).toHaveLength(3);
-    expect(html).toMatch(/id="[^"]+-tab-inbox" aria-selected="true" [^>]*tabindex="0"/);
-    expect(html).toMatch(/id="[^"]+-tab-home" aria-selected="false" [^>]*tabindex="-1"/);
+    expect(html).toMatch(/id="[^"]+-liquix-tabs-inbox" aria-selected="true" [^>]*tabindex="0"/);
+    expect(html).toMatch(/id="[^"]+-liquix-tabs-home" aria-selected="false" [^>]*tabindex="-1"/);
     expect(html.match(/tabindex="-1"/g)).toHaveLength(2);
-    expect(html.match(/text-blue-600/g)).toHaveLength(1);
-    expect(html.match(/text-white drop-shadow-/g)).toHaveLength(2);
-    expect(html).toContain('class="liquix-tabs__pill absolute will-change-transform"');
+    // Colour is the capsule's, not the tab's: every label is drawn in both
+    // colours and the two copies are clipped to the capsule and its complement.
+    expect(html.match(/text-blue-600/g)).toHaveLength(3);
+    expect(html.match(/liquix-ink/g)).toHaveLength(3);
+    expect(html).toContain('data-slot="liquix-tabs-labels-active"');
+    expect(html.match(/clip-path:polygon\(/g)).toHaveLength(2);
+    expect(html).toContain('class="liquix-pill absolute will-change-transform"');
   });
 
   test('the bar is measured from the surface width and the geometry defaults', () => {
@@ -223,19 +232,19 @@ describe('liquix tabs', () => {
     expect(html).toContain('aria-label="Pages"');
     expect(html).toContain('bottom:12px');
     expect(html).toContain('width:280px;height:48px');
-    expect(html).toContain('text-red-500');
-    expect(html).toContain('text-stone-500');
+    expect(html.match(/text-red-500/g)).toHaveLength(3);
+    expect(html.match(/text-stone-500/g)).toHaveLength(3);
     expect(html).toContain('bg-stone-200');
     expect(html).not.toContain('text-blue-600');
-    expect(html).toContain('liquix-tabs__pill absolute will-change-transform bg-stone-200');
+    expect(html).toContain('liquix-pill absolute will-change-transform bg-stone-200');
   });
 
-  test('outside a surface the track and highlight fall back to CSS glass', () => {
+  test('outside a surface the pane and highlight fall back to CSS glass', () => {
     const html = renderToStaticMarkup(
       <LiquixTabs tabs={tabs} active="home" onChange={() => undefined} width={390} />,
     );
-    expect(html).toContain('backdrop-blur-xl');
-    expect(html).toContain('backdrop-blur-md');
+    expect(html).toContain('liquix-glass-pane');
+    expect(html).toContain('liquix-glass-lens');
   });
 
   test('the shadow is the bar, one box down, for the surface underlay', () => {

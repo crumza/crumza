@@ -74,6 +74,27 @@ export type { LiquixFrame, LiquixStageProps } from './components/LiquixStage';
 export { LiquixStage } from './components/LiquixStage';
 export type { LiquixSurfaceProps } from './components/LiquixSurface';
 export { LiquixSurface } from './components/LiquixSurface';
+export type { LiquixButtonProps, LiquixButtonSize } from './components/LiquixButton';
+export { LiquixButton } from './components/LiquixButton';
+export type { LiquixFieldProps, LiquixFieldSize } from './components/LiquixField';
+export { LiquixField } from './components/LiquixField';
+export type { LiquixMenuItem, LiquixMenuProps } from './components/LiquixMenu';
+export { LiquixMenu } from './components/LiquixMenu';
+export type { LiquixPopoverProps } from './components/LiquixPopover';
+export { LiquixPopover } from './components/LiquixPopover';
+export type {
+  LiquixSegmentedControlProps,
+  LiquixSegmentedOption,
+} from './components/LiquixSegmentedControl';
+export { LiquixSegmentedControl } from './components/LiquixSegmentedControl';
+export type { LiquixSwitchProps } from './components/LiquixSwitch';
+export { LiquixSwitch } from './components/LiquixSwitch';
+export type {
+  LiquixToasterProps,
+  LiquixToastFn,
+  LiquixToastOptions,
+} from './components/LiquixToast';
+export { LiquixToaster, liquixToast } from './components/LiquixToast';
 export type {
   LiquixTab,
   LiquixTabsProps,
@@ -83,6 +104,18 @@ export { LiquixTabs, LiquixTabsShadow } from './components/LiquixTabs';
 export type { LiquixPaint, LiquixStrip } from './liquix/backdrop';
 export type { LiquixBoxEntry, LiquixBoxHandle, LiquixBoxShape } from './liquix/box';
 export { useLiquixBox } from './liquix/box';
+export type { Capsule } from './liquix/clip';
+export { insideClip, outsideClip } from './liquix/clip';
+export type {
+  LiquixLensStyle,
+  LiquixMotionFrame,
+  LiquixMotionTiming,
+  LiquixShapeFrame,
+} from './liquix/motion';
+export { LIQUIX_LENS, LIQUIX_TIMING, LiquixMotion, shapeFrame } from './liquix/motion';
+export { useBloom } from './liquix/use-bloom';
+export type { Measured } from './liquix/use-measure';
+export { useMeasure } from './liquix/use-measure';
 export type { LiquixPanel, LiquixParams, LiquixTint, PanelKind } from './liquix/params';
 export {
   PANEL_KINDS,

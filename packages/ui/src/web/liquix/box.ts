@@ -1,4 +1,4 @@
-import { type RefObject, useContext, useEffect, useRef } from 'react';
+import { type RefCallback, type RefObject, useContext, useEffect, useMemo, useRef } from 'react';
 import { LiquixStageContext, type LiquixShapeEntry, type LiquixStageValue } from './stage';
 
 /** A box's shape, mutable so a caller can animate it every frame for nothing. */
@@ -16,9 +16,16 @@ export interface LiquixBoxEntry extends LiquixShapeEntry {
   layer: number;
 }
 
-export interface LiquixBoxHandle {
-  /** Hang this on the element whose box the glass takes. */
-  readonly elementRef: RefObject<HTMLDivElement | null>;
+/** A callback ref that also remembers its element, so it can be passed as `ref` and read from. */
+export type LiquixElementRef<T extends HTMLElement> = RefCallback<T> & { current: T | null };
+
+export interface LiquixBoxHandle<T extends HTMLElement = HTMLDivElement> {
+  /**
+   * Hang this on the element whose box the glass takes. It attaches the
+   * element to the shape whenever it mounts, so a panel that appears after
+   * the hook ran is drawn where it is, not where nothing is.
+   */
+  readonly elementRef: LiquixElementRef<T>;
   /** The registered entry, for animating its shape or glow per frame. */
   readonly entryRef: RefObject<LiquixBoxEntry>;
   /** The surrounding host, for registering and unregistering by hand. */
@@ -42,9 +49,10 @@ export interface LiquixBoxHandle {
  * The entry is a plain mutable object the frame loop reads, not React state,
  * so a caller can animate its shape every frame for nothing.
  */
-export function useLiquixBox(layer = 0): LiquixBoxHandle {
+export function useLiquixBox<T extends HTMLElement = HTMLDivElement>(
+  layer = 0,
+): LiquixBoxHandle<T> {
   const stage = useContext(LiquixStageContext);
-  const elementRef = useRef<HTMLDivElement | null>(null);
   const entryRef = useRef<LiquixBoxEntry>({
     el: null,
     label: null,
@@ -54,8 +62,19 @@ export function useLiquixBox(layer = 0): LiquixBoxHandle {
     glow: 0,
     glowTarget: 0,
     alpha: 1,
+    clarity: 1,
+    shadow: 0,
     layer,
   });
+
+  const elementRef = useMemo<LiquixElementRef<T>>(() => {
+    const attach = ((node: T | null) => {
+      attach.current = node;
+      entryRef.current.el = node;
+    }) as LiquixElementRef<T>;
+    attach.current = null;
+    return attach;
+  }, []);
 
   useEffect(() => {
     if (!stage) return;
@@ -64,7 +83,7 @@ export function useLiquixBox(layer = 0): LiquixBoxHandle {
     entry.layer = layer;
     stage.register(entry);
     return () => stage.unregister(entry);
-  }, [stage, layer]);
+  }, [stage, layer, elementRef]);
 
   return { elementRef, entryRef, stage, fallback: stage?.fallback ?? true };
 }

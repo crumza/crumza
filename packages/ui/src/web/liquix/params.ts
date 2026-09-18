@@ -131,25 +131,28 @@ export const defaultLiquixPanels: readonly LiquixPanel[] = [
  * Effect parameters for a LiquixSurface, whose glass sits over live DOM rather
  * than over a backdrop the host owns.
  *
- * The tint is light, and the glass dims itself over bright content the way
- * the stage's does, so the white labels LiquixTabs draws stay legible over
- * any picture without turning the glass frosted. Overscroll physics are
- * off because the container scrolls natively. The shader's drop shadow is off
- * because it is drawn into the backdrop pass as a darkening around the
- * silhouette, and with everything outside the glass cut away it would survive
- * only where the glass refracts it, as a dirty ring inside the rim. A surface
- * wears a CSS shadow instead, on an element under the canvas.
+ * The tint is dark, and the glass dims itself further over bright content,
+ * so the white labels LiquixTabs draws stay legible over any picture, a pale
+ * sky as much as dark trees, without turning the glass frosted. Overscroll
+ * physics are
+ * off because the container scrolls natively. The drop shadow is off by
+ * default: a surface draws it as alpha outside the glass, per shape, which a
+ * lifted shape asks for through its entry, and a bar that never lifts wears a
+ * CSS shadow on an element under the canvas instead.
  */
 export const defaultLiquixSurfaceParams: LiquixParams = {
   ...defaultLiquixParams,
-  // A bar is a lens, not a pane: the bevel reaches the centre of a 56px bar, so
-  // there is no flat interior to read as frosted, the backdrop stays sharp at
-  // the lip and only softens with depth, and the tint is light enough that
-  // the picture behind still shows through the middle.
-  refThickness: 28,
-  blurRadius: 4,
+  // The material the way Apple's Liquid Glass behaves: the body of a pane is a
+  // lightly blurred, lightly tinted view of what is behind it, and the bending
+  // lives in a rim a few pixels deep, where the backdrop is sharp at the lip
+  // and the specular highlights ride. A shape that wants a deeper lens, a
+  // lifted pill say, asks for it through its entry's bevel.
+  refThickness: 10,
+  refDispersion: 3,
+  blurRadius: 6,
   blurEdge: false,
-  tint: { r: 255, g: 255, b: 255, a: 0.14 },
+  tint: { r: 18, g: 22, b: 30, a: 0.45 },
+  overLight: 50,
   pullStretch: 0,
   pullSquash: 0,
   pullShift: 0,
