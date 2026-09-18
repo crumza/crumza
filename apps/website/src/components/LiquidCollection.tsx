@@ -2,6 +2,8 @@ import {
   LiquidColorPicker,
   LiquidContextMenu,
   LiquidGallery,
+  LiquidGlassSlider,
+  LiquidGlassToggle,
   LiquidHeader,
   LiquidMobileNav,
   LiquidNotificationStack,
@@ -32,7 +34,7 @@ interface Entry {
 const groups: readonly { readonly heading: string; readonly items: readonly string[] }[] = [
   { heading: 'Cards', items: ['Pricing card', 'Testimonials'] },
   { heading: 'Navigation', items: ['Header', 'Tab indicator', 'Mobile nav'] },
-  { heading: 'Inputs', items: ['Search', 'Stepper', 'Color picker'] },
+  { heading: 'Inputs', items: ['Search', 'Stepper', 'Glass toggle', 'Glass slider', 'Color picker'] },
   { heading: 'Feedback', items: ['Notifications'] },
   { heading: 'Surfaces', items: ['Context menu'] },
   { heading: 'Media', items: ['Gallery'] },
@@ -80,6 +82,18 @@ const entries: Record<string, Entry> = {
     component: 'LiquidStepper',
     href: 'liquid-stepper',
     render: (r) => <LiquidStepper radius={r} />,
+  },
+  'Glass toggle': {
+    title: 'A thumb that turns to glass',
+    component: 'LiquidGlassToggle',
+    href: 'liquid-glass-toggle',
+    render: (r) => <LiquidGlassToggle radius={r} aria-label="Wi-Fi" />,
+  },
+  'Glass slider': {
+    title: 'A lens on a rail',
+    component: 'LiquidGlassSlider',
+    href: 'liquid-glass-slider',
+    render: (r) => <LiquidGlassSlider radius={r} defaultValue={40} aria-label="Brightness" />,
   },
   'Color picker': {
     title: 'Any shade you like',

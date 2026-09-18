@@ -185,6 +185,38 @@ button.lq-lens {
   will-change: filter;
 }
 
+/* What a surface asks of the material, as multiples of it. Set any of them on
+   a surface, or on anything above one, and transition it: the engine reads all
+   three on every paint. --lq-bend is how hard it bends the scene at its rim, so
+   a lens that is picked up bends harder and gets there eased; --lq-blur is how
+   much of the interior blur it takes and --lq-tint how much of the tint, so a
+   loupe keeps what it magnifies sharp and its own colour. Registered so they
+   can transition. */
+@property --lq-bend {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+@property --lq-blur {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+@property --lq-tint {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+/* a surface's own refracted content (LiquidSurface's `refracted`): laid out in
+   the lens window over the clone of the scene, and bent through the same filter */
+.lq-refracted {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+}
+
 /* glass tint, blended over the refraction, beneath the glint */
 .lq-tint {
   position: absolute;

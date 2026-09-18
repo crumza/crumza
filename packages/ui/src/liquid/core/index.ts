@@ -1,6 +1,7 @@
 /* liquid-core: the one shared prerequisite for every liquid glass component.
    Every component imports only from here and from its own file. */
 
+export { useControllableState } from '../../core/use-controllable-state';
 export * from './backdrops';
 export * from './engine';
 export { H, inner, LIQUID_RADIUS, LIQUID_RADIUS_MAX, pill, useEnterExit } from './geometry';

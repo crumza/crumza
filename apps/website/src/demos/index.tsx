@@ -70,6 +70,8 @@ import {
   LiquidColorPicker,
   LiquidContextMenu,
   LiquidGallery,
+  LiquidGlassSlider,
+  LiquidGlassToggle,
   LiquidHeader,
   LiquidMobileNav,
   LiquidNotificationStack,
@@ -879,6 +881,18 @@ function LiquidSearchDemo(): ReactElement {
 function LiquidStepperDemo(): ReactElement {
   return <LiquidFrame height={320}>{(r) => <LiquidStepper radius={r} />}</LiquidFrame>;
 }
+function LiquidGlassToggleDemo(): ReactElement {
+  return (
+    <LiquidFrame height={320}>{(r) => <LiquidGlassToggle radius={r} aria-label="Wi-Fi" />}</LiquidFrame>
+  );
+}
+function LiquidGlassSliderDemo(): ReactElement {
+  return (
+    <LiquidFrame height={320}>
+      {(r) => <LiquidGlassSlider radius={r} defaultValue={40} aria-label="Brightness" />}
+    </LiquidFrame>
+  );
+}
 function LiquidColorPickerDemo(): ReactElement {
   return <LiquidFrame height={480}>{(r) => <LiquidColorPicker radius={r} />}</LiquidFrame>;
 }
@@ -951,6 +965,8 @@ const demos: Record<string, ComponentType> = {
   'components/liquid-tab-indicator': LiquidTabIndicatorDemo,
   'components/liquid-search': LiquidSearchDemo,
   'components/liquid-stepper': LiquidStepperDemo,
+  'components/liquid-glass-toggle': LiquidGlassToggleDemo,
+  'components/liquid-glass-slider': LiquidGlassSliderDemo,
   'components/liquid-color-picker': LiquidColorPickerDemo,
   'components/liquid-notification-stack': LiquidNotificationStackDemo,
   'components/liquid-context-menu': LiquidContextMenuDemo,

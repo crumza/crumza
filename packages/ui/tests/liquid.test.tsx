@@ -11,6 +11,8 @@ import {
   LiquidColorPicker,
   LiquidContextMenu,
   LiquidGallery,
+  LiquidGlassSlider,
+  LiquidGlassToggle,
   LiquidHeader,
   LiquidMobileNav,
   LiquidNotificationStack,
@@ -169,6 +171,14 @@ describe('liquid scene and surface contracts', () => {
       'class="lq-blur" style="-webkit-backdrop-filter:saturate(1.25);backdrop-filter:saturate(1.25)"',
     );
   });
+  test('a surface refracts its own content when asked, laid over the clone of the scene', () => {
+    const html = scene(<LiquidSurface refracted={<span className="echo" />} />);
+    expect(html).toContain(
+      '<div class="lq-refraction"><div class="lq-refracted"><span class="echo"></span></div></div>',
+    );
+    // nothing extra when there is nothing to refract
+    expect(scene(<LiquidSurface />)).toContain('<div class="lq-refraction"></div>');
+  });
   test('as="button" is a native non-submit button', () => {
     const html = scene(
       <LiquidSurface as="button" type="button" aria-label="Push">
@@ -242,6 +252,8 @@ describe('liquid component contracts', () => {
       ['liquid-header', <LiquidHeader key="h" />],
       ['liquid-mobile-nav', <LiquidMobileNav key="d" />],
       ['liquid-testimonials', <LiquidTestimonials key="x" />],
+      ['liquid-glass-toggle', <LiquidGlassToggle key="g" aria-label="Wi-Fi" />],
+      ['liquid-glass-slider', <LiquidGlassSlider key="r" aria-label="Brightness" />],
     ];
     for (const [slot, node] of roots) {
       expect(scene(node)).toContain(`data-slot="${slot}"`);
@@ -255,6 +267,108 @@ describe('liquid component contracts', () => {
     expect(html).toContain('Start 14-day trial');
     // the card corner is capped by the button height, not by its own tall box
     expect(html).toContain('border-radius:28px');
+  });
+  test('glass toggle: a native switch holding two panes of the scene, capped white at rest', () => {
+    const html = scene(<LiquidGlassToggle aria-label="Wi-Fi" />);
+    expect(html).toContain('<button type="button" role="switch" aria-checked="false"');
+    expect(html).toContain('aria-label="Wi-Fi"');
+    expect(html).toContain('data-slot="liquid-glass-toggle"');
+    expect(html).toContain('data-size="default"');
+    // the track and the thumb are both surfaces: the same engine, the same material
+    expect(html.match(/data-slot="liquid-surface"/g)).toHaveLength(2);
+    expect(html).toContain('class="lq-lens lqc-toggle-track"');
+    expect(html).toContain('class="lq-lens lqc-toggle-lens"');
+    // the thumb's box is a plain wrapper; the lens inside it is a slight loupe
+    // whose corner is the track's less the inset, capped to round by the engine
+    expect(html).toContain(
+      'class="lqc-toggle-thumb" aria-hidden="true" style="--lqc-toggle-thumb-r:19px"',
+    );
+    expect(html).toContain('class="lq-lens lqc-toggle-lens" style="border-radius:19px"');
+    // under the cap the lens carries the on-colour and a sheen, in that order
+    expect(html).toContain(
+      '<span class="lqc-toggle-glaze"></span><span class="lqc-toggle-sheen"></span><span class="lqc-toggle-cap"></span>',
+    );
+    expect(html).toContain('<span class="lqc-toggle-fill"></span>');
+    // its side is a custom property the stylesheet reads; a settled thumb has no --x
+    expect(html).toContain('--on:0');
+    expect(html).not.toContain('--x:');
+    expect(html).not.toContain('data-lift');
+    // the geometry travels as properties, so one calc places the thumb for every size
+    expect(html).toContain('--lqc-toggle-w:64px');
+    expect(html).toContain('--lqc-toggle-thumb:26px');
+    expect(html).toContain('--lqc-toggle-inset:3px');
+  });
+  test('glass toggle: checked, disabled and the small size are in the markup', () => {
+    const html = scene(<LiquidGlassToggle aria-label="Wi-Fi" defaultChecked disabled size="sm" />);
+    expect(html).toContain('aria-checked="true"');
+    expect(html).toContain('--on:1');
+    expect(html).toContain('disabled=""');
+    expect(html).toContain('data-size="sm"');
+    expect(html).toContain('--lqc-toggle-w:50px');
+    expect(html).toContain('--lqc-toggle-thumb:20px');
+    // a controlled value wins over the default
+    expect(
+      scene(<LiquidGlassToggle aria-label="Wi-Fi" checked={false} defaultChecked />),
+    ).toContain('aria-checked="false"');
+    // the radius knob reaches the thumb: 8 on the track, 5 on the thumb inside its 3px inset
+    const square = scene(<LiquidGlassToggle aria-label="Wi-Fi" radius={8} />);
+    expect(square).toContain('class="lq-lens lqc-toggle-track" style="border-radius:8px"');
+    expect(square).toContain('class="lq-lens lqc-toggle-lens" style="border-radius:5px"');
+  });
+  test('glass slider: a keyboard slider on a thin rail, its lens a pane carrying a copy of the rail', () => {
+    const html = scene(<LiquidGlassSlider aria-label="Brightness" defaultValue={40} />);
+    expect(html).toContain('data-slot="liquid-glass-slider"');
+    expect(html).toContain('role="slider"');
+    expect(html).toContain('tabindex="0"');
+    expect(html).toContain('aria-label="Brightness"');
+    expect(html).toContain('aria-valuemin="0"');
+    expect(html).toContain('aria-valuemax="100"');
+    expect(html).toContain('aria-valuenow="40"');
+    // the position at rest is a fraction the stylesheet reads; a settled lens has no --x
+    expect(html).toContain('--v:0.4');
+    expect(html).not.toContain('--x:');
+    expect(html).not.toContain('data-lift');
+    // the rail is a plain bar filled to the lens; the lens is the one pane
+    expect(html).toContain(
+      '<div class="lqc-slider-rail" aria-hidden="true"><span class="lqc-slider-fill"></span></div>',
+    );
+    expect(html.match(/data-slot="liquid-surface"/g)).toHaveLength(1);
+    expect(html).toContain('class="lq-lens lqc-slider-lens"');
+    // the copy of the rail rides in the pane's refraction layer; the light and the cap sit over the glass
+    expect(html).toContain(
+      '<div class="lq-refracted"><span class="lqc-slider-echo"><span class="lqc-slider-echo-fill"></span></span></div>',
+    );
+    expect(html).toContain(
+      '<span class="lqc-slider-sheen"></span><span class="lqc-slider-cap"></span>',
+    );
+    // the geometry travels as properties: an oversized capsule over a thin rail
+    expect(html).toContain('--lqc-slider-thumb-w:64px');
+    expect(html).toContain('--lqc-slider-thumb-h:40px');
+    expect(html).toContain('--lqc-slider-rail:6px');
+    expect(html).toContain('--lqc-slider-hit:52px');
+  });
+  test('glass slider: values snap to the step inside the range; disabled leaves the tab order', () => {
+    const stepped = scene(
+      <LiquidGlassSlider aria-label="Zoom" min={50} max={200} step={10} defaultValue={123} />,
+    );
+    expect(stepped).toContain('aria-valuenow="120"');
+    expect(stepped).toContain('aria-valuemin="50"');
+    expect(
+      scene(<LiquidGlassSlider aria-label="Zoom" min={50} max={200} defaultValue={-5} />),
+    ).toContain('aria-valuenow="50"');
+    expect(
+      scene(<LiquidGlassSlider aria-label="Zoom" step={0.1} defaultValue={0.3} max={1} />),
+    ).toContain('aria-valuenow="0.3"');
+    // a controlled value wins over the default; the text for it passes through
+    const controlled = scene(
+      <LiquidGlassSlider aria-label="Zoom" value={70} defaultValue={10} aria-valuetext="Loud" />,
+    );
+    expect(controlled).toContain('aria-valuenow="70"');
+    expect(controlled).toContain('aria-valuetext="Loud"');
+    const off = scene(<LiquidGlassSlider aria-label="Zoom" disabled defaultValue={10} />);
+    expect(off).toContain('aria-disabled="true"');
+    expect(off).toContain('tabindex="-1"');
+    expect(off).toContain('data-disabled=""');
   });
   test('gallery: one slide on show, the rest hidden, thumbnails as tabs on a focusable frame', () => {
     const html = scene(<LiquidGallery images={IMAGES} />);

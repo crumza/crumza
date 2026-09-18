@@ -317,7 +317,36 @@ export interface LiquidSurfaceProps extends HTMLAttributes<HTMLElement> {
   readonly disabled?: boolean | undefined;
   readonly type?: 'button' | 'submit' | undefined;
   readonly style?: LiquidCSS | undefined;
+  /** Content the surface refracts along with the scene: a copy of whatever it
+   *  sits ON rather than in front of, laid out in the surface's own box (0,0
+   *  is its top-left corner) and bent, blurred and magnified with the clone.
+   *  A slider's lens carries a copy of its rail here, so the rail bends
+   *  through the glass the way the scene does. Decorative: it is behind the
+   *  filter, so nothing in it can be read or pressed. */
+  readonly refracted?: ReactNode;
 }
+
+/** What a surface asks of the material, read from three registered properties
+ *  on the surface or anything above it, each a multiple of the material's own
+ *  value and each 1 by default. `--lq-bend` is how hard it bends the scene at
+ *  its rim: a lens that is picked up bends harder, and because the property
+ *  transitions it gets there eased. The map is untouched by it, only the
+ *  filter's displacement scale moves. `--lq-blur` is how much of the interior
+ *  blur it takes, and `--lq-tint` how much of the tint: a loupe wants what it
+ *  magnifies kept sharp and its own colour. */
+interface SurfaceTuning {
+  readonly bend: number;
+  readonly blur: number;
+  readonly tint: number;
+}
+const tuningOf = (lens: HTMLElement): SurfaceTuning => {
+  const styles = getComputedStyle(lens);
+  const read = (name: string): number => {
+    const value = Number.parseFloat(styles.getPropertyValue(name));
+    return Number.isFinite(value) && value >= 0 ? value : 1;
+  };
+  return { bend: read('--lq-bend'), blur: read('--lq-blur'), tint: read('--lq-tint') };
+};
 
 interface SurfaceGeometry {
   readonly w: number;
@@ -336,6 +365,7 @@ export function LiquidSurface({
   contentClassName,
   children,
   style,
+  refracted,
   ...rest
 }: LiquidSurfaceProps): ReactElement {
   const scene = useLiquidScene();
@@ -354,6 +384,7 @@ export function LiquidSurface({
   const glintRef = useRef<HTMLDivElement | null>(null);
   const housingRef = useRef<SVGSVGElement | null>(null);
   const cloneRef = useRef<HTMLDivElement | null>(null);
+  const refractedRef = useRef<HTMLDivElement | null>(null);
 
   const localRef = useRef({
     dirty: true,
@@ -423,7 +454,7 @@ export function LiquidSurface({
     const lensFilter = createLensFilter(housing, refraction);
 
     /** push geometry and the composited (non-filter) optics layers */
-    const place = (): SurfaceGeometry => {
+    const place = (tune: SurfaceTuning): SurfaceGeometry => {
       const lensRect = lens.getBoundingClientRect();
       const sceneRect = sceneEl.getBoundingClientRect();
       const p = scene.paramsRef.current;
@@ -470,17 +501,32 @@ export function LiquidSurface({
           L.zoom === 1 ? 'top left' : `${offX + w / 2}px ${offY + h / 2}px`;
       }
 
+      // The surface's own refracted content sits over the clone, in the lens
+      // window of the map, and takes the same magnification about the same centre.
+      const own = refractedRef.current;
+      if (own) {
+        own.style.left = `${pad * SS}px`;
+        own.style.top = `${pad * SS}px`;
+        own.style.width = `${w * SS}px`;
+        own.style.height = `${h * SS}px`;
+        own.style.transform = L.zoom === 1 ? 'none' : `scale(${L.zoom})`;
+      }
+
       // blur is standalone, NOT chained onto url(): Safari over-blurs a chained blur
-      blurWrap.style.filter = liquidInteriorFilter(p);
+      blurWrap.style.filter = liquidInteriorFilter({
+        blur: p.blur * tune.blur,
+        saturate: p.saturate,
+      });
       glint.style.opacity = String(Math.min(1, p.glint / 100));
       tint.style.background = p.tintColor;
-      tint.style.opacity = String(p.tint);
+      tint.style.opacity = String(Math.min(1, p.tint * tune.tint));
 
       return { w, h, r, mapW, mapH };
     };
 
     const paint = (now: number): void => {
-      const g = place();
+      const tune = tuningOf(lens);
+      const g = place(tune);
       const p = scene.paramsRef.current;
       const pad = p.overhang;
 
@@ -549,7 +595,7 @@ export function LiquidSurface({
         mapUrl: L.mapUrl,
         mapW: g.mapW,
         mapH: g.mapH,
-        depth: p.depth,
+        depth: p.depth * tune.bend,
         chroma: p.chroma,
         // Only animated source content needs the id re-minted every frame; a drag
         // or a tween changes filter attributes, which invalidates on its own.
@@ -617,7 +663,13 @@ export function LiquidSurface({
               : undefined
           }
         >
-          <div ref={refractionRef} className="lq-refraction" />
+          <div ref={refractionRef} className="lq-refraction">
+            {refracted ? (
+              <div ref={refractedRef} className="lq-refracted">
+                {refracted}
+              </div>
+            ) : null}
+          </div>
         </div>
         <div
           ref={tintRef}

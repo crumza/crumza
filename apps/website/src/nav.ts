@@ -31,6 +31,8 @@ export const sidebar: readonly NavGroup[] = [
       { slug: 'components/liquid-tab-indicator', label: 'LiquidTabIndicator' },
       { slug: 'components/liquid-search', label: 'LiquidSearch' },
       { slug: 'components/liquid-stepper', label: 'LiquidStepper' },
+      { slug: 'components/liquid-glass-toggle', label: 'LiquidGlassToggle' },
+      { slug: 'components/liquid-glass-slider', label: 'LiquidGlassSlider' },
       { slug: 'components/liquid-color-picker', label: 'LiquidColorPicker' },
       { slug: 'components/liquid-notification-stack', label: 'LiquidNotification\u00adStack' },
       { slug: 'components/liquid-context-menu', label: 'LiquidContextMenu' },

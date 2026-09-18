@@ -1,0 +1,227 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion and reduced-transparency overrides must win over the component transitions. */
+/* LiquidGlassToggle: geometry and motion only; the material is .lq-lens (core)
+
+   Apple's toggle, with a lens for a thumb. Two panes of the scene's glass: the
+   track, and the thumb, which is a slight loupe under a white cap. At rest the
+   cap is all you see. GlassToggle.tsx marks the root [data-lift] while a finger
+   has the thumb and writes its position to --x, 0 to 1 along the travel; the
+   scene's press marks [data-press="on"] for the beat before that. Everything
+   the thumb looks like in each of those states is here.
+
+   Sizes arrive as custom properties from the component, so one calc places the
+   thumb for every size, and the box only ever changes by layout: a transform
+   scale on a lens would carry its clone of the scene off the scene behind it. */
+
+.lqc-toggle {
+  /* the thumb answers the press, not the whole control */
+  --lq-press-scale: 1;
+  --lqc-toggle-travel: calc(
+    var(--lqc-toggle-w) -
+    2 *
+    var(--lqc-toggle-inset) -
+    var(--lqc-toggle-thumb)
+  );
+  position: relative;
+  display: block;
+  flex: none;
+  width: var(--lqc-toggle-w);
+  height: var(--lqc-toggle-h);
+  padding: 0;
+  border: 0;
+  border-radius: var(--lqc-toggle-r);
+  appearance: none;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/* A drag along the thumb is the control, so the browser must not read it as a
+   pan and take the pointer back. Three classes' worth, because the scene's
+   `manipulation` rule is `.lq-stage :is(button, ..., [role="switch"])`. */
+.lq-stage .lqc-toggle[role="switch"] {
+  touch-action: none;
+}
+.lqc-toggle:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+.lqc-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.85);
+}
+/* No ripple, and no flat highlight under reduced motion: the thumb is the answer. */
+.lqc-toggle[data-tap]::after,
+.lqc-toggle[data-press="on"]::after {
+  display: none;
+}
+
+/* The track: one pane, filling the control. */
+.lqc-toggle-track {
+  position: absolute;
+  inset: 0;
+}
+.lqc-toggle-track-content {
+  position: relative;
+  border-radius: inherit;
+}
+/* The on-colour, in step with the thumb: it comes up as the thumb is dragged
+   across rather than switching when it lands. Opacity clamps the overshoot. */
+.lqc-toggle-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--lqc-toggle-on, rgb(52 199 89 / 0.78));
+  opacity: var(--x, var(--on, 0));
+  transition: opacity 320ms var(--lq-ease);
+}
+.lqc-toggle[data-lift] .lqc-toggle-fill {
+  transition: none;
+}
+
+/* The thumb.
+
+   A plain wrapper carries the box, the travel and the shadow; the lens inside
+   fills it and is only ever the material. Placed from the left inset and moved
+   by translate: --x along the travel, less whatever the press added, so a
+   pressed thumb widens away from the side it sits on rather than into the
+   inset; less half the stretch, so speed stretches it about its middle. There
+   is no transition on the translate at all: while a finger has it, anything
+   but one to one reads as lag, and after that the spring in GlassToggle.tsx
+   writes it every frame. */
+.lqc-toggle-thumb {
+  position: absolute;
+  top: 50%;
+  left: var(--lqc-toggle-inset);
+  width: calc(var(--lqc-toggle-thumb) + var(--lqc-grow, 0px) + var(--lqc-stretch, 0px));
+  height: calc(var(--lqc-toggle-thumb) + var(--lqc-rise, 0px));
+  border-radius: var(--lqc-toggle-thumb-r, 9999px);
+  translate: calc(
+      var(--x, var(--on, 0)) *
+      (var(--lqc-toggle-travel) - var(--lqc-grow, 0px)) -
+      var(--lqc-stretch, 0px) /
+      2
+    )
+    -50%;
+  box-shadow:
+    0 1px 1.5px rgb(0 0 0 / 0.14),
+    0 2px 6px -2px rgb(0 0 0 / 0.3);
+  will-change: translate;
+  transition:
+    width 220ms var(--lq-spring),
+    height 220ms var(--lq-spring),
+    box-shadow 240ms var(--lq-ease);
+}
+.lqc-toggle-lens {
+  position: absolute;
+  inset: 0;
+}
+.lqc-toggle-lens-content {
+  border-radius: inherit;
+}
+/* The three layers over the glass, bottom to top. The glaze is the track's
+   on-colour, at the same opacity the track shows it, so the lens carries the
+   colour it is sitting on the way glass would. The sheen is one soft highlight
+   where the light lands, which is what makes a disc of glass read as curved.
+   The cap is the white. */
+.lqc-toggle-glaze,
+.lqc-toggle-sheen,
+.lqc-toggle-cap {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.lqc-toggle-glaze {
+  background: var(--lqc-toggle-on, rgb(52 199 89 / 0.78));
+  opacity: calc(var(--x, var(--on, 0)) * 0.7);
+  transition: opacity 320ms var(--lq-ease);
+}
+.lqc-toggle[data-lift] .lqc-toggle-glaze {
+  transition: none;
+}
+.lqc-toggle-sheen {
+  background:
+    radial-gradient(
+      ellipse 70% 45% at 38% 22%,
+      rgb(255 255 255 / 0.5),
+      rgb(255 255 255 / 0.12) 55%,
+      rgb(255 255 255 / 0) 100%
+    ),
+    radial-gradient(ellipse 60% 30% at 60% 96%, rgb(255 255 255 / 0.22), rgb(255 255 255 / 0) 100%);
+  opacity: 0;
+  transition: opacity 300ms var(--lq-ease);
+}
+/* The white: with the faintest gradient so it reads as a surface that catches
+   light rather than a flat fill. */
+.lqc-toggle-cap {
+  background: linear-gradient(180deg, #ffffff, #f2f2f5);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 1),
+    inset 0 -1px 1px rgb(0 0 0 / 0.05);
+  transition: opacity 300ms var(--lq-ease) 40ms;
+}
+@media (hover: hover) {
+  .lqc-toggle:hover:not(:disabled) .lqc-toggle-thumb {
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.16),
+      0 4px 10px -3px rgb(0 0 0 / 0.36);
+  }
+}
+
+/* Pressed: the thumb gives along the track, and the cap thins enough for the
+   lens to start showing at the rim. */
+.lqc-toggle[data-press="on"] .lqc-toggle-thumb {
+  --lqc-grow: var(--lqc-toggle-grow);
+}
+.lqc-toggle[data-press="on"] .lqc-toggle-cap {
+  opacity: 0.84;
+  transition-delay: 0ms;
+}
+
+/* Lifted: off the track and following the finger. It grows in both directions,
+   the shadow drops away beneath it, the cap clears and the sheen comes up, so
+   what is under the finger is the lens and the scene bent through it. */
+.lqc-toggle[data-lift] .lqc-toggle-thumb {
+  --lqc-grow: var(--lqc-toggle-lift);
+  --lqc-rise: var(--lqc-toggle-lift);
+  box-shadow:
+    0 3px 6px -2px rgb(0 0 0 / 0.2),
+    0 10px 22px -8px rgb(0 0 0 / 0.5);
+}
+.lqc-toggle[data-lift] .lqc-toggle-cap {
+  opacity: 0;
+  transition: opacity 180ms var(--lq-ease);
+}
+.lqc-toggle[data-lift] .lqc-toggle-sheen {
+  opacity: 1;
+  transition: opacity 180ms var(--lq-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* It still lifts and still follows the finger: nothing grows, stretches or
+     eases on the way, and the spring in GlassToggle.tsx steps aside. */
+  .lqc-toggle-thumb,
+  .lqc-toggle-cap,
+  .lqc-toggle-sheen,
+  .lqc-toggle-glaze,
+  .lqc-toggle-fill {
+    transition: none !important;
+  }
+  .lqc-toggle[data-press="on"] .lqc-toggle-thumb,
+  .lqc-toggle[data-lift] .lqc-toggle-thumb {
+    --lqc-grow: 0px;
+    --lqc-rise: 0px;
+    --lqc-stretch: 0px;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  /* Core gives every lens an opaque fill here; the thumb keeps its white. */
+  .lqc-toggle-lens {
+    background: #fff;
+  }
+  .lqc-toggle-cap {
+    opacity: 1 !important;
+  }
+}

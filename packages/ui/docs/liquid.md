@@ -103,6 +103,8 @@ Every component takes the shared `radius` and is centred over the scene. The gla
 | [LiquidTabIndicator](/docs/components/liquid-tab-indicator) | tabs with a travelling indicator | `role="tablist"` |
 | [LiquidSearch](/docs/components/liquid-search) | a search field with live matches | `<input>`, `role="listbox"` |
 | [LiquidStepper](/docs/components/liquid-stepper) | a minus/plus counter | two `<button>`s, `aria-live` value |
+| [LiquidGlassToggle](/docs/components/liquid-glass-toggle) | on/off whose thumb lifts into a lens | `<button role="switch">` |
+| [LiquidGlassSlider](/docs/components/liquid-glass-slider) | a thin rail with an oversized lens for a thumb | `role="slider"` |
 | [LiquidColorPicker](/docs/components/liquid-color-picker) | picking a colour | two `role="slider"` pads |
 | [LiquidNotificationStack](/docs/components/liquid-notification-stack) | a deck of dismissable notices | `role="status"` cards |
 | [LiquidContextMenu](/docs/components/liquid-context-menu) | a right-click menu with a submenu | `role="menu"` |
@@ -113,6 +115,10 @@ Every component takes the shared `radius` and is centred over the scene. The gla
 One `requestAnimationFrame` loop per scene drives every surface. A surface repaints only when something changed under it: a size or position change, an option change, or a short pump a component asks for while it animates. Parked over a still scene, the glass costs nothing.
 
 Server-rendered markup already carries the blur, tint and glint as inline styles, with a backdrop blur standing in for the clone, so the glass looks right from its first paint; the rim refraction arrives when the engine mounts. Frosted glass blurs its clone hard, and a blur thins out towards the edge of what it samples, so a frosted clone reaches further past the glass edge than a clear one before the wrapper clips it; that is why the frosted material is a little more work per surface.
+
+A surface can ask for a multiple of three of the material's optics through registered properties set on it or on anything above it, and the engine reads them on every paint. `--lq-bend` multiplies the filter's displacement scale, so the map is untouched and the change is free; because the property is registered it transitions, and a lens that is picked up gets to its harder bend eased. `--lq-blur` multiplies the interior blur and `--lq-tint` the tint, so a loupe can keep what it magnifies sharp and its own colour. The material's rim was drawn for panes, and a small lens takes less of it: the glass slider's lens rests at 0.55 of the bend and goes to 0.9 in the hand, and on clear glass takes a quarter of the blur and a third of the tint.
+
+A surface refracts the scene. It can also refract something of its own: pass `refracted` and the content is laid out in the surface's box, over the clone of the scene, and bent, blurred and magnified with it. The glass slider's lens carries a copy of its rail there, so the rail it sits on bends through the glass along with the scene behind it. It is behind the filter, so it is decorative: nothing in it can be read or pressed.
 
 Displacement maps are built on a canvas, keyed by size, radius and optics, and cached across surfaces. Mid-animation a surface builds on an 8px-quantized size and lets the filter stretch it, so an opening panel costs a couple of cached maps rather than one per frame.
 

@@ -38,6 +38,8 @@
 | [LiquidTabIndicator](/docs/components/liquid-tab-indicator) | tabs with a travelling indicator | `role="tablist"` |
 | [LiquidSearch](/docs/components/liquid-search) | a search field with live matches | native input, `role="listbox"` |
 | [LiquidStepper](/docs/components/liquid-stepper) | a minus/plus counter | two `<button>`s |
+| [LiquidGlassToggle](/docs/components/liquid-glass-toggle) | on/off with a lens for a thumb | `<button role="switch">` |
+| [LiquidGlassSlider](/docs/components/liquid-glass-slider) | a number in a range, with a lens for a thumb | `role="slider"` |
 | [LiquidColorPicker](/docs/components/liquid-color-picker) | picking a colour | `role="slider"` |
 | [LiquidNotificationStack](/docs/components/liquid-notification-stack) | a deck of dismissable notices | `role="status"` |
 | [LiquidContextMenu](/docs/components/liquid-context-menu) | a right-click menu | `role="menu"` |
