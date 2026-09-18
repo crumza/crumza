@@ -7,6 +7,11 @@
    than inside them, so the compositor carries them and the engine is never
    asked to repaint a filter for either.
 
+   Held, the pane lifts: it grows, brightens and follows the finger, and the
+   glyph under it grows with it. MobileNav.tsx marks the dock [data-drag] and
+   the slot under the finger [data-hot], and writes the pane's position to --x
+   in slots; everything it looks like while lifted is here.
+
    The bar's box never changes, so it builds one displacement map and keeps it.
 
    The chrome is the liquix stage's: its glyph shadow, its focus ring, and for
@@ -52,12 +57,18 @@
     inset 0 1.5px 1px rgb(255 255 255 / 0.5),
     inset 0 -1.5px 1px rgb(255 255 255 / 0.22),
     0 6px 18px -10px rgb(0 0 0 / 0.55);
-  translate: calc(var(--at, 0) * 100%) 0;
+  /* --x is only set while a finger has the pane; the rest of the time it is
+     on the slot it was thrown to */
+  translate: calc(var(--x, var(--at, 0)) * 100%) 0;
   transform-origin: center;
   pointer-events: none;
   animation:
     lqc-dock-throw 500ms var(--lq-spring) both,
     lqc-dock-stretch 500ms var(--lq-ease) both;
+  transition:
+    scale 240ms var(--lq-spring),
+    background-color 240ms var(--lq-ease),
+    box-shadow 240ms var(--lq-ease);
 }
 @keyframes lqc-dock-throw {
   from {
@@ -65,14 +76,30 @@
   }
 }
 @keyframes lqc-dock-stretch {
-  0%,
-  100% {
-    scale: 1 1;
+  0% {
+    /* a pick that ends a drag starts from the lifted size and settles */
+    scale: calc(1 + var(--lift, 0) * 0.14);
   }
   45% {
     /* a slot's worth of travel stretches it by 7%, four slots by 28% */
     scale: calc(1 + var(--dist, 0) * 0.07) 0.93;
   }
+  100% {
+    scale: 1 1;
+  }
+}
+
+/* Lifted. The throw is off so the pane is exactly where the finger says, with
+   no easing between them: anything else reads as lag against the thing it is
+   touching. It grows, comes up off the glass and catches more light. */
+.lqc-dock[data-drag] .lqc-dock-pane {
+  animation: none;
+  scale: 1.14;
+  background-color: rgb(255 255 255 / 0.26);
+  box-shadow:
+    inset 0 1.5px 1px rgb(255 255 255 / 0.6),
+    inset 0 -1.5px 1px rgb(255 255 255 / 0.26),
+    0 10px 24px -10px rgb(0 0 0 / 0.65);
 }
 
 .lqc-dock-item {
@@ -96,6 +123,13 @@
   user-select: none;
   -webkit-user-select: none;
 }
+/* A drag across the dock is the control, so the browser must not read it as a
+   pan and take the pointer back. Three classes, because the scene's
+   `manipulation` rule is `.lq-stage :is(button, a[href], ...)`, and :is() takes
+   the weight of its heaviest argument. */
+.lq-stage .lqc-dock .lqc-dock-item {
+  touch-action: none;
+}
 .lqc-dock-item:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px rgb(255 255 255 / 0.8);
@@ -109,6 +143,7 @@
   width: 25px;
   height: 25px;
   filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.45));
+  transition: scale 200ms var(--lq-spring);
 }
 .lqc-dock-icon svg {
   width: 25px;
@@ -125,7 +160,8 @@
 }
 @keyframes lqc-dock-pop {
   0% {
-    scale: 1;
+    /* after a drag the glyph is already up at 1.3, and comes down from there */
+    scale: calc(1 + var(--lift, 0) * 0.3);
   }
   40% {
     scale: 1.28;
@@ -133,6 +169,17 @@
   100% {
     scale: 1;
   }
+}
+
+/* The glyph under the lifted pane swells with it, and swaps to the next one as
+   the finger crosses into its slot: a transition, not the pop, so the swell
+   moves from glyph to glyph rather than restarting on each. */
+.lqc-dock-item[data-hot] .lqc-dock-icon {
+  animation: none;
+  scale: 1.3;
+}
+.lqc-dock-item[data-hot] .lqc-dock-icon svg {
+  stroke-width: 2.4;
 }
 
 /* The glyph you are on carries a little more weight, which is the difference
@@ -147,14 +194,23 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* The dock still answers: the glass is simply already there. */
+  /* The dock still answers: the glass is simply already there. A drag still
+     carries the pane, but nothing grows on the way. */
   .lqc-dock-pane {
     animation: none !important;
+    transition: none !important;
   }
+  .lqc-dock[data-drag] .lqc-dock-pane {
+    scale: 1;
+  }
+  .lqc-dock-icon,
   .lqc-dock-icon svg {
     transition: none !important;
   }
   .lqc-dock-item[aria-current="page"] .lqc-dock-icon {
     animation: none !important;
+  }
+  .lqc-dock-item[data-hot] .lqc-dock-icon {
+    scale: 1;
   }
 }

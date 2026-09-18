@@ -518,6 +518,74 @@ test('liquid tab indicator: a press selects the tab and the indicator settles un
   expect(await blurLayer.evaluate((el) => getComputedStyle(el).backdropFilter)).toBe('none');
 });
 
+test('liquid mobile nav: a tap picks on the way down; a hold lifts the pane, a drag carries it and the release picks', async () => {
+  const dock = page.locator('[data-slot="liquid-mobile-nav"]');
+  await dock.scrollIntoViewIfNeeded();
+  const item = (name: string) => dock.getByRole('button', { name });
+  const centre = async (name: string): Promise<{ x: number; y: number }> => {
+    const b = await item(name).boundingBox();
+    if (!b) throw new Error(`${name} has no box`);
+    return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+  };
+  const paneAt = (): Promise<string> =>
+    dock.locator('.lqc-dock-pane').evaluate((el) => getComputedStyle(el).translate);
+
+  // A tap chooses on pointerdown, before the release.
+  const inbox = await centre('Inbox');
+  await page.mouse.move(inbox.x, inbox.y);
+  await page.mouse.down();
+  expect(await item('Inbox').getAttribute('aria-current')).toBe('page');
+  await page.mouse.up();
+  expect(await dock.getAttribute('data-drag')).toBeNull();
+
+  // A hold lifts: the dock marks the drag, the slot under the finger is hot,
+  // the pane has grown and the glyph under it has grown with it.
+  await page.mouse.down();
+  await page.waitForFunction(() =>
+    document.querySelector('[data-slot="liquid-mobile-nav"]')?.hasAttribute('data-drag'),
+  );
+  expect(await item('Inbox').getAttribute('data-hot')).toBe('');
+  await page.waitForFunction(() => {
+    const dockEl = document.querySelector('[data-slot="liquid-mobile-nav"]');
+    const pane = dockEl?.querySelector('.lqc-dock-pane');
+    const icon = dockEl?.querySelector('[data-hot] .lqc-dock-icon');
+    if (!pane || !icon) return false;
+    return (
+      getComputedStyle(pane).scale.startsWith('1.14') && getComputedStyle(icon).scale === '1.3'
+    );
+  });
+
+  // The pane follows the finger one to one, in slots, and the swell moves to
+  // the glyph it is over; the pick itself has not moved yet.
+  const explore = await centre('Explore');
+  await page.mouse.move(explore.x, inbox.y, { steps: 8 });
+  expect(await paneAt()).toBe('100%');
+  expect(await item('Explore').getAttribute('data-hot')).toBe('');
+  expect(await item('Inbox').getAttribute('aria-current')).toBe('page');
+
+  // Past the end it gets heavy: a third of the pull, a third of a slot at most.
+  const home = await centre('Home');
+  const slot = explore.x - home.x;
+  await page.mouse.move(home.x - 3 * slot, inbox.y, { steps: 4 });
+  expect(await paneAt()).toBe('-35%');
+  expect(await item('Home').getAttribute('data-hot')).toBe('');
+
+  // Let go: the drag is over, the nearest slot is the pick, and the pane
+  // springs onto it from where the finger left it.
+  await page.mouse.up();
+  expect(await dock.getAttribute('data-drag')).toBeNull();
+  expect(await dock.locator('[data-hot]').count()).toBe(0);
+  expect(await item('Home').getAttribute('aria-current')).toBe('page');
+  await page.waitForFunction(
+    () =>
+      getComputedStyle(
+        document.querySelector('[data-slot="liquid-mobile-nav"] .lqc-dock-pane') as Element,
+      ).translate === '0%',
+  );
+  // The pane never lost the finger to a pan: the items refuse touch actions.
+  expect(await item('Home').evaluate((el) => getComputedStyle(el).touchAction)).toBe('none');
+});
+
 test('liquid search: a round button grows into the field, and folds back when empty', async () => {
   const search = page.locator('[data-slot="liquid-search"]');
   await search.scrollIntoViewIfNeeded();
