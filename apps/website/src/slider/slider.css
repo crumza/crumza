@@ -1,0 +1,252 @@
+/* /slider: geometry and motion of the glass slider; the material is .lq-lens (core).
+
+   A thick rail and a pill of a thumb that is a pane of the scene's glass under
+   a white cap. GlassSlider.tsx marks the root [data-lift] while a finger has it
+   and writes the thumb's position to --x, 0 to 1 along the travel, and the
+   extra width speed lends it to --gs-stretch; at rest the position is --v,
+   from the value. The rail's fill, the thumb and the copy of the rail inside
+   the lens all read the same properties, so one write moves all three.
+
+   The root is a size container, so every position here is a fraction of its
+   own width and nothing is measured. Sizes arrive as custom properties from
+   the component, and the thumb only ever changes size by layout: a transform
+   scale on a lens would carry its clone of the scene off the scene behind it.
+   It grows about its own centre, because the translate is measured to the
+   centre and the box is pulled back by half of itself. */
+
+.gs-page {
+  display: grid;
+  gap: 0;
+}
+.gs-stage {
+  min-height: 460px;
+}
+
+.gs {
+  --gs-track: rgb(120 120 126 / 0.16);
+  --gs-blue: #0a7ccf;
+  --gs-travel: calc(100cqw - var(--gs-thumb-w));
+  /* the thumb's centre along the rail; the fill reaches to it */
+  --gs-center: calc(var(--x, var(--v, 0)) * var(--gs-travel) + var(--gs-thumb-w) / 2);
+  /* the thumb's current size: the pill at rest, the lens lifted */
+  --gs-w: var(--gs-thumb-w);
+  --gs-h: var(--gs-thumb-h);
+  position: relative;
+  container-type: inline-size;
+  width: min(520px, var(--lq-room));
+  height: var(--gs-hit);
+  /* a drag along the rail is the control: the browser must not read it as a pan */
+  touch-action: none;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.gs[data-disabled] {
+  opacity: 0.45;
+}
+
+/* The rail: a shade darker than whatever it lies on, filled to the thumb. */
+.gs-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: var(--gs-rail);
+  translate: 0 -50%;
+  border-radius: 9999px;
+  background: var(--gs-track);
+  box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.14);
+  overflow: hidden;
+}
+/* The fill ends in a round cap, the way the reference's does: through the
+   lens the end is in plain view, and a square one reads as a cut. */
+.gs-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--gs-center);
+  border-radius: 9999px;
+  background: var(--gs-blue);
+  transition: width 180ms var(--lq-ease);
+}
+
+/* The thumb.
+
+   A plain wrapper carries the box, the travel and the shadow; the pane inside
+   fills it. The translate eases when the value moves it (a key, a controlled
+   change, the settle after a release) and not at all while a finger has it,
+   when anything but one to one reads as lag. Size changes ride the spring
+   curve, so the lift lands with a hair of give. */
+.gs-thumb {
+  /* the press feedback here is the lift, not the scene's dip or its ripple */
+  --lq-press-scale: 1;
+  /* The rim and the bend, as shares of the material's. The material's rim
+     reaches 26px in from the edge; on a 48px lens a sixth of it is a 4px ring,
+     which is the thin streak the reference bends its rail into along the edge,
+     and inside the ring the scene is straight and a little magnified. The
+     bend is three quarters of the material's, so the ring reaches the rail
+     from anywhere on the rim without smearing it across the middle. */
+  --lq-rim: 0.15;
+  --lq-bend: 0.6;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: calc(var(--gs-w) + var(--gs-stretch, 0px));
+  height: var(--gs-h);
+  border-radius: var(--gs-r);
+  translate: calc(var(--gs-center) - 50%) -50%;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.08),
+    0 6px 16px -4px rgb(0 0 0 / 0.2);
+  outline: none;
+  will-change: translate;
+  transition:
+    translate 180ms var(--lq-ease),
+    width 300ms var(--lq-ease),
+    height 300ms var(--lq-ease),
+    box-shadow 300ms var(--lq-ease),
+    --lq-bend 300ms var(--lq-ease);
+}
+.gs-thumb:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 0.7);
+  outline-offset: 3px;
+}
+.gs[data-lift] .gs-thumb:focus-visible {
+  outline: none;
+}
+.gs-thumb[data-tap]::after,
+.gs-thumb[data-press="on"]::after {
+  display: none;
+}
+.gs-lens {
+  position: absolute;
+  inset: 0;
+}
+/* On clear glass the lens keeps what it magnifies sharp and near its own
+   colour: a quarter of the interior blur and a quarter of the tint, which is
+   the five percent the reference darkens the rail by. Frosted keeps its frost. */
+.lq-stage:not([data-frosted]) .gs-thumb {
+  --lq-blur: 0.25;
+  --lq-tint: 0.25;
+}
+.gs-lens-content {
+  border-radius: inherit;
+}
+
+/* Over the glass, bottom to top: the rim's light, then the cap.
+
+   The rim is where a thick edge of glass catches the light: one bright line
+   along the lower edge, a softer one along the top and a hairline of shade all
+   round. Only seen lifted; at rest the cap is over it. The cap is the white:
+   a pill of it, with the faintest gradient so it reads as a surface. */
+.gs-rim,
+.gs-cap {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.gs-rim {
+  box-shadow:
+    inset 0 -2px 1.5px rgb(255 255 255 / 0.85),
+    inset 0 1.5px 1.5px rgb(255 255 255 / 0.4),
+    inset 0 0 0 1px rgb(0 0 0 / 0.09);
+  opacity: 0;
+  transition: opacity 200ms var(--lq-ease);
+}
+/* The material's bevel lights the top-left and shades the bottom-right; this
+   lens is lit from below, so its bevel is turned down and the rim above does
+   the lighting. The scene's glint knob still drives it through the opacity. */
+.gs-lens .lq-glint {
+  box-shadow:
+    inset 1px 1px 2px rgb(255 255 255 / 0.3),
+    inset -1px -1px 2px rgb(0 0 0 / 0.06);
+}
+.gs-cap {
+  background: linear-gradient(180deg, #efeff1, #e2e2e5);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    inset 0 -1px 1px rgb(0 0 0 / 0.05);
+  /* back over the glass a beat after the release, once the lens has begun to shrink */
+  transition: opacity 180ms var(--lq-ease) 120ms;
+}
+
+/* The rail as the lens sees it: a copy in the lens' own coordinates, so it
+   lies exactly over the real rail and moves against the lens as the lens moves
+   along it. It lives in the pane's refraction layer, so the engine magnifies
+   it with the scene and bends it at the rim. */
+.gs-echo {
+  position: absolute;
+  left: calc(50% - var(--gs-center));
+  top: calc(50% - var(--gs-rail) / 2);
+  width: 100cqw;
+  height: var(--gs-rail);
+  border-radius: 9999px;
+  background: var(--gs-track);
+  box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.14);
+  overflow: hidden;
+  transition: left 180ms var(--lq-ease);
+}
+.gs-echo-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--gs-center);
+  border-radius: 9999px;
+  background: var(--gs-blue);
+  transition: width 180ms var(--lq-ease);
+}
+
+/* Lifted. Everything that eased now follows the finger directly. The thumb
+   grows into the lens about its centre, bends the scene harder, its shadow
+   drops away beneath it, the white clears at once and the rim's light comes up. */
+.gs[data-lift] .gs-fill,
+.gs[data-lift] .gs-echo,
+.gs[data-lift] .gs-echo-fill {
+  transition: none;
+}
+.gs[data-lift] .gs-thumb {
+  --gs-w: var(--gs-lens-w);
+  --gs-h: var(--gs-lens-h);
+  --lq-bend: 0.75;
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 0.08),
+    0 14px 30px -10px rgb(0 0 0 / 0.32);
+  transition:
+    width 240ms var(--lq-spring),
+    height 240ms var(--lq-spring),
+    box-shadow 240ms var(--lq-ease),
+    --lq-bend 240ms var(--lq-ease);
+}
+.gs[data-lift] .gs-cap {
+  opacity: 0;
+  transition: opacity 110ms var(--lq-ease);
+}
+.gs[data-lift] .gs-rim {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* It still lifts and still follows the finger; nothing grows or eases on the way. */
+  .gs-thumb,
+  .gs-fill,
+  .gs-echo,
+  .gs-echo-fill,
+  .gs-rim,
+  .gs-cap {
+    transition: none !important;
+  }
+  .gs[data-lift] .gs-thumb {
+    --gs-w: var(--gs-thumb-w);
+    --gs-h: var(--gs-thumb-h);
+    --lq-bend: 0.6;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  /* Core gives every pane an opaque fill here; the thumb keeps its white. */
+  .gs-lens {
+    background: #fff;
+  }
+  .gs-cap {
+    opacity: 1 !important;
+  }
+}

@@ -1,0 +1,11 @@
+---
+// /slider: a slider whose white thumb lifts into a lens of the scene's glass
+// while it is held. The lens is a LiquidSurface, so it refracts through the
+// same engine as the rest of the liquid set; the route only adds the control.
+import Catalog from '../layouts/Catalog.astro';
+import '../slider/slider.css';
+import { SliderStage } from '../slider/SliderStage';
+---
+<Catalog title="Glass slider" description="A white thumb that lifts into a lens as you drag. Press it, or press the rail.">
+  <SliderStage client:load />
+</Catalog>

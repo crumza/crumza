@@ -1,4 +1,9 @@
-import { LIQUID_RADIUS_MAX, LIQUID_RANGES, liquidBackdropStyle } from '@crumza/ui/liquid';
+import {
+  LIQUID_RADIUS_MAX,
+  LIQUID_RANGES,
+  type LiquidBackdrop,
+  liquidBackdropStyle,
+} from '@crumza/ui/liquid';
 import { Switch } from '@crumza/ui/web';
 import type { ReactElement, ReactNode } from 'react';
 import { liquidBackdrops, type LiquidSettings, withFrosted } from './liquid';
@@ -50,10 +55,13 @@ export function LiquidInspector({
   settings,
   onChange,
   layout = 'column',
+  backdrops = liquidBackdrops,
 }: {
   readonly settings: LiquidSettings;
   readonly onChange: (next: LiquidSettings) => void;
   readonly layout?: 'column' | 'row';
+  /** The strip the scene scrolls, when it is not the site's own. */
+  readonly backdrops?: readonly LiquidBackdrop[];
 }): ReactElement {
   const set = <K extends keyof LiquidSettings>(key: K, value: LiquidSettings[K]): void =>
     onChange({ ...settings, [key]: value });
@@ -112,7 +120,7 @@ export function LiquidInspector({
       </Group>
       <Group {...(grouped ? { label: 'Backdrop' } : {})}>
         <div className="liquid-scenes" role="group" aria-label="Backdrop">
-          {liquidBackdrops.map((panel, at) => (
+          {backdrops.map((panel, at) => (
             <button
               key={panel.src ?? panel.css}
               type="button"
