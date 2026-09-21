@@ -47,6 +47,9 @@ const THUMB_H = 34;
 /** The thumb lifted: the lens. */
 const LENS_W = 104;
 const LENS_H = 48;
+/** Px from either edge of the box to the rail's end, where the thumb's centre
+ *  can go: half the lens, so a lifted lens at either end fills the box exactly. */
+const INSET = LENS_W / 2;
 /** Px the lens widens by at speed, at most, and px of that per px/s of travel. */
 const STRETCH_MAX = 22;
 const STRETCH = 0.024;
@@ -87,7 +90,7 @@ export interface GlassSliderProps {
 /** One finger on the control, kept out of React state so a move never renders. */
 interface Gesture {
   readonly id: number;
-  /** px, the control's left edge and the travel the thumb's centre has along it */
+  /** px, the control's left edge and the length of the rail, which the thumb's centre travels */
   readonly left: number;
   readonly travel: number;
   /** px from the finger to the thumb's centre when it was picked up; 0 for a press on the rail */
@@ -183,9 +186,9 @@ export function GlassSlider({
     set(next);
   };
 
-  /** Where the finger puts the thumb's centre, 0 to 1 along the travel. */
+  /** Where the finger puts the thumb's centre, 0 to 1 along the rail. */
   const aim = (g: Gesture, clientX: number): number =>
-    clamp01((clientX - g.offset - g.left - THUMB_W / 2) / g.travel);
+    clamp01((clientX - g.offset - g.left - INSET) / g.travel);
 
   // On the scene's driver, while a finger has the control: the catch-up after
   // a rail press, and the stretch falling away as the finger slows. The
@@ -227,7 +230,7 @@ export function GlassSlider({
     const g: Gesture = {
       id: event.pointerId,
       left: box.left,
-      travel: Math.max(1, box.width - THUMB_W),
+      travel: Math.max(1, box.width - LENS_W),
       offset: 0,
       x: at,
       target: at,
@@ -242,7 +245,7 @@ export function GlassSlider({
       event.target instanceof Element && event.target.closest('.gs-thumb') !== null;
     if (onThumb) {
       // Picked up where it was touched: the thumb keeps that offset under the finger.
-      (g as { offset: number }).offset = event.clientX - (box.left + at * g.travel + THUMB_W / 2);
+      (g as { offset: number }).offset = event.clientX - (box.left + at * g.travel + INSET);
     } else {
       // Pressed on the rail: the value is there now, and the thumb goes to it.
       g.target = aim(g, event.clientX);

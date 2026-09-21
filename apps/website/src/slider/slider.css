@@ -25,15 +25,22 @@
 .gs {
   --gs-track: rgb(120 120 126 / 0.16);
   --gs-blue: #0a7ccf;
-  --gs-travel: calc(100cqw - var(--gs-thumb-w));
-  /* the thumb's centre along the rail; the fill reaches to it */
-  --gs-center: calc(var(--x, var(--v, 0)) * var(--gs-travel) + var(--gs-thumb-w) / 2);
+  /* The rail is inset by half the lens, and the thumb's centre travels from
+     one end of it to the other: at 0 the fill has no length and at 100 it is
+     the whole rail, whatever shows through the glass, and the lens at either
+     end reaches exactly to the edge of the box and no further. */
+  --gs-inset: calc(var(--gs-lens-w) / 2);
+  --gs-travel: calc(100cqw - var(--gs-lens-w));
+  /* how much of the rail is filled: to the thumb's centre */
+  --gs-run: calc(var(--x, var(--v, 0)) * var(--gs-travel));
+  /* the thumb's centre, from the left edge of the box */
+  --gs-center: calc(var(--gs-run) + var(--gs-inset));
   /* the thumb's current size: the pill at rest, the lens lifted */
   --gs-w: var(--gs-thumb-w);
   --gs-h: var(--gs-thumb-h);
   position: relative;
   container-type: inline-size;
-  width: min(520px, var(--lq-room));
+  width: min(560px, var(--lq-room));
   height: var(--gs-hit);
   /* a drag along the rail is the control: the browser must not read it as a pan */
   touch-action: none;
@@ -49,8 +56,8 @@
 /* The rail: a shade darker than whatever it lies on, filled to the thumb. */
 .gs-rail {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: var(--gs-inset);
+  right: var(--gs-inset);
   top: 50%;
   height: var(--gs-rail);
   translate: 0 -50%;
@@ -64,7 +71,7 @@
 .gs-fill {
   position: absolute;
   inset: 0 auto 0 0;
-  width: var(--gs-center);
+  width: var(--gs-run);
   border-radius: 9999px;
   background: var(--gs-blue);
   transition: width 180ms var(--lq-ease);
@@ -176,9 +183,9 @@
    it with the scene and bends it at the rim. */
 .gs-echo {
   position: absolute;
-  left: calc(50% - var(--gs-center));
+  left: calc(50% - var(--gs-run));
   top: calc(50% - var(--gs-rail) / 2);
-  width: 100cqw;
+  width: var(--gs-travel);
   height: var(--gs-rail);
   border-radius: 9999px;
   background: var(--gs-track);
@@ -189,7 +196,7 @@
 .gs-echo-fill {
   position: absolute;
   inset: 0 auto 0 0;
-  width: var(--gs-center);
+  width: var(--gs-run);
   border-radius: 9999px;
   background: var(--gs-blue);
   transition: width 180ms var(--lq-ease);
