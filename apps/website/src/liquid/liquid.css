@@ -1,0 +1,326 @@
+/* /liquid: a studio floor and the pieces on it; the material is .lq-lens (core).
+
+   The reveal's glass sits on a soft grey floor under a studio light: the pane
+   is clear, a little lighter than the floor, with a bright edge where its rim
+   catches the light, a shade of shadow beneath it, and dark glyphs on it. The
+   floor carries a faint grid so the rim has straight lines to bend.
+
+   Everything here is scoped to .studio, the scene's own class, so the site's
+   liquid pages keep their look and only this floor takes the light material. */
+
+.studio-page {
+  display: grid;
+  gap: 18px;
+}
+
+.studio {
+  /* the floor: lit from the top left, with a 44px grid a shade darker */
+  --studio-floor:
+    repeating-linear-gradient(90deg, rgb(20 22 28 / 0.055) 0 1px, transparent 1px 44px),
+    repeating-linear-gradient(0deg, rgb(20 22 28 / 0.055) 0 1px, transparent 1px 44px),
+    radial-gradient(120% 110% at 22% 12%, #edeef1 0%, #d4d6db 48%, #bec0c6 100%);
+  /* the ink on the glass, and a wash of it for a row or a glyph under the pointer */
+  --studio-ink: #1c1c1e;
+  --studio-wash: rgb(20 22 28 / 0.06);
+  --studio-wash-strong: rgb(20 22 28 / 0.09);
+  --studio-ring: rgb(20 22 28 / 0.55);
+  min-height: 640px;
+  background: #d4d6db;
+}
+[data-theme="dark"] .studio {
+  --studio-floor:
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 44px),
+    repeating-linear-gradient(0deg, rgb(255 255 255 / 0.05) 0 1px, transparent 1px 44px),
+    radial-gradient(120% 110% at 22% 12%, #3b3d43 0%, #27282d 48%, #1a1b1f 100%);
+  --studio-ink: #f2f2f4;
+  --studio-wash: rgb(255 255 255 / 0.08);
+  --studio-wash-strong: rgb(255 255 255 / 0.12);
+  --studio-ring: rgb(255 255 255 / 0.6);
+  background: #27282d;
+}
+
+/* Glass on a light floor: dark ink with no shadow behind it, a soft shadow on
+   the floor, and a bevel with more light in it, the way a thick clear edge
+   catches a studio light along its top and its lower lip. The slider's lens
+   keeps its own bevel, which is lit from below on purpose. */
+.studio .lq-content {
+  color: var(--studio-ink);
+  text-shadow: none;
+}
+.studio .lq-lens {
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.06),
+    0 18px 34px -16px rgb(0 0 0 / 0.36);
+}
+.studio .lq-glint:not(.gs-lens *) {
+  box-shadow:
+    inset 1.5px 1.5px 3px rgb(255 255 255 / 0.95),
+    inset 0 -1.5px 2px rgb(255 255 255 / 0.55),
+    inset -1.5px -1px 4px rgb(0 0 0 / 0.16),
+    inset 0 0 0 0.5px rgb(255 255 255 / 0.35);
+}
+[data-theme="dark"] .studio .lq-glint:not(.gs-lens *) {
+  box-shadow:
+    inset 1.5px 1.5px 3px rgb(255 255 255 / 0.5),
+    inset 0 -1.5px 2px rgb(255 255 255 / 0.28),
+    inset -1.5px -1px 4px rgb(0 0 0 / 0.3),
+    inset 0 0 0 0.5px rgb(255 255 255 / 0.18);
+}
+/* The set's focus rings are white for glass over a picture; here they are ink. */
+.studio .lqc-toggle:focus-visible {
+  box-shadow: 0 0 0 2px var(--studio-ring);
+}
+.studio .gs-thumb:focus-visible {
+  outline-color: var(--studio-ring);
+}
+
+/* The pieces, laid out the way the reveal ends: the two rails along the top,
+   the menu down the left, the round button and the toggle in the middle, the
+   pager and the trio along the bottom. */
+.studio-set {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    "slider hue"
+    "menu mid"
+    "pager trio";
+  align-items: center;
+  /* cells stretch to their column, so a rail that asks for its cell's width
+     has a width to ask for; each cell centres what it holds */
+  justify-items: stretch;
+  gap: 44px 40px;
+  width: min(880px, var(--lq-room));
+  padding: 12px 0;
+}
+.studio-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+.studio-cell-slider {
+  grid-area: slider;
+}
+.studio-cell-hue {
+  grid-area: hue;
+}
+.studio-cell-menu {
+  grid-area: menu;
+}
+.studio-cell-mid {
+  grid-area: mid;
+  gap: 32px;
+}
+.studio-cell-pager {
+  grid-area: pager;
+}
+.studio-cell-trio {
+  grid-area: trio;
+}
+@container lq-stage (max-width: 700px) {
+  .studio-set {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "slider"
+      "hue"
+      "menu"
+      "mid"
+      "pager"
+      "trio";
+    gap: 36px;
+  }
+}
+@media (max-width: 720px) {
+  .studio {
+    min-height: 1040px;
+  }
+}
+
+/* The rails: the slider's is blue on a shade of the floor, the hue rail is
+   the spectrum itself with nothing filled, so the lens carries a copy of the
+   spectrum and bends it. Both a little shorter than the slider page's. */
+.studio .gs {
+  --gs-track: rgb(20 22 28 / 0.12);
+  width: min(360px, 100%);
+}
+[data-theme="dark"] .studio .gs {
+  --gs-track: rgb(255 255 255 / 0.14);
+}
+/* heavier than the dark floor's track rule above, so the spectrum stays in both themes */
+.studio .studio-hue .gs {
+  --gs-track: linear-gradient(
+    90deg,
+    hsl(0 92% 58%),
+    hsl(45 96% 55%),
+    hsl(90 80% 48%),
+    hsl(150 75% 45%),
+    hsl(200 90% 52%),
+    hsl(260 85% 60%),
+    hsl(320 85% 58%),
+    hsl(360 92% 58%)
+  );
+}
+.studio-hue .gs-fill,
+.studio-hue .gs-echo-fill {
+  display: none;
+}
+
+/* The toggle takes the hue the rail is on: the reveal's green until it moves. */
+.studio-toggle {
+  --lqc-toggle-on: hsl(var(--studio-hue, 135) 68% 50% / 0.88);
+}
+
+/* The menu: a pane of four rows, one chosen. */
+.studio-menu-wrap {
+  display: grid;
+}
+.studio-menu {
+  width: min(184px, var(--lq-room));
+}
+.studio-menu-content {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 2px;
+}
+.studio-row {
+  --lq-press-scale: 0.985;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 38px;
+  padding: 0 12px;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  border-radius: var(--lq-inner-r, 14px);
+  color: inherit;
+  font: 500 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 140ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+@media (hover: hover) {
+  .studio-row:hover {
+    background-color: var(--studio-wash);
+  }
+}
+.studio-row[aria-checked="true"] {
+  background-color: var(--studio-wash-strong);
+}
+.studio-row:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--studio-ring);
+}
+.studio-row-label {
+  flex: 1 1 auto;
+}
+
+/* The shapes: an outline that fills when chosen or pressed. */
+.studio-shape {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  fill-opacity: 0;
+  transition: fill-opacity 160ms var(--lq-ease);
+}
+.studio-shape[data-filled] {
+  fill-opacity: 1;
+}
+
+/* The pager, the trio and the round button: panes the height of a control. */
+.studio-pager,
+.studio-trio {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.studio-pill {
+  width: 112px;
+  height: 52px;
+}
+.studio-pill-content {
+  gap: 0;
+  padding: 0 6px;
+}
+.studio-glyph-button {
+  --lq-press-scale: 0.92;
+  position: relative;
+  width: 48px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: var(--lq-inner-r, 20px);
+  color: inherit;
+  cursor: pointer;
+  transition:
+    background-color 140ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+@media (hover: hover) {
+  .studio-glyph-button:hover {
+    background-color: var(--studio-wash);
+  }
+}
+.studio-glyph-button:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--studio-ring);
+}
+.studio-round {
+  width: 52px;
+  height: 52px;
+}
+.studio-fab {
+  width: 60px;
+  height: 60px;
+}
+.studio-done {
+  width: 100px;
+  height: 52px;
+}
+.studio-done-content {
+  font: 600 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+}
+.studio-glyph {
+  width: 22px;
+  height: 22px;
+  transition: rotate 240ms var(--lq-spring);
+}
+/* pressed, the plus is a cross */
+.studio-fab[aria-pressed="true"] .studio-glyph {
+  rotate: 45deg;
+}
+/* a pane that is a button is the whole control: it takes the ring itself */
+.studio :is(.studio-round, .studio-fab, .studio-done):focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--studio-ring),
+    0 1px 2px rgb(0 0 0 / 0.06),
+    0 18px 34px -16px rgb(0 0 0 / 0.36);
+}
+
+.studio-note {
+  max-width: 68ch;
+  color: var(--c-muted-strong, #666);
+}
+.studio-note a {
+  color: var(--c-fg, #282828);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-shape,
+  .studio-glyph,
+  .studio-row,
+  .studio-glyph-button {
+    transition: none !important;
+  }
+}

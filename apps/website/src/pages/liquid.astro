@@ -1,0 +1,12 @@
+---
+// /liquid: clear glass on a studio floor, after the Liquid Glass reveal. A
+// shape menu, a pager, a toggle, a slider, a hue rail and a few buttons, every
+// one a pane of the same scene, with dark glyphs because the floor is light.
+import Catalog from '../layouts/Catalog.astro';
+import '../slider/slider.css';
+import '../liquid/liquid.css';
+import { LiquidStudio } from '../liquid/LiquidStudio';
+---
+<Catalog title="Liquid" description="Clear glass on a studio floor. It bends the light behind it and gives under a finger.">
+  <LiquidStudio client:load />
+</Catalog>
