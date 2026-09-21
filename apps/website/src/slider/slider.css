@@ -88,13 +88,15 @@
   /* the press feedback here is the lift, not the scene's dip or its ripple */
   --lq-press-scale: 1;
   /* The rim and the bend, as shares of the material's. The material's rim
-     reaches 26px in from the edge; on a 48px lens a sixth of it is a 4px ring,
-     which is the thin streak the reference bends its rail into along the edge,
-     and inside the ring the scene is straight and a little magnified. The
-     bend is three quarters of the material's, so the ring reaches the rail
-     from anywhere on the rim without smearing it across the middle. */
-  --lq-rim: 0.15;
-  --lq-bend: 0.6;
+     reaches 26px in from the edge; on a 42px lens half of it is a 12px band
+     that the bend ramps up through, so the rail's edges flare smoothly into
+     the rim the way the reference's do and then run on round the rounded end
+     as a thin streak, while the middle stays straight and a little magnified.
+     A narrower band bends nothing until the last few pixels and the rail
+     steps into a ring instead of curving. About half the material's bend, a
+     touch more in the hand. */
+  --lq-rim: 0.5;
+  --lq-bend: 0.45;
   position: absolute;
   left: 0;
   top: 50%;
@@ -213,7 +215,7 @@
 .gs[data-lift] .gs-thumb {
   --gs-w: var(--gs-lens-w);
   --gs-h: var(--gs-lens-h);
-  --lq-bend: 0.75;
+  --lq-bend: 0.55;
   box-shadow:
     0 2px 4px rgb(0 0 0 / 0.08),
     0 14px 30px -10px rgb(0 0 0 / 0.32);
@@ -244,7 +246,7 @@
   .gs[data-lift] .gs-thumb {
     --gs-w: var(--gs-thumb-w);
     --gs-h: var(--gs-thumb-h);
-    --lq-bend: 0.6;
+    --lq-bend: 0.45;
   }
 }
 

@@ -28,8 +28,8 @@ import {
    jumping. Let go and it settles back onto the value's step, shrinking as the
    white comes back over the glass.
 
-   Geometry is the reference render's, at a resting thumb 34px tall: the rail
-   is 0.35 of that, the thumb 1.55 wide, the lens 3.06 by 1.41. Timing is the
+   Geometry is the reference render's, at a resting thumb 30px tall: the rail
+   is 0.37 of that, the thumb 1.53 wide, the lens 3.07 by 1.4. Timing is the
    iOS slider's: the lift is near instant and the release is quick.
 
    No frame loop of its own. A drag writes one custom property per pointer
@@ -42,23 +42,23 @@ import {
    gesture costs a few cached maps. */
 
 /** The thumb at rest: a pill. */
-const THUMB_W = 52;
-const THUMB_H = 34;
+const THUMB_W = 46;
+const THUMB_H = 30;
 /** The thumb lifted: the lens. */
-const LENS_W = 104;
-const LENS_H = 48;
+const LENS_W = 92;
+const LENS_H = 42;
 /** Px from either edge of the box to the rail's end, where the thumb's centre
  *  can go: half the lens, so a lifted lens at either end fills the box exactly. */
 const INSET = LENS_W / 2;
 /** Px the lens widens by at speed, at most, and px of that per px/s of travel. */
-const STRETCH_MAX = 22;
+const STRETCH_MAX = 20;
 const STRETCH = 0.024;
 /** Ms for the stretch to fall by two thirds once the finger slows. */
 const STRETCH_DECAY = 110;
 /** The rail under the thumb. */
-const RAIL_H = 12;
+const RAIL_H = 11;
 /** The control's box: a full touch target, with the rail and the thumb centred in it. */
-const HIT_H = 60;
+const HIT_H = 56;
 /** Ms time constant of the catch-up after a press on the rail. */
 const TAU = 70;
 /** The lens' magnification of what is under it. */
