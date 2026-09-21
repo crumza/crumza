@@ -36,6 +36,7 @@ export const sidebar: readonly NavGroup[] = [
       { slug: 'components/liquid-color-picker', label: 'LiquidColorPicker' },
       { slug: 'components/liquid-notification-stack', label: 'LiquidNotification\u00adStack' },
       { slug: 'components/liquid-context-menu', label: 'LiquidContextMenu' },
+      { slug: 'components/liquid-dock-menu', label: 'LiquidDockMenu' },
       { slug: 'components/liquid-gallery', label: 'LiquidGallery' },
     ],
   },

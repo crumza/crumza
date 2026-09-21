@@ -172,3 +172,92 @@ export const Trash2: IconComponent = icon('trash-2', [
   ['path', { d: 'M3 6h18' }, 'd0wm0j'],
   ['path', { d: 'M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' }, 'e791ji'],
 ]);
+
+export const Heart: IconComponent = icon('heart', [
+  [
+    'path',
+    {
+      d: 'M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z',
+    },
+    'c3ymky',
+  ],
+]);
+
+export const Archive: IconComponent = icon('archive', [
+  ['rect', { width: '20', height: '5', x: '2', y: '3', rx: '1' }, '1m3agn'],
+  ['path', { d: 'M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8' }, '1w9u4o'],
+  ['path', { d: 'M10 12h4' }, '1z2b8l'],
+]);
+
+export const ChevronsUpDown: IconComponent = icon('chevrons-up-down', [
+  ['path', { d: 'm7 15 5 5 5-5' }, '1hf1tw'],
+  ['path', { d: 'm7 9 5-5 5 5' }, 'sgt6xg'],
+]);
+
+export const ArrowLeft: IconComponent = icon('arrow-left', [
+  ['path', { d: 'm12 19-7-7 7-7' }, '1l729n'],
+  ['path', { d: 'M19 12H5' }, 'x3x0zl'],
+]);
+
+export const User: IconComponent = icon('user', [
+  ['path', { d: 'M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2' }, '975kel'],
+  ['circle', { cx: '12', cy: '7', r: '4' }, '17ys0d'],
+]);
+
+export const Briefcase: IconComponent = icon('briefcase', [
+  ['path', { d: 'M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16' }, 'jecpp'],
+  ['rect', { width: '20', height: '14', x: '2', y: '6', rx: '2' }, 'i6l2r4'],
+]);
+
+export const Lightbulb: IconComponent = icon('lightbulb', [
+  [
+    'path',
+    {
+      d: 'M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5',
+    },
+    '1gvzjb',
+  ],
+  ['path', { d: 'M9 18h6' }, 'x1upvd'],
+  ['path', { d: 'M10 22h4' }, 'ceow96'],
+]);
+
+export const IdCard: IconComponent = icon('id-card', [
+  ['path', { d: 'M16 10h2' }, '8sgtl7'],
+  ['path', { d: 'M16 14h2' }, 'epxaof'],
+  ['path', { d: 'M6.17 15a3 3 0 0 1 5.66 0' }, 'n6f512'],
+  ['circle', { cx: '9', cy: '11', r: '2' }, 'yxgjnd'],
+  ['rect', { x: '2', y: '5', width: '20', height: '14', rx: '2' }, 'qneu4z'],
+]);
+
+export const PaintbrushVertical: IconComponent = icon('paintbrush-vertical', [
+  ['path', { d: 'M10 2v2' }, '7u0qdc'],
+  ['path', { d: 'M14 2v4' }, 'qmzblu'],
+  ['path', { d: 'M17 2a1 1 0 0 1 1 1v9H6V3a1 1 0 0 1 1-1z' }, 'ycvu00'],
+  [
+    'path',
+    {
+      d: 'M6 12a1 1 0 0 0-1 1v1a2 2 0 0 0 2 2h2a1 1 0 0 1 1 1v2.9a2 2 0 1 0 4 0V17a1 1 0 0 1 1-1h2a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1',
+    },
+    'iw4wnp',
+  ],
+]);
+
+export const UserPlus: IconComponent = icon('user-plus', [
+  ['path', { d: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' }, '1yyitq'],
+  ['circle', { cx: '9', cy: '7', r: '4' }, 'nufk8'],
+  ['path', { d: 'M19 8v6' }, '1w7bmk'],
+  ['path', { d: 'M22 11h-6' }, 'nfh3x8'],
+]);
+
+export const LogOut: IconComponent = icon('log-out', [
+  ['path', { d: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4' }, '1uf3rs'],
+  ['path', { d: 'm16 17 5-5-5-5' }, '1bji2h'],
+  ['path', { d: 'M21 12H9' }, 'dn1m92'],
+]);
+
+export const Settings2: IconComponent = icon('settings-2', [
+  ['path', { d: 'M20 7h-9' }, '3s1dr2'],
+  ['path', { d: 'M14 17H5' }, 'gfn3mx'],
+  ['circle', { cx: '17', cy: '17', r: '3' }, '18b49y'],
+  ['circle', { cx: '7', cy: '7', r: '3' }, 'dfmy0x'],
+]);

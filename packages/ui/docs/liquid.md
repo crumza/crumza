@@ -108,6 +108,7 @@ Every component takes the shared `radius` and is centred over the scene. The gla
 | [LiquidColorPicker](/docs/components/liquid-color-picker) | picking a colour | two `role="slider"` pads |
 | [LiquidNotificationStack](/docs/components/liquid-notification-stack) | a deck of dismissable notices | `role="status"` cards |
 | [LiquidContextMenu](/docs/components/liquid-context-menu) | a right-click menu with a submenu | `role="menu"` |
+| [LiquidDockMenu](/docs/components/liquid-dock-menu) | a pill of glyphs that unfolds into a menu | `<nav>` of `<button>`s, `role="menu"` |
 | [LiquidGallery](/docs/components/liquid-gallery) | an image carousel with a rail | `aria-roledescription="carousel"` |
 
 ## How it paints

@@ -69,6 +69,7 @@ import {
 import {
   LiquidColorPicker,
   LiquidContextMenu,
+  LiquidDockMenu,
   LiquidGallery,
   LiquidGlassSlider,
   LiquidGlassToggle,
@@ -902,6 +903,9 @@ function LiquidNotificationStackDemo(): ReactElement {
 function LiquidContextMenuDemo(): ReactElement {
   return <LiquidFrame>{(r) => <LiquidContextMenu radius={r} />}</LiquidFrame>;
 }
+function LiquidDockMenuDemo(): ReactElement {
+  return <LiquidFrame>{(r) => <LiquidDockMenu radius={r} />}</LiquidFrame>;
+}
 function LiquidGalleryDemo(): ReactElement {
   return (
     <LiquidFrame>{(r) => <LiquidGallery radius={r} images={liquidGalleryImages} />}</LiquidFrame>
@@ -970,6 +974,7 @@ const demos: Record<string, ComponentType> = {
   'components/liquid-color-picker': LiquidColorPickerDemo,
   'components/liquid-notification-stack': LiquidNotificationStackDemo,
   'components/liquid-context-menu': LiquidContextMenuDemo,
+  'components/liquid-dock-menu': LiquidDockMenuDemo,
   'components/liquid-gallery': LiquidGalleryDemo,
 };
 

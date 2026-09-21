@@ -1,6 +1,7 @@
 import {
   LiquidColorPicker,
   LiquidContextMenu,
+  LiquidDockMenu,
   LiquidGallery,
   LiquidGlassSlider,
   LiquidGlassToggle,
@@ -33,7 +34,7 @@ interface Entry {
 /** The set, grouped the way it is reached for rather than alphabetically. */
 const groups: readonly { readonly heading: string; readonly items: readonly string[] }[] = [
   { heading: 'Cards', items: ['Pricing card', 'Testimonials'] },
-  { heading: 'Navigation', items: ['Header', 'Tab indicator', 'Mobile nav'] },
+  { heading: 'Navigation', items: ['Header', 'Tab indicator', 'Mobile nav', 'Dock menu'] },
   { heading: 'Inputs', items: ['Search', 'Stepper', 'Glass toggle', 'Glass slider', 'Color picker'] },
   { heading: 'Feedback', items: ['Notifications'] },
   { heading: 'Surfaces', items: ['Context menu'] },
@@ -64,6 +65,12 @@ const entries: Record<string, Entry> = {
     component: 'LiquidMobileNav',
     href: 'liquid-mobile-nav',
     render: (r) => <LiquidMobileNav radius={r} />,
+  },
+  'Dock menu': {
+    title: 'A pill that unfolds',
+    component: 'LiquidDockMenu',
+    href: 'liquid-dock-menu',
+    render: (r) => <LiquidDockMenu radius={r} />,
   },
   'Tab indicator': {
     title: 'A drop that travels',

@@ -1,4 +1,5 @@
 import {
+  LiquidDockMenu,
   LiquidGlassSlider,
   LiquidGlassToggle,
   LiquidMobileNav,
@@ -33,12 +34,12 @@ function Toggles(): ReactElement {
   );
 }
 
-/** Seven liquid surfaces on their own stages, for the keyboard, gesture and engine e2e. */
+/** The liquid surfaces on their own stages, for the keyboard, gesture and engine e2e. */
 export function LiquidPlayground(): ReactElement {
   return (
     <section aria-label="Liquid glass" className="grid gap-4">
       <span className="font-mono text-ui-sm uppercase tracking-[0.1em] text-muted-foreground">
-        liquid glass: one engine, seven surfaces
+        liquid glass: one engine, many surfaces
       </span>
       <div className="grid gap-4 md:grid-cols-2">
         <LiquidScene background={SCENE} className="h-72 rounded-2xl">
@@ -55,6 +56,10 @@ export function LiquidPlayground(): ReactElement {
         </LiquidScene>
         <LiquidScene background={SCENE} className="h-72 rounded-2xl md:col-span-2">
           <LiquidMobileNav />
+        </LiquidScene>
+        {/* Tall enough for the longest page: six rows grow up from the pill. */}
+        <LiquidScene background={SCENE} className="h-80 rounded-2xl md:col-span-2">
+          <LiquidDockMenu />
         </LiquidScene>
         <LiquidScene background={SCENE} className="h-56 rounded-2xl">
           <Toggles />

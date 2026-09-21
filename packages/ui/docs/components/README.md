@@ -43,6 +43,7 @@
 | [LiquidColorPicker](/docs/components/liquid-color-picker) | picking a colour | `role="slider"` |
 | [LiquidNotificationStack](/docs/components/liquid-notification-stack) | a deck of dismissable notices | `role="status"` |
 | [LiquidContextMenu](/docs/components/liquid-context-menu) | a right-click menu | `role="menu"` |
+| [LiquidDockMenu](/docs/components/liquid-dock-menu) | a pill of glyphs that unfolds into a menu | `<nav>` of `<button>`s, `role="menu"` |
 | [LiquidGallery](/docs/components/liquid-gallery) | an image carousel | `aria-roledescription="carousel"` |
 | [LiquixStage](/docs/components/liquix-stage) | the WebGL2 host for shader-drawn glass | `<canvas>` + `<div>` |
 | [LiquixCapsule](/docs/components/liquix-capsule) | a shader-drawn capsule action | `<button>` |

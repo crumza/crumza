@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import type { IconComponent } from '../src/liquid';
 import {
   inner,
   LIQUID_BACKDROPS,
@@ -10,6 +11,7 @@ import {
   LIQUID_RADIUS_MAX,
   LiquidColorPicker,
   LiquidContextMenu,
+  LiquidDockMenu,
   LiquidGallery,
   LiquidGlassSlider,
   LiquidGlassToggle,
@@ -254,6 +256,7 @@ describe('liquid component contracts', () => {
       ['liquid-testimonials', <LiquidTestimonials key="x" />],
       ['liquid-glass-toggle', <LiquidGlassToggle key="g" aria-label="Wi-Fi" />],
       ['liquid-glass-slider', <LiquidGlassSlider key="r" aria-label="Brightness" />],
+      ['liquid-dock-menu', <LiquidDockMenu key="k" />],
     ];
     for (const [slot, node] of roots) {
       expect(scene(node)).toContain(`data-slot="${slot}"`);
@@ -369,6 +372,68 @@ describe('liquid component contracts', () => {
     expect(off).toContain('aria-disabled="true"');
     expect(off).toContain('tabindex="-1"');
     expect(off).toContain('data-disabled=""');
+  });
+  test('dock menu: at rest a pill of labelled glyphs and More, sized for the menu it will unfold into', () => {
+    const html = scene(<LiquidDockMenu />);
+    expect(html).toContain('data-slot="liquid-dock-menu"');
+    expect(html).toContain('data-state="dock"');
+    // the pill is a nav of buttons, each named; the two with pages say so
+    expect(html).toContain('<nav class="lqc-dockmenu-dock" aria-label="Menu">');
+    for (const label of ['Home', 'Discover', 'Favorites', 'Notebooks', 'More']) {
+      expect(html).toContain(`aria-label="${label}"`);
+    }
+    expect(html).toContain('aria-label="Notebooks" aria-haspopup="menu"');
+    expect(html).toContain('aria-label="More" aria-haspopup="menu" aria-expanded="false"');
+    // the menu is not in the markup until it unfolds; the pill is the one pane
+    expect(html).not.toContain('role="menu"');
+    expect(html.match(/data-slot="liquid-surface"/g)).toHaveLength(1);
+    expect(html).toContain('class="lq-lens lqc-dockmenu-glass"');
+    // the geometry travels as properties: five slots in a 192px pill, and the
+    // panel's height for the five rows it will show
+    expect(html).toContain('--lqc-dockmenu-pill:192px');
+    expect(html).toContain('--lqc-dockmenu-slots:5');
+    expect(html).toContain('--lqc-dockmenu-h:184px');
+    // the shared radius reaches both insets: 18 for a glyph's round, 14 for a row
+    expect(html).toContain('--lqc-dockmenu-item-r:18px');
+    expect(html).toContain('--lqc-dockmenu-row-r:14px');
+    // the label over the pill is there, hidden, with its slot
+    expect(html).toContain('class="lqc-dockmenu-tip" aria-hidden="true" style="--i:0"');
+  });
+  test('dock menu: unfolded, a menu of menuitems with the pill inert behind it', () => {
+    const html = scene(<LiquidDockMenu defaultOpen />);
+    expect(html).toContain('data-state="menu"');
+    expect(html).toContain('role="menu"');
+    expect(html).toContain('aria-label="More" aria-haspopup="menu" aria-expanded="true"');
+    expect(html.match(/role="menuitem"/g)).toHaveLength(5);
+    // More, Notebooks in the pill, Notebooks and Settings as rows
+    expect(html.match(/aria-haspopup="menu"/g)).toHaveLength(4);
+    expect(html).toContain('<nav class="lqc-dockmenu-dock" aria-label="Menu" inert="">');
+    // rows arrive a beat apart from the top, after the glass has grown
+    expect(html).toContain('--lqc-dockmenu-arrive:170ms');
+    expect(html).toContain('style="--at:4"');
+    expect(html.match(/lqc-dockmenu-row-caret"/g)).toHaveLength(2);
+    // a controlled open wins over the default
+    expect(scene(<LiquidDockMenu open={false} defaultOpen />)).toContain('data-state="dock"');
+  });
+  test('dock menu: your own items size the pill and the panel, and a square radius reaches the insets', () => {
+    const Dot: IconComponent = (props) => <svg {...props} />;
+    const items = [
+      { id: 'a', label: 'Alpha', icon: Dot },
+      { id: 'b', label: 'Beta', icon: Dot },
+      { id: 'c', label: 'Gamma', icon: Dot, items: [{ id: 'd', label: 'Delta', icon: Dot }] },
+    ];
+    const html = scene(<LiquidDockMenu items={items} aria-label="Sections" />);
+    // three glyphs and More: 8 of inset, four 36px slots, three hairlines
+    expect(html).toContain('--lqc-dockmenu-pill:155px');
+    expect(html).toContain('--lqc-dockmenu-slots:4');
+    // three rows: 16 of inset, 96 of rows, 4 of gaps
+    expect(html).toContain('--lqc-dockmenu-h:116px');
+    expect(html).toContain('aria-label="Sections"');
+    expect(html).toContain('aria-label="Gamma" aria-haspopup="menu"');
+    const square = scene(<LiquidDockMenu radius={12} />);
+    expect(square).toContain('class="lq-lens lqc-dockmenu-glass" style="border-radius:12px"');
+    expect(square).toContain('--lqc-dockmenu-item-r:8px');
+    expect(square).toContain('--lqc-dockmenu-row-r:4px');
   });
   test('gallery: one slide on show, the rest hidden, thumbnails as tabs on a focusable frame', () => {
     const html = scene(<LiquidGallery images={IMAGES} />);

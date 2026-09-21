@@ -854,6 +854,125 @@ test('liquid glass slider: the lens lifts and follows the finger across the rail
   await page.emulateMedia({ reducedMotion: 'no-preference' });
 });
 
+test('liquid dock menu: More unfolds the pill into a panel that grows up from it, pages turn, the arrows walk it, and Escape folds it back onto More', async () => {
+  const root = page.locator('[data-slot="liquid-dock-menu"]');
+  await root.scrollIntoViewIfNeeded();
+  const glass = root.locator('.lqc-dockmenu-glass');
+  const more = root.getByRole('button', { name: 'More' });
+  const tip = root.locator('.lqc-dockmenu-tip');
+  const box = async (
+    l: Locator,
+  ): Promise<{ x: number; y: number; width: number; height: number }> => {
+    const b = await l.boundingBox();
+    if (!b) throw new Error('nothing to measure');
+    return b;
+  };
+  const state = (want: string): Promise<unknown> =>
+    page.waitForFunction(
+      (s) =>
+        document.querySelector('[data-slot="liquid-dock-menu"]')?.getAttribute('data-state') === s,
+      want,
+    );
+  const rowCount = (want: number): Promise<unknown> =>
+    page.waitForFunction(
+      (n) =>
+        document.querySelectorAll('[data-slot="liquid-dock-menu"] [role="menuitem"]').length === n,
+      want,
+    );
+  const glassHeight = (want: number): Promise<unknown> =>
+    page.waitForFunction((h) => {
+      const el = document.querySelector('.lqc-dockmenu-glass');
+      return !!el && Math.round(el.getBoundingClientRect().height) === h;
+    }, want);
+  const named = (): Promise<string> =>
+    page.evaluate(() => document.activeElement?.getAttribute('aria-label') ?? '');
+
+  // At rest: a 192 by 44 pill of five labelled glyphs, one pane, and no menu in the DOM.
+  expect(await root.getAttribute('data-state')).toBe('dock');
+  const pill = await box(glass);
+  expect(Math.round(pill.width)).toBe(192);
+  expect(Math.round(pill.height)).toBe(44);
+  expect(await root.getByRole('button').count()).toBe(5);
+  expect(await root.locator('[role="menu"]').count()).toBe(0);
+  expect(await more.getAttribute('aria-expanded')).toBe('false');
+  expect(await tip.evaluate((el) => getComputedStyle(el).opacity)).toBe('0');
+
+  // Point at a glyph and its name comes up over it; move to the next and the name follows.
+  await root.getByRole('button', { name: 'Home' }).hover();
+  await page.waitForFunction(() =>
+    document.querySelector('.lqc-dockmenu-tip')?.hasAttribute('data-show'),
+  );
+  expect(await tip.textContent()).toBe('Home');
+  await root.getByRole('button', { name: 'Favorites' }).hover();
+  await page.waitForFunction(
+    () => document.querySelector('.lqc-dockmenu-tip')?.textContent === 'Favorites',
+  );
+
+  // More: the glass grows into a 228px panel of five rows that shares the pill's
+  // bottom edge, the glyphs go inert behind it, and focus lands on the first row.
+  await more.click();
+  await state('menu');
+  await rowCount(5);
+  await glassHeight(184);
+  const panel = await box(glass);
+  expect(Math.round(panel.width)).toBe(228);
+  expect(Math.round(panel.y + panel.height)).toBe(Math.round(pill.y + pill.height));
+  expect(await more.getAttribute('aria-expanded')).toBe('true');
+  expect(await root.locator('.lqc-dockmenu-dock').getAttribute('inert')).not.toBeNull();
+  expect(await active()).toBe('Home');
+
+  // Notebooks turns the page: Back and three rows, a shorter panel, focus on Personal.
+  await root.getByRole('menuitem', { name: 'Notebooks' }).click();
+  await rowCount(4);
+  await glassHeight(150);
+  expect(await root.getByRole('menuitem').first().textContent()).toBe('Back');
+  expect(await active()).toBe('Personal');
+
+  // Left comes back onto the row that opened the page; the arrows walk and wrap;
+  // Right turns to Settings' page; End reaches its last row.
+  await page.keyboard.press('ArrowLeft');
+  await rowCount(5);
+  await glassHeight(184);
+  expect(await active()).toBe('Notebooks');
+  await page.keyboard.press('ArrowDown');
+  expect(await active()).toBe('Settings');
+  await page.keyboard.press('ArrowDown');
+  expect(await active()).toBe('Home');
+  await page.keyboard.press('ArrowUp');
+  await page.keyboard.press('ArrowRight');
+  await rowCount(6);
+  await glassHeight(218);
+  expect(await active()).toBe('Profile');
+  await page.keyboard.press('End');
+  expect(await active()).toBe('Sign out');
+
+  // Escape folds it back into the pill and hands focus to More.
+  await page.keyboard.press('Escape');
+  await state('dock');
+  expect(await root.locator('[role="menu"]').count()).toBe(0);
+  const folded = await box(glass);
+  expect(Math.round(folded.width)).toBe(192);
+  expect(Math.round(folded.height)).toBe(44);
+  expect(await named()).toBe('More');
+
+  // A press outside folds it as well.
+  await more.click();
+  await state('menu');
+  await page.mouse.click(pill.x - 60, pill.y + pill.height / 2);
+  await state('dock');
+
+  // Reduced motion: it still unfolds and folds, with the panel simply there.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await more.click();
+  await state('menu');
+  await glassHeight(184);
+  expect(await root.getByRole('menuitem').count()).toBe(5);
+  await page.keyboard.press('Escape');
+  await state('dock');
+  await glassHeight(44);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+});
+
 test('liquid search: a round button grows into the field, and folds back when empty', async () => {
   const search = page.locator('[data-slot="liquid-search"]');
   await search.scrollIntoViewIfNeeded();

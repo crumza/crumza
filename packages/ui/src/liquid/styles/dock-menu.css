@@ -1,0 +1,345 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component animations. */
+/* LiquidDockMenu: geometry and motion only; the material is .lq-lens (core)
+
+   A pill of glyphs that unfolds into a menu. The pill and the panel are one
+   pane of glass whose BOX changes: width and height, never a transform, so the
+   clone of the scene inside it stays pixel-aligned with the scene behind it
+   through the whole morph, and the engine keeps the rim right on a quantized
+   map while the box moves and the exact one once it settles.
+
+   The pill sits at the foot of the scene and the panel grows UP from the
+   pill's bottom edge, so the root's box is the pill's height and the panel's
+   width, and the glass is anchored to its bottom: nothing the scene laid out
+   moves when the menu opens. DockMenu.tsx marks the root [data-state] as dock,
+   opening, menu or closing, and writes the panel's height for the page on show
+   to --lqc-dockmenu-h; everything it looks like in each state is here.
+
+   The two faces, glyphs and rows, are content above the filtered layers, so
+   their blur and fade are the compositor's and the filter is never repainted
+   for them.
+
+   The open goes squash, grow, arrive: the glyphs blur out as the pill presses
+   down to a bar, the bar grows up and out into the panel, and the rows come in
+   from the top a beat apart. The close is the same road back: the rows blur
+   out together, the panel drops to the bar, and the bar lifts into the pill as
+   the glyphs return. */
+
+.lqc-dockmenu {
+  --lqc-dockmenu-pill-w: min(var(--lqc-dockmenu-pill, 192px), var(--lq-room));
+  --lqc-dockmenu-pill-h: 44px;
+  --lqc-dockmenu-panel-w: min(228px, var(--lq-room));
+  /* the pressed-down bar the morph passes through, both ways */
+  --lqc-dockmenu-bar-w: calc(var(--lqc-dockmenu-pill-w) - 10px);
+  --lqc-dockmenu-bar-h: 18px;
+  --lqc-dockmenu-slot: 36px;
+  --lqc-dockmenu-pitch: 37px;
+  position: relative;
+  /* a dock sits at the foot of the scene, not in the middle of it */
+  align-self: end;
+  margin-bottom: 24px;
+  width: var(--lqc-dockmenu-panel-w);
+  height: var(--lqc-dockmenu-pill-h);
+}
+
+/* The one pane. Centred by its margins inside the root, which is already the
+   panel's width, so it needs no transform to stay centred as it grows. */
+.lqc-dockmenu-glass {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin-inline: auto;
+  width: var(--lqc-dockmenu-pill-w);
+  height: var(--lqc-dockmenu-pill-h);
+  /* a page turn resizes the settled panel: the height eases to the new page */
+  transition: height 180ms var(--lq-ease);
+}
+.lqc-dockmenu[data-state="opening"] .lqc-dockmenu-glass,
+.lqc-dockmenu[data-state="menu"] .lqc-dockmenu-glass {
+  width: var(--lqc-dockmenu-panel-w);
+  height: var(--lqc-dockmenu-h, 184px);
+}
+.lqc-dockmenu[data-state="opening"] .lqc-dockmenu-glass {
+  transition: none;
+  animation: lqc-dockmenu-open 200ms both;
+}
+.lqc-dockmenu[data-state="closing"] .lqc-dockmenu-glass {
+  transition: none;
+  animation: lqc-dockmenu-close 220ms both;
+}
+/* Squash, then grow. The bar is the anticipation: the pill gives under the
+   press before it springs up, and the corner follows the height on its own,
+   because the engine caps the radius at half the box on every paint. */
+@keyframes lqc-dockmenu-open {
+  0% {
+    width: var(--lqc-dockmenu-pill-w);
+    height: var(--lqc-dockmenu-pill-h);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+  }
+  40% {
+    width: var(--lqc-dockmenu-bar-w);
+    height: var(--lqc-dockmenu-bar-h);
+    animation-timing-function: var(--lq-ease);
+  }
+  100% {
+    width: var(--lqc-dockmenu-panel-w);
+    height: var(--lqc-dockmenu-h, 184px);
+  }
+}
+/* Hold while the rows leave, drop to the bar, lift into the pill. */
+@keyframes lqc-dockmenu-close {
+  0%,
+  20% {
+    width: var(--lqc-dockmenu-panel-w);
+    height: var(--lqc-dockmenu-h, 184px);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+  }
+  58% {
+    width: var(--lqc-dockmenu-bar-w);
+    height: var(--lqc-dockmenu-bar-h);
+    animation-timing-function: var(--lq-ease);
+  }
+  100% {
+    width: var(--lqc-dockmenu-pill-w);
+    height: var(--lqc-dockmenu-pill-h);
+  }
+}
+
+.lqc-dockmenu-content {
+  position: relative;
+}
+
+/* The pill's face: the glyphs, in a row the pill's width, centred, so they
+   sit still while the glass around them is still settling back to the pill. */
+.lqc-dockmenu-dock {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: var(--lqc-dockmenu-pill-w);
+  height: var(--lqc-dockmenu-pill-h);
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 0 4px;
+}
+.lqc-dockmenu[data-state="opening"] .lqc-dockmenu-dock,
+.lqc-dockmenu[data-state="menu"] .lqc-dockmenu-dock {
+  opacity: 0;
+  pointer-events: none;
+}
+.lqc-dockmenu[data-state="opening"] .lqc-dockmenu-dock {
+  animation: lqc-dockmenu-face-out 70ms var(--lq-ease) both;
+}
+.lqc-dockmenu[data-state="closing"] .lqc-dockmenu-dock {
+  /* back once the bar is lifting into the pill */
+  animation: lqc-dockmenu-face-in 130ms var(--lq-ease) both;
+  animation-delay: 110ms;
+}
+@keyframes lqc-dockmenu-face-out {
+  from {
+    opacity: 1;
+    filter: blur(0);
+  }
+  to {
+    opacity: 0;
+    filter: blur(6px);
+  }
+}
+@keyframes lqc-dockmenu-face-in {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* A glyph's button: a round of glass that lights under the pointer. */
+.lqc-dockmenu-item {
+  --lq-press-scale: 0.92;
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--lqc-dockmenu-slot);
+  height: var(--lqc-dockmenu-slot);
+  display: grid;
+  place-items: center;
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: var(--lqc-dockmenu-item-r, 18px);
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    background-color 140ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+.lqc-dockmenu-item svg {
+  width: 16px;
+  height: 16px;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.35));
+}
+@media (hover: hover) {
+  .lqc-dockmenu-item:hover {
+    background-color: rgb(255 255 255 / 0.16);
+  }
+}
+.lqc-dockmenu-item:focus-visible {
+  outline: none;
+  background-color: rgb(255 255 255 / 0.16);
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.8);
+}
+.lqc-dockmenu-item[aria-expanded="true"] {
+  background-color: rgb(255 255 255 / 0.16);
+}
+
+/* The name over the pointed-at glyph: a light pill, so its type is dark. One
+   element that slides from slot to slot rather than one per glyph, and it
+   waits a beat before it shows so a pointer crossing the pill is not named
+   five times. Slots are centred on the pill, so its position is the slot's
+   distance from the middle one. */
+.lqc-dockmenu-tip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: calc(
+    50% +
+    (var(--i, 0) - (var(--lqc-dockmenu-slots, 5) - 1) / 2) *
+    var(--lqc-dockmenu-pitch)
+  );
+  translate: -50% 4px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff;
+  color: #111;
+  font: 700 12px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  white-space: nowrap;
+  text-shadow: none;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.08),
+    0 4px 12px -4px rgb(0 0 0 / 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 120ms var(--lq-ease),
+    translate 160ms var(--lq-ease),
+    left 160ms var(--lq-ease);
+}
+.lqc-dockmenu-tip[data-show] {
+  opacity: 1;
+  translate: -50% 0;
+  transition-delay: 90ms, 90ms, 0ms;
+}
+
+/* The panel's face: rows from the top, inside the inset. */
+.lqc-dockmenu-menu {
+  position: absolute;
+  inset: 0;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  outline: none;
+}
+
+/* A row arrives out of a blur, a beat after the one above it; the wait before
+   the first is the page's, written by the component, so a page opening under
+   a growing panel waits for the glass and a page turn does not. */
+.lqc-dockmenu-row {
+  --lq-press-scale: 0.985;
+  position: relative;
+  flex: 0 0 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  border-radius: var(--lqc-dockmenu-row-r, 14px);
+  color: #fff;
+  font: 600 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  animation: lqc-dockmenu-row-in 160ms var(--lq-ease) both;
+  animation-delay: calc(var(--lqc-dockmenu-arrive, 40ms) + var(--at, 0) * 22ms);
+  transition:
+    background-color 120ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+/* Leaving: the whole page at once, quickly, ahead of the next page or the fold. */
+.lqc-dockmenu-menu[data-leaving] .lqc-dockmenu-row,
+.lqc-dockmenu[data-state="closing"] .lqc-dockmenu-row {
+  animation: lqc-dockmenu-row-out 50ms var(--lq-ease) both;
+  animation-delay: 0ms;
+}
+@keyframes lqc-dockmenu-row-in {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+@keyframes lqc-dockmenu-row-out {
+  to {
+    opacity: 0;
+    filter: blur(6px);
+  }
+}
+@media (hover: hover) {
+  .lqc-dockmenu-row:hover {
+    background-color: rgb(255 255 255 / 0.14);
+  }
+}
+.lqc-dockmenu-row:focus-visible {
+  outline: none;
+  background-color: rgb(255 255 255 / 0.14);
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.6);
+}
+
+.lqc-dockmenu-row-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+.lqc-dockmenu-row-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lqc-dockmenu-row-caret {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The menu still unfolds and folds: the glass is simply already the panel,
+     or already the pill, and the rows are there or gone. Each state's resting
+     rules describe exactly that, so dropping the animations is the whole of it. */
+  .lqc-dockmenu-glass,
+  .lqc-dockmenu-dock,
+  .lqc-dockmenu-row,
+  .lqc-dockmenu-tip {
+    animation: none !important;
+    transition: none !important;
+  }
+  /* folding: the rows would otherwise sit in the pill over the glyphs */
+  .lqc-dockmenu[data-state="closing"] .lqc-dockmenu-menu {
+    display: none;
+  }
+}
