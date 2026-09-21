@@ -24,9 +24,9 @@ import {
    progressive blur and a fold shadow across the face sell the turn, and the
    interior sits in the cover's shadow until it is most of the way open.
 
-   Three ways in: a tap toggles it on a critically damped spring, a drag on the
-   card follows the finger and settles to the nearer side, and the slider
-   drives progress directly. The spring runs on one requestAnimationFrame loop
+   Three ways in: a tap toggles it on a spring, a drag on the card follows the
+   finger and settles to the nearer side, and the slider drives progress
+   directly. The spring runs on one requestAnimationFrame loop
    and writes custom properties straight to the root, so a frame never renders
    React; React renders only when the card crosses from closed to open. */
 

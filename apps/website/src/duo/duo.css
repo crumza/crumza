@@ -58,6 +58,8 @@
   padding: var(--duo-pad);
   background: var(--duo-paper);
   border-radius: 0 var(--duo-r) var(--duo-r) 0;
+  /* the shade over it is a square; the corners must clip it */
+  overflow: hidden;
   display: grid;
   grid-template-rows: auto 1fr auto;
   z-index: 1;
@@ -161,14 +163,14 @@
   mask-position: calc(100% - var(--duo-bleed)) 0;
 }
 .duo-soft-1 {
-  filter: blur(calc(var(--blur) * 0.3));
-  -webkit-mask-image: linear-gradient(to right, transparent 8%, #000 42%);
-  mask-image: linear-gradient(to right, transparent 8%, #000 42%);
+  filter: blur(calc(var(--blur) * 0.25));
+  -webkit-mask-image: linear-gradient(to right, transparent 14%, #000 48%);
+  mask-image: linear-gradient(to right, transparent 14%, #000 48%);
 }
 .duo-soft-2 {
   filter: blur(calc(var(--blur) * 0.6));
-  -webkit-mask-image: linear-gradient(to right, transparent 36%, #000 70%);
-  mask-image: linear-gradient(to right, transparent 36%, #000 70%);
+  -webkit-mask-image: linear-gradient(to right, transparent 40%, #000 72%);
+  mask-image: linear-gradient(to right, transparent 40%, #000 72%);
 }
 .duo-soft-3 {
   filter: blur(var(--blur));
@@ -176,12 +178,12 @@
   mask-image: linear-gradient(to right, transparent 64%, #000 100%);
 }
 .duo-back .duo-soft-1 {
-  -webkit-mask-image: linear-gradient(to left, transparent 8%, #000 42%);
-  mask-image: linear-gradient(to left, transparent 8%, #000 42%);
+  -webkit-mask-image: linear-gradient(to left, transparent 14%, #000 48%);
+  mask-image: linear-gradient(to left, transparent 14%, #000 48%);
 }
 .duo-back .duo-soft-2 {
-  -webkit-mask-image: linear-gradient(to left, transparent 36%, #000 70%);
-  mask-image: linear-gradient(to left, transparent 36%, #000 70%);
+  -webkit-mask-image: linear-gradient(to left, transparent 40%, #000 72%);
+  mask-image: linear-gradient(to left, transparent 40%, #000 72%);
 }
 .duo-back .duo-soft-3 {
   -webkit-mask-image: linear-gradient(to left, transparent 64%, #000 100%);
