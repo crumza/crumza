@@ -1,0 +1,11 @@
+---
+// /duo: a folded business card that opens like a book, after the iPhone Duo
+// exploration. Tap it, drag the page, or drag the slider. The card is paper,
+// not glass, so it stands apart from the liquid set and lives with the route.
+import Catalog from '../layouts/Catalog.astro';
+import '../duo/duo.css';
+import { DuoCard } from '../duo/DuoCard';
+---
+<Catalog title="Duo" description="Business card. An open and close interaction inspired by iPhone Duo.">
+  <DuoCard client:load />
+</Catalog>

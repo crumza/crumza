@@ -1,0 +1,384 @@
+/* /duo: a folded business card, the page it sits on and the slider under it.
+
+   The card is paper: white, a 2px near-black frame, 12px corners on the free
+   edges and square ones at the fold. Its type is the card's own (20, 18, 14 and
+   12px) and is set here, not inherited; the page chrome around it stays on the
+   site's 12 and 13px. Motion is written by DuoCard.tsx as custom properties on
+   .duo: --p (0..1), --theta, --spine, --face, --reach, --shade, --fold and
+   --blur. Nothing here transitions; every frame is one write. */
+
+.duo-fit {
+  width: 100%;
+}
+.duo {
+  --duo-w: 256px;
+  --duo-h: 358px;
+  --duo-r: 12px;
+  --duo-pad: 20px;
+  --duo-paper: #fff;
+  --duo-ink: #09090b;
+  --duo-body: #000;
+  --duo-muted: #71717a;
+  --duo-ring: #e4e4e7;
+  --duo-track: var(--c-line);
+  --duo-track-line: rgb(0 0 0 / 0.22);
+  --duo-fill: var(--c-fg-strong);
+  display: grid;
+  padding: 64px 0 40px;
+  zoom: var(--duo-zoom, 1);
+}
+[data-theme="dark"] .duo {
+  --duo-track-line: rgb(255 255 255 / 0.22);
+}
+.duo * {
+  box-sizing: border-box;
+}
+
+/* The stage. Its centre is the vanishing point, and the card is centred on it
+   closed and open alike, so the fold travels as it turns. */
+.duo-scene {
+  position: relative;
+  height: var(--duo-h);
+  perspective: 1200px;
+}
+.duo-panel,
+.duo-body,
+.duo-face,
+.duo-hit {
+  position: absolute;
+  top: 0;
+  height: var(--duo-h);
+}
+
+/* The second page, and the cover's inside, take the same frame: paper, and a
+   border on every side but the fold. */
+.duo-panel {
+  left: calc(50% + var(--spine));
+  width: var(--duo-w);
+  padding: var(--duo-pad);
+  background: var(--duo-paper);
+  border-radius: 0 var(--duo-r) var(--duo-r) 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  z-index: 1;
+}
+.duo-panel::after,
+.duo-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--duo-ink);
+  border-radius: inherit;
+  pointer-events: none;
+}
+.duo-right::after {
+  border-left: 0;
+}
+
+/* The cover's body, turning about the fold in perspective. Black, so the
+   corners that lift above and below the card read as its edge. */
+.duo-body {
+  left: calc(50% + var(--spine));
+  width: var(--duo-w);
+  background: var(--duo-body);
+  /* A touch rounder than the face so its own edge never shows past the face's. */
+  border-radius: 0 calc(var(--duo-r) + 2px) calc(var(--duo-r) + 2px) 0;
+  transform-origin: 0 50%;
+  transform: rotateY(calc(-1 * var(--theta)));
+  z-index: 2;
+}
+/* Closed or open it lies exactly under a face, so it is not drawn at all. */
+.duo[data-rest] .duo-body {
+  visibility: hidden;
+}
+
+/* The printed faces: a flat panel anchored at the fold and clipped at the
+   body's free edge. Only the side that faces the viewer is in the tree. */
+.duo-face {
+  width: var(--face);
+  overflow: hidden;
+  background: var(--duo-paper);
+  z-index: 3;
+}
+.duo-front {
+  left: calc(50% + var(--spine));
+  border-radius: 0 var(--duo-r) var(--duo-r) 0;
+}
+.duo-back {
+  left: calc(50% + var(--spine) - var(--face));
+  border-radius: var(--duo-r) 0 0 var(--duo-r);
+}
+.duo-back::after {
+  border-right: 0;
+}
+.duo[data-side="front"] .duo-back,
+.duo[data-side="back"] .duo-front {
+  display: none;
+}
+.duo-sheet {
+  position: absolute;
+  top: 0;
+  width: var(--duo-w);
+  height: var(--duo-h);
+  padding: var(--duo-pad);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+.duo-front .duo-sheet {
+  left: 0;
+}
+.duo-back .duo-sheet {
+  right: 0;
+}
+
+/* Depth of field: the free edge is nearest and softest. Three softened copies
+   of the sheet sit over the sharp one, each blurred harder and masked to a band
+   further from the fold; where a band is solid its copy hides everything under
+   it. The copies run 48px past the sheet on every side so the blur's own soft
+   edge falls outside the face, and each mask is sized to the sheet and moved in
+   by that margin, so its bands read from the fold like the fold shadow's. */
+.duo-soft {
+  --duo-bleed: 48px;
+  top: calc(-1 * var(--duo-bleed));
+  width: calc(var(--duo-w) + 2 * var(--duo-bleed));
+  height: calc(var(--duo-h) + 2 * var(--duo-bleed));
+  padding: calc(var(--duo-pad) + var(--duo-bleed));
+  background: var(--duo-paper);
+  pointer-events: none;
+  -webkit-mask-size: var(--duo-w) 100%;
+  mask-size: var(--duo-w) 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.duo-front .duo-soft {
+  left: calc(-1 * var(--duo-bleed));
+  -webkit-mask-position: var(--duo-bleed) 0;
+  mask-position: var(--duo-bleed) 0;
+}
+.duo-back .duo-soft {
+  right: calc(-1 * var(--duo-bleed));
+  -webkit-mask-position: calc(100% - var(--duo-bleed)) 0;
+  mask-position: calc(100% - var(--duo-bleed)) 0;
+}
+.duo-soft-1 {
+  filter: blur(calc(var(--blur) * 0.3));
+  -webkit-mask-image: linear-gradient(to right, transparent 8%, #000 42%);
+  mask-image: linear-gradient(to right, transparent 8%, #000 42%);
+}
+.duo-soft-2 {
+  filter: blur(calc(var(--blur) * 0.6));
+  -webkit-mask-image: linear-gradient(to right, transparent 36%, #000 70%);
+  mask-image: linear-gradient(to right, transparent 36%, #000 70%);
+}
+.duo-soft-3 {
+  filter: blur(var(--blur));
+  -webkit-mask-image: linear-gradient(to right, transparent 64%, #000 100%);
+  mask-image: linear-gradient(to right, transparent 64%, #000 100%);
+}
+.duo-back .duo-soft-1 {
+  -webkit-mask-image: linear-gradient(to left, transparent 8%, #000 42%);
+  mask-image: linear-gradient(to left, transparent 8%, #000 42%);
+}
+.duo-back .duo-soft-2 {
+  -webkit-mask-image: linear-gradient(to left, transparent 36%, #000 70%);
+  mask-image: linear-gradient(to left, transparent 36%, #000 70%);
+}
+.duo-back .duo-soft-3 {
+  -webkit-mask-image: linear-gradient(to left, transparent 64%, #000 100%);
+  mask-image: linear-gradient(to left, transparent 64%, #000 100%);
+}
+
+/* The shadows. Both span the whole panel from the fold, so a face that is
+   clipped short shows only the start of each. */
+.duo-shade,
+.duo-fold {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+/* The interior in the cover's shadow, lifting as the cover comes off it. */
+.duo-shade {
+  background: var(--duo-body);
+  opacity: var(--shade);
+}
+/* The fold's shadow, deepening toward the free edge. */
+.duo-fold {
+  background: linear-gradient(to right, rgb(0 0 0 / 0) 0%, rgb(0 0 0 / 0.35) 50%, #000 100%) left /
+    var(--duo-w) 100% no-repeat;
+  opacity: var(--fold);
+}
+.duo-back .duo-fold {
+  background-image: linear-gradient(to left, rgb(0 0 0 / 0) 0%, rgb(0 0 0 / 0.35) 50%, #000 100%);
+  background-position: right;
+}
+
+/* One control over the whole card, wherever its pages are. */
+.duo-hit {
+  left: calc(50% + var(--spine) - var(--reach));
+  width: calc(var(--duo-w) + var(--reach));
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--duo-r);
+  background: transparent;
+  appearance: none;
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  z-index: 4;
+}
+.duo[data-drag] .duo-hit {
+  cursor: grabbing;
+}
+
+/* The print. Sizes are the card's own; see the note at the top. */
+.duo-panel,
+.duo-sheet {
+  color: var(--duo-ink);
+  font-family: var(--font-sans);
+  text-align: left;
+  white-space: nowrap;
+  -webkit-font-smoothing: antialiased;
+}
+.duo-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  height: 20px;
+}
+.duo-mark {
+  display: block;
+  width: 40px;
+  height: 20px;
+}
+.duo-mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--duo-muted);
+}
+.duo-foot {
+  display: grid;
+  align-content: end;
+}
+.duo-name {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.duo-title {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--duo-muted);
+}
+.duo-links {
+  align-self: center;
+  display: grid;
+}
+.duo-link {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.duo-link .duo-mono {
+  line-height: 22px;
+}
+.duo-value {
+  color: var(--duo-ink);
+}
+.duo-avatar {
+  display: block;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--duo-ring);
+}
+.duo-tagline {
+  font-size: 18px;
+  line-height: 25px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.duo-pronouns {
+  margin-top: 8px;
+}
+
+/* Under the card: a caption, the slider and a readout, in a column the width
+   of the closed card, so they line up with its left edge. */
+.duo-controls {
+  width: var(--duo-w);
+  margin: 48px auto 0;
+  justify-self: center;
+}
+.duo-caption {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--c-muted);
+}
+.duo-readout {
+  margin: 12px 0 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--c-muted);
+  font-variant-numeric: tabular-nums;
+}
+.duo-slider {
+  display: block;
+  width: 100%;
+  height: 16px;
+  margin: 12px 0 0;
+  padding: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+.duo-slider:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+/* The filled part ends under the thumb's centre, which sits 8px in from either end. */
+.duo-slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--duo-track-line);
+  background: linear-gradient(
+    to right,
+    var(--duo-fill) calc(8px + var(--p, 0) * (100% - 16px)),
+    var(--duo-track) 0
+  );
+}
+.duo-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -5px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--duo-fill);
+}
+.duo-slider::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--duo-track-line);
+  background: linear-gradient(
+    to right,
+    var(--duo-fill) calc(8px + var(--p, 0) * (100% - 16px)),
+    var(--duo-track) 0
+  );
+}
+.duo-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--duo-fill);
+}
