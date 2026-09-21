@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0.2" y2="1">
+      <stop offset="0" stop-color="#2a6fd0"/>
+      <stop offset="0.5" stop-color="#4b93e2"/>
+      <stop offset="1" stop-color="#9ccbf2"/>
+    </linearGradient>
+    <radialGradient id="haze" cx="0.72" cy="0.18" r="0.55">
+      <stop offset="0" stop-color="#e9f3ff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#e9f3ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bloom" cx="0.24" cy="0.82" r="0.42">
+      <stop offset="0" stop-color="#ffd23f"/>
+      <stop offset="0.45" stop-color="#f6b326" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#f0a41c" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="0.3" cy="0.9" r="0.6">
+      <stop offset="0" stop-color="#ffe680" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ffe680" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#sky)"/>
+  <rect width="1600" height="1000" fill="url(#haze)"/>
+  <rect width="1600" height="1000" fill="url(#glow)"/>
+  <ellipse cx="380" cy="820" rx="560" ry="360" fill="url(#bloom)"/>
+  <ellipse cx="640" cy="960" rx="420" ry="200" fill="#f9c02c" fill-opacity="0.55"/>
+</svg>

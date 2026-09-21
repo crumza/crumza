@@ -3,15 +3,32 @@ import {
   type LiquidCSS,
   LiquidGlassToggle,
   LiquidScene,
+  liquidBackdropStyle,
 } from '@crumza/ui/liquid';
 import { type ReactElement, useEffect, useState } from 'react';
 import { GlassSlider } from '../slider/GlassSlider';
 import { type Marks, Pager, RoundButton, SHAPES, ShapeMenu, Trio } from './pieces';
 
-/** The floor is a CSS value the stylesheet owns, so it follows the site's
- *  theme: the panel and every clone of it inside a pane read the same
- *  variable, and a theme change recolours all of them at once. */
-const FLOOR: readonly LiquidBackdrop[] = [{ css: 'var(--studio-floor)' }];
+/** Whether the glyphs on the glass are dark or light, decided per backdrop:
+ *  dark ink on the floor and the light scenes, the set's white on the photos. */
+type Ink = 'dark' | 'light';
+
+interface Scene extends LiquidBackdrop {
+  readonly ink: Ink;
+}
+
+/** The strip behind the studio. The floor is a CSS value the stylesheet owns,
+ *  so it follows the site's theme; the rest are the site's scenes, with a sky
+ *  and a bloom after the reveal's shot of a toolbar over a flower. Scroll or
+ *  sweep the stage to carry the next one under the glass, or pick a thumbnail. */
+const SCENES: readonly Scene[] = [
+  { label: 'Sky', src: '/liquid/sky.svg', ink: 'dark' },
+  { label: 'Studio', css: 'var(--studio-floor)', ink: 'dark' },
+  { label: 'Ridge', src: '/liquid/ridge.jpg', ink: 'light' },
+  { label: 'Bloom', src: '/liquid/bloom.png', ink: 'dark' },
+  { label: 'Duotone', src: '/liquid/duotone.png', ink: 'light' },
+  { label: 'Ambience', src: '/liquid/ambience.svg', ink: 'light' },
+];
 
 /** Where the floor starts, and where Done puts it back: the reveal's green
  *  toggle, a slider a little past half, the first shape chosen. */
@@ -34,19 +51,26 @@ function useDarkTheme(): boolean {
 }
 
 /**
- * The studio: one refracting scene over a light floor with a faint grid, and
- * the reveal's pieces laid out on it. The pieces talk to each other a little,
- * so the floor is a place to play rather than a row of samples: the pager
- * steps the menu, the hue rail colours the toggle, and Done puts it all back.
+ * The studio: one refracting scene over a strip of backdrops, and the reveal's
+ * pieces laid out on it. The pieces talk to each other a little, so the floor
+ * is a place to play rather than a row of samples: the pager steps the menu,
+ * the hue rail colours the toggle, and Done puts it all back.
  */
 export function LiquidStudio(): ReactElement {
   const dark = useDarkTheme();
+  const [backdrop, setBackdrop] = useState(0);
   const [shape, setShape] = useState<number | null>(0);
   const [hue, setHue] = useState(HUE);
   const [level, setLevel] = useState(LEVEL);
   const [on, setOn] = useState(true);
   const [marks, setMarks] = useState<Marks>(NO_MARKS);
   const [added, setAdded] = useState(false);
+
+  const scene = SCENES[backdrop] ?? SCENES[0];
+  const ink: Ink = scene?.ink ?? 'dark';
+  // On a light ground the glass lifts a little milk over it; over a photo it
+  // takes the material's own faint black, as every pane in the set does.
+  const light = ink === 'dark';
 
   const step = (direction: -1 | 1): void =>
     setShape((current) => {
@@ -67,14 +91,16 @@ export function LiquidStudio(): ReactElement {
   return (
     <div className="studio-page">
       <LiquidScene
-        backdrops={FLOOR}
+        backdrops={SCENES}
+        backdrop={backdrop}
+        onBackdropChange={setBackdrop}
         blur={2}
         glint={100}
-        tint={dark ? 0.08 : 0.12}
-        tintColor="#ffffff"
+        tint={light ? (dark ? 0.08 : 0.12) : 0.2}
+        tintColor={light ? '#ffffff' : '#000000'}
         className="liquid-stage studio"
+        data-ink={ink}
         style={{ '--studio-hue': hue } as LiquidCSS}
-        data-slot="liquid-studio"
       >
         <div className="studio-set">
           <div className="studio-cell studio-cell-slider">
@@ -107,11 +133,28 @@ export function LiquidStudio(): ReactElement {
           </div>
         </div>
       </LiquidScene>
+
+      <div className="studio-scenes" role="group" aria-label="Backdrop">
+        {SCENES.map((panel, at) => (
+          <button
+            key={panel.label}
+            type="button"
+            className="liquid-scene-thumb"
+            aria-label={panel.label}
+            aria-pressed={backdrop === at}
+            title={panel.label}
+            onClick={() => setBackdrop(at)}
+          >
+            <span className="liquid-scene-thumb-fill" style={liquidBackdropStyle(panel)} />
+          </button>
+        ))}
+      </div>
+
       <p className="studio-note">
-        Every piece is a pane of the same glass, refracting the floor behind it: the grid bends at
-        the rims, and a press spreads light from the point it landed. The chevrons step the menu
-        and the cross clears it; the hue rail colours the toggle; Done puts the floor back. The
-        toggle is the set&apos;s{' '}
+        Every piece is a pane of the same glass, refracting what is behind it: scroll or sweep the
+        stage to carry the next backdrop under the pieces, and watch their rims bend it. The
+        chevrons step the menu and the cross clears it; the hue rail colours the toggle; Done puts
+        the floor back. The toggle is the set&apos;s{' '}
         <a href="/docs/components/liquid-glass-toggle">LiquidGlassToggle</a>, the sliders are the{' '}
         <a href="/slider">glass slider</a> on a thick rail, and the rest are panes of{' '}
         <a href="/docs/liquid">LiquidSurface</a> with the reveal&apos;s glyphs on them.

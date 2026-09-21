@@ -3,7 +3,10 @@
    The reveal's glass sits on a soft grey floor under a studio light: the pane
    is clear, a little lighter than the floor, with a bright edge where its rim
    catches the light, a shade of shadow beneath it, and dark glyphs on it. The
-   floor carries a faint grid so the rim has straight lines to bend.
+   floor carries a faint grid so the rim has straight lines to bend. The floor
+   is one panel of a strip; the others are pictures, and LiquidStudio.tsx marks
+   the stage [data-ink] for whether the glyphs over the panel on show are dark
+   or light.
 
    Everything here is scoped to .studio, the scene's own class, so the site's
    liquid pages keep their look and only this floor takes the light material. */
@@ -72,6 +75,35 @@
 }
 .studio .gs-thumb:focus-visible {
   outline-color: var(--studio-ring);
+}
+
+/* Over a photo the glyphs are the set's white with its shadow behind them,
+   whatever the site's theme, and the bevel is the material's own: a picture
+   gives the rim plenty to bend without more light in the edge. */
+.studio[data-ink="light"] {
+  --studio-ink: #fff;
+  --studio-wash: rgb(255 255 255 / 0.14);
+  --studio-wash-strong: rgb(255 255 255 / 0.2);
+  --studio-ring: rgb(255 255 255 / 0.85);
+}
+.studio[data-ink="light"] .lq-content {
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.45);
+}
+.studio[data-ink="light"] .lq-glint:not(.gs-lens *) {
+  box-shadow:
+    inset 1px 1px 2.5px rgb(255 255 255 / 0.55),
+    inset -1.5px -1.5px 4px rgb(0 0 0 / 0.22);
+}
+
+/* The strip's thumbnails, under the stage: the inspector's, in a row. */
+.studio-scenes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.studio-scenes .liquid-scene-thumb {
+  width: 52px;
+  height: 34px;
 }
 
 /* The pieces, laid out the way the reveal ends: the two rails along the top,
@@ -143,8 +175,9 @@
   --gs-track: rgb(20 22 28 / 0.12);
   width: min(360px, 100%);
 }
-[data-theme="dark"] .studio .gs {
-  --gs-track: rgb(255 255 255 / 0.14);
+[data-theme="dark"] .studio .gs,
+.studio[data-ink="light"] .gs {
+  --gs-track: rgb(255 255 255 / 0.22);
 }
 /* heavier than the dark floor's track rule above, so the spectrum stays in both themes */
 .studio .studio-hue .gs {
