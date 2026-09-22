@@ -17,6 +17,7 @@ import {
   Underline,
   useControllableState,
   useDismiss,
+  useLiquidScene,
   useMorphPhase,
   walk,
 } from '../core';
@@ -101,6 +102,7 @@ export function LiquidContextToolbar({
     defaultValue: defaultOpen ?? false,
     onChange: onOpenChange,
   });
+  const { prewarm } = useLiquidScene();
   const phase = useMorphPhase(open, OPEN, CLOSE);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const barRef = useRef<HTMLDivElement | null>(null);
@@ -145,6 +147,7 @@ export function LiquidContextToolbar({
       className={className ? `lqc-ctxbar ${className}` : 'lqc-ctxbar'}
       data-slot="liquid-context-toolbar"
       data-state={phase}
+      onPointerEnter={() => prewarm(BAR_W, SIZE, r)}
       data-lifted={lifted ? '' : undefined}
       style={
         {

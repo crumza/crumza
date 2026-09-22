@@ -31,7 +31,7 @@ export interface LiquidOptions {
   /** Frosted glass, the way Apple frosts a material: a heavy, saturated blur
    *  under a dense veil, a hairline rim and a soft bend. Off is clear glass. */
   readonly frosted?: boolean | undefined;
-  /** Interior blur in px, 0 to 40. Defaults to 2.5, or 14 when frosted. */
+  /** Interior blur in px, 0 to 40. Defaults to 1, or 14 when frosted. */
   readonly blur?: number | undefined;
   /** Specular rim intensity, 0 to 100. Defaults to 100. */
   readonly glint?: number | undefined;
@@ -71,7 +71,7 @@ export const LIQUID_OPTICS: Record<'clear' | 'frosted', LiquidGlassParams> = {
     splay: 2,
     feather: 24,
     curve: 2,
-    blur: 2.5,
+    blur: 1,
     saturate: 1,
     overhang: PAD,
     chroma: 0,

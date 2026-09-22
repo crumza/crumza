@@ -82,9 +82,9 @@ describe('liquid options', () => {
     expect(params.feather).toBe(LIQUID_OPTICS.clear.feather);
     expect(params.chroma).toBe(0);
   });
-  test('the resting material is blur 2.5, glint 100 and a 20% black tint', () => {
+  test('the resting material is blur 1, glint 100 and a 20% black tint', () => {
     const rest = resolveLiquidParams();
-    expect(rest.blur).toBe(2.5);
+    expect(rest.blur).toBe(1);
     expect(rest.glint).toBe(100);
     expect(rest.tint).toBe(0.2);
     expect(rest.tintColor).toBe('#000000');
@@ -96,7 +96,7 @@ describe('liquid options', () => {
   });
   test('an omitted or non-finite knob takes the value of the optic it sits in', () => {
     expect(resolveLiquidParams({ frosted: true }).blur).toBe(14);
-    expect(resolveLiquidParams({ frosted: false }).blur).toBe(2.5);
+    expect(resolveLiquidParams({ frosted: false }).blur).toBe(1);
     expect(resolveLiquidParams({ blur: Number.NaN, glint: Number.POSITIVE_INFINITY })).toEqual(
       LIQUID_OPTICS.clear,
     );
@@ -142,7 +142,7 @@ describe('liquid scene and surface contracts', () => {
     expect(html).toContain('<span class="lq-content">Glass</span>');
     // the optics are in the markup, so they paint with the HTML rather than on hydration
     expect(html).toContain(
-      'class="lq-blur" style="-webkit-backdrop-filter:blur(2.5px);backdrop-filter:blur(2.5px)"',
+      'class="lq-blur" style="-webkit-backdrop-filter:blur(1px);backdrop-filter:blur(1px)"',
     );
     expect(html).toContain('class="lq-tint" style="background:#000000;opacity:0.2"');
     expect(html).toContain('class="lq-glint" style="opacity:1"');

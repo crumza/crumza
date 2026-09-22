@@ -16,6 +16,7 @@ import {
   Sparkles,
   useControllableState,
   useDismiss,
+  useLiquidScene,
   useMorphPhase,
   walk,
   X,
@@ -83,6 +84,7 @@ export function LiquidActionPill({
     defaultValue: defaultOpen ?? false,
     onChange: onOpenChange,
   });
+  const { prewarm } = useLiquidScene();
   const phase = useMorphPhase(open, OPEN, CLOSE);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const barRef = useRef<HTMLDivElement | null>(null);
@@ -117,6 +119,7 @@ export function LiquidActionPill({
       className={className ? `lqc-pill ${className}` : 'lqc-pill'}
       data-slot="liquid-action-pill"
       data-state={phase}
+      onPointerEnter={() => prewarm(openW, SIZE, r)}
       style={
         {
           '--lqc-pill-size': `${SIZE}px`,

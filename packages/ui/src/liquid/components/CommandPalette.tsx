@@ -20,6 +20,7 @@ import {
   Upload,
   useControllableState,
   useDismiss,
+  useLiquidScene,
   useMorphPhase,
 } from '../core';
 
@@ -98,6 +99,7 @@ export function LiquidCommandPalette({
     defaultValue: defaultOpen ?? false,
     onChange: onOpenChange,
   });
+  const { prewarm, pump } = useLiquidScene();
   const phase = useMorphPhase(open, OPEN, CLOSE);
   const id = useId();
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -187,6 +189,7 @@ export function LiquidCommandPalette({
       className={className ? `lqc-cmd ${className}` : 'lqc-cmd'}
       data-slot="liquid-command-palette"
       data-state={phase}
+      onPointerEnter={() => prewarm(PANEL_W, panelH, r)}
       style={
         {
           '--lqc-cmd-trigger-w': `${TRIGGER_W}px`,
@@ -239,6 +242,7 @@ export function LiquidCommandPalette({
                 onChange={(event) => {
                   setQuery(event.target.value);
                   setMark(0);
+                  pump(400);
                 }}
                 onKeyDown={onFieldKey}
               />

@@ -752,10 +752,10 @@ test('liquid glass slider: the lens lifts and follows the finger across the rail
   expect(await lens.locator('feImage').first().getAttribute('href')).toStartWith('data:image/png');
   // half the material's bend at rest: 60 times 0.5
   expect(await bend()).toBe(30);
-  // a quarter of its 2.5px interior blur and a third of its 20% tint: what the
+  // a quarter of its 1px interior blur and a third of its 20% tint: what the
   // lens magnifies stays sharp and keeps its colour
   expect(await lens.locator('.lq-blur').evaluate((el) => getComputedStyle(el).filter)).toBe(
-    'blur(0.625px)',
+    'blur(0.25px)',
   );
   expect(await lens.locator('.lq-tint').evaluate((el) => getComputedStyle(el).opacity)).toBe(
     '0.07',

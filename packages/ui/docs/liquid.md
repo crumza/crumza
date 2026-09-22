@@ -19,7 +19,7 @@ Five things are adjustable. Everything else about the optics is fixed, so every 
 | Prop | Type | Default | Notes |
 | --- | --- | --- | --- |
 | `frosted` | `boolean` | `false` | the toggle between clear glass and frosted glass, the material of the macOS Dock: a softening blur, a little saturation and a thin milk veil, with a hairline for a rim |
-| `blur` | `number` | `2.5`, or `14` when frosted | interior blur in px, 0 to 40 |
+| `blur` | `number` | `1`, or `14` when frosted | interior blur in px, 0 to 40 |
 | `glint` | `number` | `100` | specular rim intensity, 0 to 100 |
 | `tint` | `number` | `0.2`, or `0.14` when frosted | tint strength, 0 to 1 |
 | `tintColor` | `string` | `'#000000'`, or `'#ffffff'` when frosted | tint colour: multiplied into the refraction on clear glass, laid over it as a veil on frosted glass |

@@ -16,6 +16,7 @@ import {
   Upload,
   useControllableState,
   useDismiss,
+  useLiquidScene,
   useMorphPhase,
   walk,
 } from '../core';
@@ -88,6 +89,7 @@ export function LiquidPlusButton({
     defaultValue: defaultOpen ?? false,
     onChange: onOpenChange,
   });
+  const { prewarm } = useLiquidScene();
   const phase = useMorphPhase(open, OPEN, CLOSE);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -125,6 +127,7 @@ export function LiquidPlusButton({
       className={className ? `lqc-plus ${className}` : 'lqc-plus'}
       data-slot="liquid-plus-button"
       data-state={phase}
+      onPointerEnter={() => prewarm(PANEL_W, panelH, r)}
       style={
         {
           '--lqc-plus-size': `${SIZE}px`,
