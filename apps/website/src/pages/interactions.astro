@@ -1,0 +1,9 @@
+---
+// /interactions: every morph in the liquid set on its own stage, the way a
+// native control answers a finger: it grows, it goes, it comes back.
+import Catalog from '../layouts/Catalog.astro';
+import Interactions from '../components/Interactions';
+---
+<Catalog title="Interactions" description="Controls that morph: a plus into a menu, a round into a bar, a button into a field, and back.">
+  <Interactions client:load />
+</Catalog>

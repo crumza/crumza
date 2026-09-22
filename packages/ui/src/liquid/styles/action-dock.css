@@ -1,0 +1,109 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component animations. */
+/* LiquidActionDock: geometry and motion only; the material is .lq-lens (core)
+
+   A round whose actions come out from behind it and settle in an arc over it.
+   Each satellite is its own pane inside a SLOT that carries the travel by
+   translate, so no pane changes size. ActionDock.tsx writes each slot's
+   resting offset to --x and --y and its place in the arc to --at (from the
+   button out) and --from-end (for the way back in). The travel is on the
+   set's spring: a hair of carry past the mark and back, no bounce. */
+
+.lqc-fab {
+  position: relative;
+  width: var(--lqc-fab-size);
+  height: var(--lqc-fab-size);
+}
+
+.lqc-fab-button {
+  --lq-press-scale: 0.92;
+  position: relative;
+  z-index: 1;
+  width: var(--lqc-fab-size);
+  height: var(--lqc-fab-size);
+  transition: scale 150ms var(--lq-ease);
+}
+.lqc-fab-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.85);
+}
+.lqc-fab-glyph {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.25;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.35));
+  transition: rotate 300ms var(--lq-ease);
+}
+.lqc-fab[data-state="opening"] .lqc-fab-glyph,
+.lqc-fab[data-state="open"] .lqc-fab-glyph {
+  rotate: 45deg;
+}
+
+/* The satellites' field is the button's own box; each slot starts centred
+   on it, behind the button, and travels to its offset. */
+.lqc-fab-menu {
+  position: absolute;
+  inset: 0;
+  outline: none;
+}
+.lqc-fab-slot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--lqc-fab-satellite);
+  height: var(--lqc-fab-satellite);
+  margin: calc(var(--lqc-fab-satellite) / -2);
+  translate: var(--x) var(--y);
+  animation: lqc-fab-out 380ms var(--lq-spring) both;
+  animation-delay: calc(var(--at, 0) * 40ms);
+}
+.lqc-fab[data-state="closing"] .lqc-fab-slot {
+  animation: lqc-fab-in 260ms var(--lq-ease) both;
+  animation-delay: calc(var(--from-end, 0) * 30ms);
+}
+@keyframes lqc-fab-out {
+  from {
+    translate: 0 0;
+    opacity: 0;
+    scale: 0.6;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+@keyframes lqc-fab-in {
+  to {
+    translate: 0 0;
+    opacity: 0;
+    scale: 0.6;
+  }
+}
+.lqc-fab-satellite {
+  --lq-press-scale: 0.9;
+  width: 100%;
+  height: 100%;
+  transition: scale 150ms var(--lq-ease);
+}
+.lqc-fab-satellite svg {
+  width: 17px;
+  height: 17px;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.35));
+}
+.lqc-fab-satellite:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.85);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The satellites are in their places or gone. */
+  .lqc-fab-slot {
+    animation: none !important;
+  }
+  .lqc-fab-glyph,
+  .lqc-fab-button,
+  .lqc-fab-satellite {
+    transition: none !important;
+  }
+  .lqc-fab[data-state="closing"] .lqc-fab-menu {
+    display: none;
+  }
+}

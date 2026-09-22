@@ -110,6 +110,13 @@ Every component takes the shared `radius` and is centred over the scene. The gla
 | [LiquidContextMenu](/docs/components/liquid-context-menu) | a right-click menu with a submenu | `role="menu"` |
 | [LiquidDockMenu](/docs/components/liquid-dock-menu) | a pill of glyphs that unfolds into a menu | `<nav>` of `<button>`s, `role="menu"` |
 | [LiquidGallery](/docs/components/liquid-gallery) | an image carousel with a rail | `aria-roledescription="carousel"` |
+| [LiquidSheet](/docs/components/liquid-sheet) | a sheet that rises from the foot of the scene | `role="dialog"` |
+| [LiquidPlusButton](/docs/components/liquid-plus-button) | a plus that grows into a menu of actions | `<button aria-expanded>`, `role="menu"` |
+| [LiquidMenuButton](/docs/components/liquid-menu-button) | three bars that grow into a menu | `<button aria-expanded>`, `role="menu"` |
+| [LiquidActionPill](/docs/components/liquid-action-pill) | a round that widens into a row of actions | `<button aria-expanded>`, `role="toolbar"` |
+| [LiquidActionDock](/docs/components/liquid-action-dock) | a button whose actions emerge in an arc | `<button aria-expanded>`, `role="menu"` |
+| [LiquidContextToolbar](/docs/components/liquid-context-toolbar) | a formatting bar that comes out of its icon | `role="toolbar"`, `aria-pressed`, `radiogroup` |
+| [LiquidCommandPalette](/docs/components/liquid-command-palette) | a button that becomes a command field | `role="combobox"`, `role="listbox"` |
 
 ## How it paints
 

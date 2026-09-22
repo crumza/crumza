@@ -1,0 +1,266 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component animations. */
+/* LiquidCommandPalette: geometry and motion only; the material is .lq-lens (core)
+
+   A pill that grows into a panel of commands. One pane whose BOX changes,
+   anchored at its top and centred, so the field arrives where the label was.
+   The two faces are content above the filtered layers and cross by opacity
+   and blur. CommandPalette.tsx writes the panel's height for the rows that
+   match, so typing resizes the glass. */
+
+.lqc-cmd {
+  position: relative;
+  width: min(var(--lqc-cmd-panel-w), var(--lq-room));
+  height: 44px;
+  /* the panel grows down from the pill's head, so the root keeps the pill's height */
+  align-self: start;
+  margin-top: 48px;
+}
+
+.lqc-cmd-glass {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  margin-inline: auto;
+  width: min(var(--lqc-cmd-trigger-w), var(--lq-room));
+  height: 44px;
+  transition:
+    width 240ms var(--lq-ease),
+    height 240ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+.lqc-cmd[data-state="opening"] .lqc-cmd-glass,
+.lqc-cmd[data-state="open"] .lqc-cmd-glass {
+  width: min(var(--lqc-cmd-panel-w), var(--lq-room));
+  height: var(--lqc-cmd-panel-h);
+  transition:
+    width 300ms var(--lq-ease),
+    height 300ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+/* a settled panel eases to the height of what matches */
+.lqc-cmd[data-state="open"] .lqc-cmd-glass {
+  transition:
+    width 300ms var(--lq-ease),
+    height 200ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+.lqc-cmd-content {
+  position: relative;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+/* The pill's face: a glyph, a label and the keys. */
+.lqc-cmd-trigger {
+  --lq-press-scale: 0.97;
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 44px;
+  padding: 0 8px 0 16px;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font: 600 13.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  cursor: pointer;
+  border-radius: inherit;
+  transition:
+    opacity 140ms var(--lq-ease),
+    filter 140ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+.lqc-cmd-trigger:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.7);
+}
+.lqc-cmd-trigger-glyph {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+.lqc-cmd-trigger-label {
+  flex: 1 1 auto;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lqc-cmd[data-state="opening"] .lqc-cmd-trigger,
+.lqc-cmd[data-state="open"] .lqc-cmd-trigger {
+  opacity: 0;
+  filter: blur(5px);
+  pointer-events: none;
+}
+/* The pill face is not in the DOM while folding, so it fades back in on the way */
+.lqc-cmd[data-state="closing"] .lqc-cmd-trigger {
+  animation: lqc-cmd-face-in 160ms var(--lq-ease) 80ms both;
+}
+@keyframes lqc-cmd-face-in {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+  }
+}
+
+/* Keys, as small caps on glass. */
+.lqc-cmd-keys {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 7px;
+  background: rgb(255 255 255 / 0.14);
+  box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.2);
+  color: #fff;
+  font: 600 11px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  text-shadow: none;
+  white-space: nowrap;
+}
+.lqc-cmd-keys svg {
+  width: 11px;
+  height: 11px;
+}
+
+/* The panel's face: the field where the label was, the rows beneath. */
+.lqc-cmd-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  animation: lqc-cmd-face-in 200ms var(--lq-ease) 60ms both;
+}
+.lqc-cmd[data-state="closing"] .lqc-cmd-panel {
+  animation: lqc-cmd-face-out 100ms var(--lq-ease) both;
+}
+@keyframes lqc-cmd-face-out {
+  to {
+    opacity: 0;
+    filter: blur(5px);
+  }
+}
+.lqc-cmd-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 52px;
+  height: 52px;
+  padding: 0 10px 0 16px;
+  border-bottom: 0.5px solid rgb(255 255 255 / 0.18);
+}
+.lqc-cmd-field-glyph {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  opacity: 0.85;
+}
+.lqc-cmd-input {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 40px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #fff;
+  font: 600 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  caret-color: #fff;
+}
+.lqc-cmd-input::placeholder {
+  color: rgb(255 255 255 / 0.66);
+}
+.lqc-cmd-esc {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+}
+
+.lqc-cmd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+}
+.lqc-cmd-row {
+  --lq-press-scale: 0.985;
+  position: relative;
+  flex: 0 0 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 10px 0 12px;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  border-radius: var(--lqc-cmd-row-r, 16px);
+  color: #fff;
+  font: 600 13.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  text-align: left;
+  cursor: pointer;
+  animation: lqc-cmd-row-in 180ms var(--lq-ease) both;
+  animation-delay: calc(120ms + var(--at, 0) * 22ms);
+  transition:
+    background-color 100ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+/* The mark follows the keyboard and the pointer; no separate hover, so the
+   two never disagree about which row Enter would choose. */
+.lqc-cmd-row[aria-selected="true"] {
+  background-color: rgb(255 255 255 / 0.14);
+}
+.lqc-cmd-row-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  opacity: 0.9;
+}
+.lqc-cmd-row-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lqc-cmd-row-enter {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  opacity: 0.6;
+}
+.lqc-cmd-empty {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 12px;
+  font: 600 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
+  opacity: 0.8;
+}
+@keyframes lqc-cmd-row-in {
+  from {
+    opacity: 0;
+    translate: 0 -4px;
+    filter: blur(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lqc-cmd-glass,
+  .lqc-cmd-trigger {
+    transition: none !important;
+  }
+  .lqc-cmd-trigger,
+  .lqc-cmd-panel,
+  .lqc-cmd-row {
+    animation: none !important;
+  }
+  .lqc-cmd[data-state="closing"] .lqc-cmd-panel {
+    display: none;
+  }
+}

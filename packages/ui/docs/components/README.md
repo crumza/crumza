@@ -45,6 +45,13 @@
 | [LiquidContextMenu](/docs/components/liquid-context-menu) | a right-click menu | `role="menu"` |
 | [LiquidDockMenu](/docs/components/liquid-dock-menu) | a pill of glyphs that unfolds into a menu | `<nav>` of `<button>`s, `role="menu"` |
 | [LiquidGallery](/docs/components/liquid-gallery) | an image carousel | `aria-roledescription="carousel"` |
+| [LiquidSheet](/docs/components/liquid-sheet) | a sheet that rises from the foot of the scene | `role="dialog"` |
+| [LiquidPlusButton](/docs/components/liquid-plus-button) | a plus that grows into a menu of actions | `<button aria-expanded>`, `role="menu"` |
+| [LiquidMenuButton](/docs/components/liquid-menu-button) | three bars that grow into a menu | `<button aria-expanded>`, `role="menu"` |
+| [LiquidActionPill](/docs/components/liquid-action-pill) | a round that widens into a row of actions | `<button aria-expanded>`, `role="toolbar"` |
+| [LiquidActionDock](/docs/components/liquid-action-dock) | a button whose actions emerge in an arc | `<button aria-expanded>`, `role="menu"` |
+| [LiquidContextToolbar](/docs/components/liquid-context-toolbar) | a formatting bar that comes out of its icon | `role="toolbar"`, `aria-pressed`, `radiogroup` |
+| [LiquidCommandPalette](/docs/components/liquid-command-palette) | a button that becomes a command field | `role="combobox"`, `role="listbox"` |
 | [LiquixStage](/docs/components/liquix-stage) | the WebGL2 host for shader-drawn glass | `<canvas>` + `<div>` |
 | [LiquixCapsule](/docs/components/liquix-capsule) | a shader-drawn capsule action | `<button>` |
 | [LiquixCircle](/docs/components/liquix-circle) | a shader-drawn icon action | `<button>` |

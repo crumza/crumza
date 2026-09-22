@@ -1,0 +1,196 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component animations. */
+/* LiquidMenuButton: geometry and motion only; the material is .lq-lens (core)
+
+   A round with three bars that grows right and down into a menu. One pane
+   whose BOX changes, anchored at its top-left so the button stays put. The
+   bars are three spans moved by transform above the glass: the outer two
+   fold onto the middle and turn into a cross, the middle one fades. */
+
+.lqc-menubtn {
+  position: relative;
+  /* a menu button sits in the corner of the scene, and its panel grows out of it */
+  align-self: start;
+  justify-self: start;
+  margin: 24px;
+  width: var(--lqc-menubtn-size);
+  height: var(--lqc-menubtn-size);
+}
+
+.lqc-menubtn-glass {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--lqc-menubtn-size);
+  height: var(--lqc-menubtn-size);
+  transition:
+    width 220ms var(--lq-ease),
+    height 220ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+.lqc-menubtn[data-state="opening"] .lqc-menubtn-glass,
+.lqc-menubtn[data-state="open"] .lqc-menubtn-glass {
+  width: min(var(--lqc-menubtn-panel-w), var(--lq-room));
+  height: var(--lqc-menubtn-panel-h);
+  transition:
+    width 280ms var(--lq-ease),
+    height 280ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+.lqc-menubtn-content {
+  position: relative;
+}
+
+.lqc-menubtn-button {
+  --lq-press-scale: 0.9;
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: var(--lqc-menubtn-size);
+  height: var(--lqc-menubtn-size);
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  transition: scale 150ms var(--lq-ease);
+}
+.lqc-menubtn-button:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.8);
+}
+
+/* Three 18px bars, 5px apart. Open, the outer two travel to the middle and
+   turn 45 degrees each way; the middle one thins to nothing. */
+.lqc-menubtn-bars {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 12px;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.35));
+}
+.lqc-menubtn-bars span {
+  position: absolute;
+  left: 0;
+  width: 18px;
+  height: 2px;
+  border-radius: 1px;
+  background: #fff;
+  transition:
+    translate 260ms var(--lq-ease),
+    rotate 260ms var(--lq-ease),
+    opacity 160ms var(--lq-ease),
+    scale 200ms var(--lq-ease);
+}
+.lqc-menubtn-bars span:nth-child(1) {
+  top: 0;
+}
+.lqc-menubtn-bars span:nth-child(2) {
+  top: 5px;
+}
+.lqc-menubtn-bars span:nth-child(3) {
+  top: 10px;
+}
+.lqc-menubtn[data-state="opening"] .lqc-menubtn-bars span:nth-child(1),
+.lqc-menubtn[data-state="open"] .lqc-menubtn-bars span:nth-child(1) {
+  translate: 0 5px;
+  rotate: 45deg;
+}
+.lqc-menubtn[data-state="opening"] .lqc-menubtn-bars span:nth-child(2),
+.lqc-menubtn[data-state="open"] .lqc-menubtn-bars span:nth-child(2) {
+  opacity: 0;
+  scale: 0.4 1;
+}
+.lqc-menubtn[data-state="opening"] .lqc-menubtn-bars span:nth-child(3),
+.lqc-menubtn[data-state="open"] .lqc-menubtn-bars span:nth-child(3) {
+  translate: 0 -5px;
+  rotate: -45deg;
+}
+
+.lqc-menubtn-menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--lqc-menubtn-size);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 6px 6px;
+  outline: none;
+}
+.lqc-menubtn-row {
+  --lq-press-scale: 0.985;
+  position: relative;
+  flex: 0 0 40px;
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 14px;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  border-radius: var(--lqc-menubtn-row-r, 20px);
+  color: #fff;
+  font: 600 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  animation: lqc-menubtn-row-in 200ms var(--lq-ease) both;
+  animation-delay: calc(110ms + var(--at, 0) * 26ms);
+  transition:
+    background-color 120ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+/* The current page carries a small mark at its end. */
+.lqc-menubtn-row[aria-current="page"]::after {
+  content: "";
+  margin-left: auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+}
+.lqc-menubtn[data-state="closing"] .lqc-menubtn-row {
+  animation: lqc-menubtn-row-out 90ms var(--lq-ease) both;
+  animation-delay: 0ms;
+}
+@media (hover: hover) {
+  .lqc-menubtn-row:hover {
+    background-color: rgb(255 255 255 / 0.14);
+  }
+}
+.lqc-menubtn-row:focus-visible {
+  outline: none;
+  background-color: rgb(255 255 255 / 0.14);
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.6);
+}
+@keyframes lqc-menubtn-row-in {
+  from {
+    opacity: 0;
+    translate: 0 -6px;
+    filter: blur(5px);
+  }
+}
+@keyframes lqc-menubtn-row-out {
+  to {
+    opacity: 0;
+    filter: blur(5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lqc-menubtn-glass,
+  .lqc-menubtn-button,
+  .lqc-menubtn-bars span {
+    transition: none !important;
+  }
+  .lqc-menubtn-row {
+    animation: none !important;
+  }
+  .lqc-menubtn[data-state="closing"] .lqc-menubtn-menu {
+    display: none;
+  }
+}

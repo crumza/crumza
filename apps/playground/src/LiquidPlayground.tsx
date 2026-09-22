@@ -1,11 +1,18 @@
 import {
+  LiquidActionDock,
+  LiquidActionPill,
+  LiquidCommandPalette,
+  LiquidContextToolbar,
   LiquidDockMenu,
   LiquidGlassSlider,
   LiquidGlassToggle,
+  LiquidMenuButton,
   LiquidMobileNav,
   LiquidNotificationStack,
+  LiquidPlusButton,
   LiquidScene,
   LiquidSearch,
+  LiquidSheet,
   LiquidStepper,
   LiquidTabIndicator,
 } from '@crumza/ui/liquid';
@@ -60,6 +67,27 @@ export function LiquidPlayground(): ReactElement {
         {/* Tall enough for the longest page: six rows grow up from the pill. */}
         <LiquidScene background={SCENE} className="h-80 rounded-2xl md:col-span-2">
           <LiquidDockMenu />
+        </LiquidScene>
+        <LiquidScene background={SCENE} className="h-[420px] rounded-2xl md:col-span-2">
+          <LiquidSheet />
+        </LiquidScene>
+        <LiquidScene background={SCENE} className="h-80 rounded-2xl">
+          <LiquidPlusButton />
+        </LiquidScene>
+        <LiquidScene background={SCENE} className="h-80 rounded-2xl">
+          <LiquidMenuButton />
+        </LiquidScene>
+        <LiquidScene background={SCENE} className="h-56 rounded-2xl">
+          <LiquidActionPill />
+        </LiquidScene>
+        <LiquidScene background={SCENE} className="h-80 rounded-2xl">
+          <LiquidActionDock />
+        </LiquidScene>
+        <LiquidScene background={SCENE} className="h-64 rounded-2xl">
+          <LiquidContextToolbar />
+        </LiquidScene>
+        <LiquidScene background={SCENE} className="h-[420px] rounded-2xl">
+          <LiquidCommandPalette />
         </LiquidScene>
         <LiquidScene background={SCENE} className="h-56 rounded-2xl">
           <Toggles />

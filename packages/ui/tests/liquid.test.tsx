@@ -9,18 +9,25 @@ import {
   LIQUID_PATTERNS,
   LIQUID_RADIUS,
   LIQUID_RADIUS_MAX,
+  LiquidActionDock,
+  LiquidActionPill,
   LiquidColorPicker,
+  LiquidCommandPalette,
   LiquidContextMenu,
+  LiquidContextToolbar,
   LiquidDockMenu,
   LiquidGallery,
   LiquidGlassSlider,
   LiquidGlassToggle,
   LiquidHeader,
+  LiquidMenuButton,
   LiquidMobileNav,
   LiquidNotificationStack,
+  LiquidPlusButton,
   LiquidPricingCard,
   LiquidScene,
   LiquidSearch,
+  LiquidSheet,
   LiquidStepper,
   LiquidSurface,
   LiquidTabIndicator,
@@ -257,6 +264,13 @@ describe('liquid component contracts', () => {
       ['liquid-glass-toggle', <LiquidGlassToggle key="g" aria-label="Wi-Fi" />],
       ['liquid-glass-slider', <LiquidGlassSlider key="r" aria-label="Brightness" />],
       ['liquid-dock-menu', <LiquidDockMenu key="k" />],
+      ['liquid-sheet', <LiquidSheet key="e" />],
+      ['liquid-plus-button', <LiquidPlusButton key="pb" />],
+      ['liquid-menu-button', <LiquidMenuButton key="mb" />],
+      ['liquid-action-pill', <LiquidActionPill key="ap" />],
+      ['liquid-action-dock', <LiquidActionDock key="ad" />],
+      ['liquid-context-toolbar', <LiquidContextToolbar key="ct" />],
+      ['liquid-command-palette', <LiquidCommandPalette key="cp" />],
     ];
     for (const [slot, node] of roots) {
       expect(scene(node)).toContain(`data-slot="${slot}"`);
@@ -434,6 +448,123 @@ describe('liquid component contracts', () => {
     expect(square).toContain('class="lq-lens lqc-dockmenu-glass" style="border-radius:12px"');
     expect(square).toContain('--lqc-dockmenu-item-r:8px');
     expect(square).toContain('--lqc-dockmenu-row-r:4px');
+  });
+  test('sheet: closed, a trigger that promises a dialog; open, a dialog named and described by its text', () => {
+    const html = scene(<LiquidSheet />);
+    expect(html).toContain('data-state="closed"');
+    expect(html).toContain('aria-haspopup="dialog" aria-expanded="false"');
+    expect(html).not.toContain('role="dialog"');
+    expect(html).toContain('class="lq-lens lqc-sheet-trigger" style="border-radius:26px"');
+    const up = scene(<LiquidSheet defaultOpen />);
+    expect(up).toContain('data-state="open"');
+    expect(up).toMatch(
+      /role="dialog" aria-labelledby="([^"]+)-title" aria-describedby="\1-description"/,
+    );
+    expect(up).toContain('class="lqc-sheet-action" data-primary="">Export PNG</button>');
+    expect(up).toContain('aria-label="Close"');
+    expect(up).toContain(
+      'class="lqc-sheet-scrim" data-shown="" data-no-drag="" aria-hidden="true"',
+    );
+    expect(up).toContain(
+      'class="lq-lens lqc-sheet-pane" style="border-radius:28px;--lq-inner-r:12px"',
+    );
+    expect(scene(<LiquidSheet open={false} defaultOpen />)).not.toContain('role="dialog"');
+  });
+  test('every morph is closed at rest: one pane, a button that promises what it opens, and nothing open in the markup', () => {
+    const plus = scene(<LiquidPlusButton />);
+    expect(plus).toContain('data-slot="liquid-plus-button" data-state="closed"');
+    expect(plus).toContain('aria-label="Create" aria-haspopup="menu" aria-expanded="false"');
+    expect(plus).not.toContain('role="menu"');
+    expect(plus.match(/data-slot="liquid-surface"/g)).toHaveLength(1);
+    // four rows of 40 and their hairlines above the 56px round, inside a 6px inset
+    expect(plus).toContain('--lqc-plus-panel-h:228px');
+    expect(plus).toContain('--lqc-plus-row-r:22px');
+
+    const menu = scene(<LiquidMenuButton />);
+    expect(menu).toContain('data-slot="liquid-menu-button" data-state="closed"');
+    expect(menu).toContain('aria-label="Menu" aria-haspopup="menu" aria-expanded="false"');
+    expect(menu).toContain(
+      '<span class="lqc-menubtn-bars" aria-hidden="true"><span></span><span></span><span></span></span>',
+    );
+    expect(menu).not.toContain('role="menu"');
+    expect(menu).toContain('--lqc-menubtn-panel-h:266px');
+
+    const pillHtml = scene(<LiquidActionPill />);
+    expect(pillHtml).toContain('data-slot="liquid-action-pill" data-state="closed"');
+    expect(pillHtml).toContain('aria-label="Actions" aria-expanded="false"');
+    expect(pillHtml).not.toContain('role="toolbar"');
+    // the round plus four 40px slots and their hairlines, plus the trailing inset
+    expect(pillHtml).toContain('--lqc-pill-open-w:220px');
+
+    const dock = scene(<LiquidActionDock />);
+    expect(dock).toContain('data-slot="liquid-action-dock" data-state="closed"');
+    expect(dock).toContain('aria-label="Create" aria-haspopup="menu" aria-expanded="false"');
+    expect(dock).not.toContain('role="menu"');
+    expect(dock.match(/data-slot="liquid-surface"/g)).toHaveLength(1);
+
+    const bar = scene(<LiquidContextToolbar />);
+    expect(bar).toContain('data-slot="liquid-context-toolbar" data-state="closed"');
+    expect(bar).toContain('aria-label="Text format" aria-expanded="false"');
+    expect(bar).not.toContain('role="toolbar"');
+    expect(bar).not.toContain('data-lifted');
+
+    const cmd = scene(<LiquidCommandPalette />);
+    expect(cmd).toContain('data-slot="liquid-command-palette" data-state="closed"');
+    expect(cmd).toContain('aria-expanded="false" aria-haspopup="listbox"');
+    expect(cmd).toContain('Search commands');
+    expect(cmd).not.toContain('role="combobox"');
+    expect(cmd).toContain('--lqc-cmd-panel-h:308px');
+  });
+  test('every morph open: the rows, tools or options are in the markup with their roles, and the trigger says so', () => {
+    const plus = scene(<LiquidPlusButton defaultOpen />);
+    expect(plus).toContain('data-state="open"');
+    expect(plus).toContain('aria-expanded="true"');
+    expect(plus.match(/role="menuitem"/g)).toHaveLength(4);
+    expect(plus).toContain('New note');
+
+    const menu = scene(
+      <LiquidMenuButton defaultOpen items={['One', 'Two', 'Three']} current="Two" />,
+    );
+    expect(menu.match(/role="menuitem"/g)).toHaveLength(3);
+    expect(menu).toContain('aria-current="page"');
+    expect(menu).toContain('--lqc-menubtn-panel-h:182px');
+
+    const pillHtml = scene(<LiquidActionPill defaultOpen />);
+    expect(pillHtml).toContain('role="toolbar" aria-label="Actions"');
+    expect(pillHtml.match(/class="lqc-pill-action"/g)).toHaveLength(4);
+    expect(pillHtml).toContain('aria-label="Copy link"');
+
+    const dock = scene(<LiquidActionDock defaultOpen />);
+    expect(dock.match(/role="menuitem"/g)).toHaveLength(3);
+    // three satellites and the button: four panes of two sizes
+    expect(dock.match(/data-slot="liquid-surface"/g)).toHaveLength(4);
+    expect(dock).toContain('border-radius:22px');
+    // the middle one sits straight above; three span a three-quarter arc, so the outer two sit 67.5 degrees off it
+    expect(dock).toContain('--x:0.0px;--y:-88.0px');
+    expect(dock).toContain('--x:-81.3px;--y:-33.7px');
+
+    const bar = scene(
+      <LiquidContextToolbar
+        defaultOpen
+        defaultValue={{ bold: true, italic: false, underline: false, align: 'center' }}
+      />,
+    );
+    expect(bar).toContain('role="toolbar" aria-label="Text format"');
+    expect(bar).toContain('aria-label="Bold" aria-pressed="true"');
+    expect(bar).toContain('aria-label="Italic" aria-pressed="false"');
+    expect(bar).toContain('role="radiogroup" aria-label="Alignment"');
+    expect(bar).toContain('aria-label="Align centre" aria-checked="true"');
+    expect(bar.match(/data-slot="liquid-surface"/g)).toHaveLength(2);
+
+    const cmd = scene(<LiquidCommandPalette defaultOpen />);
+    expect(cmd).toContain('aria-expanded="true" aria-haspopup="listbox" inert=""');
+    expect(cmd).toMatch(
+      /role="combobox" aria-expanded="true" aria-controls="([^"]+)-list" aria-activedescendant="\1-preset"/,
+    );
+    expect(cmd).toContain('role="listbox" aria-label="Commands"');
+    expect(cmd.match(/role="option"/g)).toHaveLength(6);
+    expect(cmd.match(/aria-selected="true"/g)).toHaveLength(1);
+    expect(cmd).toContain('placeholder="Type a command"');
   });
   test('gallery: one slide on show, the rest hidden, thumbnails as tabs on a focusable frame', () => {
     const html = scene(<LiquidGallery images={IMAGES} />);

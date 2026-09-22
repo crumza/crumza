@@ -1,0 +1,165 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component animations. */
+/* LiquidContextToolbar: geometry and motion only; the material is .lq-lens (core)
+
+   A toolbar that comes out of the round that summons it. The bar is a second
+   pane placed exactly on the round for its first frame; ContextToolbar.tsx
+   then marks the root [data-lifted] and the bar's box and position ease to
+   their places by layout: width, left and bottom, never a transform, so its
+   clone stays aligned on the way. The tools arrive from the middle out. */
+
+.lqc-ctxbar {
+  position: relative;
+  width: var(--lqc-ctxbar-size);
+  height: var(--lqc-ctxbar-size);
+}
+
+.lqc-ctxbar-button {
+  --lq-press-scale: 0.9;
+  width: var(--lqc-ctxbar-size);
+  height: var(--lqc-ctxbar-size);
+  transition: scale 150ms var(--lq-ease);
+}
+.lqc-ctxbar-button svg {
+  width: 18px;
+  height: 18px;
+  transition: opacity 200ms var(--lq-ease);
+}
+/* The glyphs, on the round and on the tools; a tool that is on loses its shadow with its glass. */
+.lqc-ctxbar-button svg,
+.lqc-ctxbar-tool svg {
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.35));
+}
+.lqc-ctxbar-tool svg {
+  width: 16px;
+  height: 16px;
+}
+.lqc-ctxbar-tool[aria-pressed="true"] svg,
+.lqc-ctxbar-tool[aria-checked="true"] svg {
+  filter: none;
+}
+.lqc-ctxbar[data-lifted] .lqc-ctxbar-button svg {
+  opacity: 0.55;
+}
+.lqc-ctxbar-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.85);
+}
+
+/* On the round: same box, same place. Lifted: the toolbar's width, centred
+   on the round, its foot a little above the round's head. */
+.lqc-ctxbar-bar {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: var(--lqc-ctxbar-size);
+  height: var(--lqc-ctxbar-size);
+  margin-left: calc(var(--lqc-ctxbar-size) / -2);
+  transition:
+    width 240ms var(--lq-ease),
+    margin-left 240ms var(--lq-ease),
+    bottom 240ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+.lqc-ctxbar[data-lifted] .lqc-ctxbar-bar {
+  --w: min(var(--lqc-ctxbar-w), var(--lq-room));
+  width: var(--w);
+  margin-left: calc(var(--w) / -2);
+  bottom: calc(var(--lqc-ctxbar-size) + var(--lqc-ctxbar-lift));
+  transition:
+    width 320ms var(--lq-ease),
+    margin-left 320ms var(--lq-ease),
+    bottom 320ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+.lqc-ctxbar-content {
+  padding: 0 4px;
+}
+.lqc-ctxbar-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  outline: none;
+}
+.lqc-ctxbar-group {
+  display: contents;
+}
+.lqc-ctxbar-tool {
+  --lq-press-scale: 0.88;
+  position: relative;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: var(--lqc-ctxbar-slot-r, 18px);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    background-color 140ms var(--lq-ease),
+    color 140ms var(--lq-ease),
+    opacity 160ms var(--lq-ease),
+    filter 160ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+  filter: blur(5px);
+}
+.lqc-ctxbar[data-lifted] .lqc-ctxbar-tool {
+  opacity: 1;
+  filter: blur(0);
+  transition-delay:
+    0ms, 0ms, calc(140ms + var(--at, 0) * 30ms), calc(140ms + var(--at, 0) * 30ms), 0ms;
+}
+.lqc-ctxbar[data-state="closing"] .lqc-ctxbar-tool {
+  opacity: 0;
+  filter: blur(5px);
+  transition-delay: 0ms;
+}
+/* A pressed toggle and the checked alignment turn white under dark glyphs. */
+.lqc-ctxbar-tool[aria-pressed="true"],
+.lqc-ctxbar-tool[aria-checked="true"] {
+  background-color: rgb(255 255 255 / 0.9);
+  color: #14161a;
+}
+@media (hover: hover) {
+  .lqc-ctxbar-tool:hover:not([aria-pressed="true"]):not([aria-checked="true"]) {
+    background-color: rgb(255 255 255 / 0.16);
+  }
+}
+.lqc-ctxbar-tool:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.7);
+}
+.lqc-ctxbar-divider {
+  flex: 0 0 auto;
+  width: 1px;
+  height: 18px;
+  margin: 0 4px;
+  background: rgb(255 255 255 / 0.3);
+  opacity: 0;
+  transition: opacity 160ms var(--lq-ease);
+}
+.lqc-ctxbar[data-lifted] .lqc-ctxbar-divider {
+  opacity: 1;
+  transition-delay: 140ms;
+}
+.lqc-ctxbar[data-state="closing"] .lqc-ctxbar-divider {
+  opacity: 0;
+  transition-delay: 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lqc-ctxbar-bar,
+  .lqc-ctxbar-button,
+  .lqc-ctxbar-button svg,
+  .lqc-ctxbar-tool,
+  .lqc-ctxbar-divider {
+    transition: none !important;
+  }
+  .lqc-ctxbar[data-state="closing"] .lqc-ctxbar-bar {
+    display: none;
+  }
+}

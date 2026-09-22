@@ -5,7 +5,7 @@ import '../styles/catalog.css';
 interface Props { title?: string; description?: string | undefined; docs?: boolean; }
 const { title = 'Discover', description = 'Considered components, blocks and starting points for the web.', docs = false } = Astro.props;
 const current = Astro.url.pathname.replace(/\/$/, '') || '/';
-const items = [['/', 'Discover'], ['/ui', 'UI components'], ['/blocks', 'Blocks'], ['/templates', 'Templates']];
+const items = [['/', 'Discover'], ['/ui', 'UI components'], ['/interactions', 'Interactions'], ['/blocks', 'Blocks'], ['/templates', 'Templates']];
 ---
 <!doctype html>
 <html lang="en" data-theme="light" data-density="comfortable" data-material="liquid">

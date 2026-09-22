@@ -261,3 +261,136 @@ export const Settings2: IconComponent = icon('settings-2', [
   ['circle', { cx: '17', cy: '17', r: '3' }, '18b49y'],
   ['circle', { cx: '7', cy: '7', r: '3' }, 'dfmy0x'],
 ]);
+
+export const Upload: IconComponent = icon('upload', [
+  ['path', { d: 'M12 3v12' }, '1x0j5s'],
+  ['path', { d: 'm17 8-5-5-5 5' }, '7q97r8'],
+  ['path', { d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' }, '1nw6dm'],
+]);
+
+export const FolderPlus: IconComponent = icon('folder-plus', [
+  ['path', { d: 'M12 10v6' }, '1bos4e'],
+  ['path', { d: 'M9 13h6' }, '1uhe8q'],
+  [
+    'path',
+    {
+      d: 'M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z',
+    },
+    '1kt360',
+  ],
+]);
+
+export const Pencil: IconComponent = icon('pencil', [
+  [
+    'path',
+    {
+      d: 'M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z',
+    },
+    '1a8usu',
+  ],
+  ['path', { d: 'm15 5 4 4' }, '1mk7zo'],
+]);
+
+export const Camera: IconComponent = icon('camera', [
+  [
+    'path',
+    {
+      d: 'M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z',
+    },
+    '1tc9qg',
+  ],
+  ['circle', { cx: '12', cy: '13', r: '3' }, '1vg3eu'],
+]);
+
+export const Share: IconComponent = icon('share', [
+  ['path', { d: 'M12 2v13' }, '1cq2b8'],
+  ['path', { d: 'm16 6-4-4-4 4' }, '13yo43'],
+  ['path', { d: 'M4 14v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6' }, '1x9dj4'],
+]);
+
+export const Link: IconComponent = icon('link', [
+  ['path', { d: 'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71' }, '1cjeqo'],
+  ['path', { d: 'M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71' }, '19qd67'],
+]);
+
+export const Bookmark: IconComponent = icon('bookmark', [
+  ['path', { d: 'm19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z' }, '1fy3hk'],
+]);
+
+export const MessageCircle: IconComponent = icon('message-circle', [
+  ['path', { d: 'M7.9 20A9 9 0 1 0 4 16.1L2 22Z' }, 'vv11sd'],
+]);
+
+export const Command: IconComponent = icon('command', [
+  [
+    'path',
+    { d: 'M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3' },
+    '11bfej',
+  ],
+]);
+
+export const Type: IconComponent = icon('type', [
+  ['path', { d: 'M12 4v16' }, '1j8i4o'],
+  ['path', { d: 'M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2' }, 'dvhdng'],
+  ['path', { d: 'M9 20h6' }, 'w5cbp1'],
+]);
+
+export const Bold: IconComponent = icon('bold', [
+  [
+    'path',
+    { d: 'M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8' },
+    'mg9rjx',
+  ],
+]);
+
+export const Italic: IconComponent = icon('italic', [
+  ['path', { d: 'M19 4h-9' }, '1p2dx6'],
+  ['path', { d: 'M14 20H5' }, '1j0ipq'],
+  ['path', { d: 'M15 4 9 20' }, '1kh5ny'],
+]);
+
+export const Underline: IconComponent = icon('underline', [
+  ['path', { d: 'M6 4v6a6 6 0 0 0 12 0V4' }, '9kb039'],
+  ['path', { d: 'M4 20h16' }, 'e4jz7e'],
+]);
+
+export const AlignLeft: IconComponent = icon('align-left', [
+  ['path', { d: 'M15 12H3' }, '6jk70r'],
+  ['path', { d: 'M17 18H3' }, '1amg6g'],
+  ['path', { d: 'M21 6H3' }, '1jwq7v'],
+]);
+
+export const AlignCenter: IconComponent = icon('align-center', [
+  ['path', { d: 'M17 12H7' }, '16if0g'],
+  ['path', { d: 'M19 18H5' }, '18s9l3'],
+  ['path', { d: 'M21 6H3' }, '1jwq7v'],
+]);
+
+export const AlignRight: IconComponent = icon('align-right', [
+  ['path', { d: 'M21 12H9' }, 'dn7fvx'],
+  ['path', { d: 'M21 18H7' }, '1g6gyg'],
+  ['path', { d: 'M21 6H3' }, '1jwq7v'],
+]);
+
+export const Moon: IconComponent = icon('moon', [
+  ['path', { d: 'M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z' }, 'a7tn18'],
+]);
+
+export const Palette: IconComponent = icon('palette', [
+  [
+    'path',
+    {
+      d: 'M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z',
+    },
+    '1gcmc6',
+  ],
+  ['circle', { cx: '13.5', cy: '6.5', r: '.5', fill: 'currentColor' }, '1okk4w'],
+  ['circle', { cx: '17.5', cy: '10.5', r: '.5', fill: 'currentColor' }, 'f64h9f'],
+  ['circle', { cx: '6.5', cy: '12.5', r: '.5', fill: 'currentColor' }, 'qy21gx'],
+  ['circle', { cx: '8.5', cy: '7.5', r: '.5', fill: 'currentColor' }, 'fotxhn'],
+]);
+
+export const CornerDownLeft: IconComponent = icon('corner-down-left', [
+  ['path', { d: 'M20 4v7a4 4 0 0 1-4 4H4' }, '6o5b7l'],
+  ['path', { d: 'm9 10-5 5 5 5' }, 'w9m2ki'],
+]);

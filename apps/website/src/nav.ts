@@ -38,6 +38,13 @@ export const sidebar: readonly NavGroup[] = [
       { slug: 'components/liquid-context-menu', label: 'LiquidContextMenu' },
       { slug: 'components/liquid-dock-menu', label: 'LiquidDockMenu' },
       { slug: 'components/liquid-gallery', label: 'LiquidGallery' },
+      { slug: 'components/liquid-sheet', label: 'LiquidSheet' },
+      { slug: 'components/liquid-plus-button', label: 'LiquidPlusButton' },
+      { slug: 'components/liquid-menu-button', label: 'LiquidMenuButton' },
+      { slug: 'components/liquid-action-pill', label: 'LiquidActionPill' },
+      { slug: 'components/liquid-action-dock', label: 'LiquidActionDock' },
+      { slug: 'components/liquid-context-toolbar', label: 'LiquidContextToolbar' },
+      { slug: 'components/liquid-command-palette', label: 'LiquidCommandPalette' },
     ],
   },
   {

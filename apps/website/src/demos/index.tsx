@@ -67,17 +67,24 @@ import {
   toast,
 } from '@crumza/ui/web';
 import {
+  LiquidActionDock,
+  LiquidActionPill,
   LiquidColorPicker,
+  LiquidCommandPalette,
   LiquidContextMenu,
+  LiquidContextToolbar,
   LiquidDockMenu,
   LiquidGallery,
   LiquidGlassSlider,
   LiquidGlassToggle,
   LiquidHeader,
+  LiquidMenuButton,
   LiquidMobileNav,
   LiquidNotificationStack,
+  LiquidPlusButton,
   LiquidPricingCard,
   LiquidSearch,
+  LiquidSheet,
   LiquidStepper,
   LiquidTabIndicator,
   LiquidTestimonials,
@@ -906,6 +913,27 @@ function LiquidContextMenuDemo(): ReactElement {
 function LiquidDockMenuDemo(): ReactElement {
   return <LiquidFrame>{(r) => <LiquidDockMenu radius={r} />}</LiquidFrame>;
 }
+function LiquidSheetDemo(): ReactElement {
+  return <LiquidFrame height={460}>{(r) => <LiquidSheet radius={r} />}</LiquidFrame>;
+}
+function LiquidPlusButtonDemo(): ReactElement {
+  return <LiquidFrame height={400}>{(r) => <LiquidPlusButton radius={r} />}</LiquidFrame>;
+}
+function LiquidMenuButtonDemo(): ReactElement {
+  return <LiquidFrame height={400}>{(r) => <LiquidMenuButton radius={r} />}</LiquidFrame>;
+}
+function LiquidActionPillDemo(): ReactElement {
+  return <LiquidFrame height={320}>{(r) => <LiquidActionPill radius={r} />}</LiquidFrame>;
+}
+function LiquidActionDockDemo(): ReactElement {
+  return <LiquidFrame height={400}>{(r) => <LiquidActionDock radius={r} />}</LiquidFrame>;
+}
+function LiquidContextToolbarDemo(): ReactElement {
+  return <LiquidFrame height={340}>{(r) => <LiquidContextToolbar radius={r} />}</LiquidFrame>;
+}
+function LiquidCommandPaletteDemo(): ReactElement {
+  return <LiquidFrame height={460}>{(r) => <LiquidCommandPalette radius={r} />}</LiquidFrame>;
+}
 function LiquidGalleryDemo(): ReactElement {
   return (
     <LiquidFrame>{(r) => <LiquidGallery radius={r} images={liquidGalleryImages} />}</LiquidFrame>
@@ -976,6 +1004,13 @@ const demos: Record<string, ComponentType> = {
   'components/liquid-context-menu': LiquidContextMenuDemo,
   'components/liquid-dock-menu': LiquidDockMenuDemo,
   'components/liquid-gallery': LiquidGalleryDemo,
+  'components/liquid-sheet': LiquidSheetDemo,
+  'components/liquid-plus-button': LiquidPlusButtonDemo,
+  'components/liquid-menu-button': LiquidMenuButtonDemo,
+  'components/liquid-action-pill': LiquidActionPillDemo,
+  'components/liquid-action-dock': LiquidActionDockDemo,
+  'components/liquid-context-toolbar': LiquidContextToolbarDemo,
+  'components/liquid-command-palette': LiquidCommandPaletteDemo,
 };
 
 export function hasDemo(slug: string): boolean {

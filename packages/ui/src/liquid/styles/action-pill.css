@@ -1,0 +1,161 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component animations. */
+/* LiquidActionPill: geometry and motion only; the material is .lq-lens (core)
+
+   A round that widens to the right into a pill of actions. One pane whose
+   WIDTH changes, anchored at its left so the toggle stays put; the actions
+   arrive from the leading edge one behind another, out of a blur, so the pill
+   pours rather than appears. The toggle's two glyphs cross where they are. */
+
+.lqc-pill {
+  position: relative;
+  width: var(--lqc-pill-size);
+  height: var(--lqc-pill-size);
+}
+
+.lqc-pill-glass {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--lqc-pill-size);
+  height: var(--lqc-pill-size);
+  transition:
+    width 240ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+.lqc-pill[data-state="opening"] .lqc-pill-glass,
+.lqc-pill[data-state="open"] .lqc-pill-glass {
+  width: min(var(--lqc-pill-open-w), var(--lq-room));
+  transition:
+    width 300ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+.lqc-pill-content {
+  position: relative;
+  justify-content: flex-start;
+}
+
+.lqc-pill-toggle {
+  --lq-press-scale: 0.9;
+  position: relative;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: var(--lqc-pill-size);
+  height: var(--lqc-pill-size);
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  transition: scale 150ms var(--lq-ease);
+}
+.lqc-pill-toggle:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.8);
+}
+/* Two glyphs in one cell: the idle one turns and fades as the cross turns in. */
+.lqc-pill-glyph {
+  grid-area: 1 / 1;
+  width: 18px;
+  height: 18px;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.35));
+  transition:
+    opacity 180ms var(--lq-ease),
+    rotate 260ms var(--lq-ease),
+    scale 260ms var(--lq-ease);
+}
+.lqc-pill-glyph-open {
+  opacity: 0;
+  rotate: -90deg;
+  scale: 0.6;
+  stroke-width: 2.5;
+}
+.lqc-pill[data-state="opening"] .lqc-pill-glyph-idle,
+.lqc-pill[data-state="open"] .lqc-pill-glyph-idle {
+  opacity: 0;
+  rotate: 90deg;
+  scale: 0.6;
+}
+.lqc-pill[data-state="opening"] .lqc-pill-glyph-open,
+.lqc-pill[data-state="open"] .lqc-pill-glyph-open {
+  opacity: 1;
+  rotate: 0deg;
+  scale: 1;
+}
+
+.lqc-pill-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-right: 4px;
+  outline: none;
+}
+.lqc-pill-action {
+  --lq-press-scale: 0.88;
+  position: relative;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: var(--lqc-pill-slot-r, 20px);
+  color: #fff;
+  cursor: pointer;
+  animation: lqc-pill-action-in 220ms var(--lq-ease) both;
+  animation-delay: calc(60ms + var(--at, 0) * 36ms);
+  transition:
+    background-color 120ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+.lqc-pill-action svg {
+  width: 17px;
+  height: 17px;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.35));
+}
+.lqc-pill[data-state="closing"] .lqc-pill-action {
+  animation: lqc-pill-action-out 100ms var(--lq-ease) both;
+  animation-delay: 0ms;
+}
+@media (hover: hover) {
+  .lqc-pill-action:hover {
+    background-color: rgb(255 255 255 / 0.16);
+  }
+}
+.lqc-pill-action:focus-visible {
+  outline: none;
+  background-color: rgb(255 255 255 / 0.16);
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.6);
+}
+@keyframes lqc-pill-action-in {
+  from {
+    opacity: 0;
+    translate: -10px 0;
+    filter: blur(5px);
+  }
+}
+@keyframes lqc-pill-action-out {
+  to {
+    opacity: 0;
+    filter: blur(5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lqc-pill-glass,
+  .lqc-pill-toggle,
+  .lqc-pill-glyph {
+    transition: none !important;
+  }
+  .lqc-pill-action {
+    animation: none !important;
+  }
+  .lqc-pill[data-state="closing"] .lqc-pill-bar {
+    display: none;
+  }
+}

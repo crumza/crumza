@@ -923,3 +923,14 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* /interactions: one morph to a stage, in the collection grid. */
+.interaction-stage {
+  border-radius: var(--r-panel);
+}
+.interaction-note {
+  margin: 4px 0 0;
+  color: var(--c-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}

@@ -1,0 +1,161 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component animations. */
+/* LiquidPlusButton: geometry and motion only; the material is .lq-lens (core)
+
+   A round that grows up and out into a panel of rows, and shrinks back. One
+   pane whose BOX changes, anchored to its bottom-left corner so the round
+   stays exactly where it was and the panel grows away from it. The rows are
+   content above the filtered layers and arrive from the bottom, nearest the
+   round first, out of a blur. PlusButton.tsx marks the root [data-state]
+   closed, opening, open or closing, and writes the panel's size. */
+
+.lqc-plus {
+  position: relative;
+  /* a plus button lives at the foot of the scene, and its panel grows up from it */
+  align-self: end;
+  margin-bottom: 24px;
+  width: var(--lqc-plus-size);
+  height: var(--lqc-plus-size);
+}
+
+.lqc-plus-glass {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: var(--lqc-plus-size);
+  height: var(--lqc-plus-size);
+  transition:
+    width 220ms var(--lq-ease),
+    height 220ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+.lqc-plus[data-state="opening"] .lqc-plus-glass,
+.lqc-plus[data-state="open"] .lqc-plus-glass {
+  width: min(var(--lqc-plus-panel-w), var(--lq-room));
+  height: var(--lqc-plus-panel-h);
+  transition:
+    width 260ms var(--lq-ease),
+    height 260ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+.lqc-plus-content {
+  position: relative;
+}
+
+/* The round's button, pinned at the panel's foot; the plus turns a quarter into a cross. */
+.lqc-plus-button {
+  --lq-press-scale: 0.9;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: grid;
+  place-items: center;
+  width: var(--lqc-plus-size);
+  height: var(--lqc-plus-size);
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  transition: scale 150ms var(--lq-ease);
+}
+.lqc-plus-button:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.8);
+}
+.lqc-plus-glyph {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.25;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.35));
+  transition: rotate 260ms var(--lq-ease);
+}
+.lqc-plus[data-state="opening"] .lqc-plus-glyph,
+.lqc-plus[data-state="open"] .lqc-plus-glyph {
+  rotate: 45deg;
+}
+
+/* The rows, above the round's row, inside the inset. */
+.lqc-plus-menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--lqc-plus-size);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 6px 0;
+  outline: none;
+}
+.lqc-plus-row {
+  --lq-press-scale: 0.985;
+  position: relative;
+  flex: 0 0 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 12px;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  border-radius: var(--lqc-plus-row-r, 22px);
+  color: #fff;
+  font: 600 13.5px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  animation: lqc-plus-row-in 200ms var(--lq-ease) both;
+  animation-delay: calc(90ms + var(--at, 0) * 28ms);
+  transition:
+    background-color 120ms var(--lq-ease),
+    scale 150ms var(--lq-ease);
+}
+.lqc-plus[data-state="closing"] .lqc-plus-row {
+  animation: lqc-plus-row-out 90ms var(--lq-ease) both;
+  animation-delay: 0ms;
+}
+.lqc-plus-row-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  opacity: 0.9;
+}
+@media (hover: hover) {
+  .lqc-plus-row:hover {
+    background-color: rgb(255 255 255 / 0.14);
+  }
+}
+.lqc-plus-row:focus-visible {
+  outline: none;
+  background-color: rgb(255 255 255 / 0.14);
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.6);
+}
+@keyframes lqc-plus-row-in {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+    filter: blur(5px);
+  }
+}
+@keyframes lqc-plus-row-out {
+  to {
+    opacity: 0;
+    filter: blur(5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lqc-plus-glass,
+  .lqc-plus-glyph,
+  .lqc-plus-button {
+    transition: none !important;
+  }
+  .lqc-plus-row {
+    animation: none !important;
+  }
+  .lqc-plus[data-state="closing"] .lqc-plus-menu {
+    display: none;
+  }
+}

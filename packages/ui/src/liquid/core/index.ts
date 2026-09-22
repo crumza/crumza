@@ -8,5 +8,7 @@ export { H, inner, LIQUID_RADIUS, LIQUID_RADIUS_MAX, pill, useEnterExit } from '
 export type { EnterExitState, LiquidComponentProps, LiquidCSS } from './geometry';
 export * from './icons';
 export { approach, easeFalloff, makeClock, SETTLE_EPSILON, useSceneFrame } from './motion';
+export type { MorphPhase } from './morph';
+export { isShowing, useDismiss, useMorphPhase, walk } from './morph';
 export { LiquidScene, LiquidSurface, useLiquidScene } from './scene';
 export type { LiquidSceneContextValue, LiquidSceneProps, LiquidSurfaceProps } from './scene';

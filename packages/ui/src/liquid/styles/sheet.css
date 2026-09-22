@@ -1,0 +1,197 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced-motion overrides must win over the component transitions. */
+/* LiquidSheet: geometry and motion only; the material is .lq-lens (core)
+
+   A sheet that rises from the foot of the scene. The component fills the
+   stage and lays its own pieces out in it: a pill in the middle that raises
+   the sheet, a scrim over the scene, and the sheet itself at the foot.
+
+   The rise is a translate on the SLOT, a plain wrapper, so the pane inside
+   never changes its box and keeps the one map it was born with; the engine
+   only repositions its clone on the frames the slot moves. Sheet.tsx marks
+   the slot [data-shown] once the sheet is in the DOM and [data-drag] while a
+   finger has the handle, and writes the finger's pull to --lqc-sheet-drag. */
+
+.lqc-sheet {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.lqc-sheet-trigger {
+  --lq-press-scale: 0.96;
+  width: min(176px, var(--lq-room));
+  height: 52px;
+  font: 700 14px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  letter-spacing: -0.008em;
+  transition: scale 150ms var(--lq-ease);
+}
+
+/* The dim over the scene. It is not in any pane's clone, so the glass shows
+   the scene at full light while the room around it is darkened. */
+.lqc-sheet-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 0.22);
+  opacity: 0;
+  transition: opacity 260ms var(--lq-ease);
+}
+.lqc-sheet-scrim[data-shown] {
+  opacity: 1;
+  transition-duration: 320ms;
+}
+
+/* The slot: at the foot, centred, and below the edge of the stage until shown.
+   Shown, it sits where the finger has pulled it, which is nowhere at rest. */
+.lqc-sheet-slot {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  width: min(360px, var(--lq-room));
+  translate: -50% calc(100% + 24px);
+  transition: translate 260ms var(--lq-ease);
+}
+.lqc-sheet-slot[data-shown] {
+  translate: -50% var(--lqc-sheet-drag, 0px);
+  transition: translate 340ms var(--lq-ease);
+}
+/* Under a finger, one to one: anything else reads as lag. */
+.lqc-sheet-slot[data-drag] {
+  transition: none;
+}
+
+.lqc-sheet-pane {
+  width: 100%;
+}
+.lqc-sheet-content {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  text-align: left;
+}
+.lqc-sheet-dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px 16px;
+  outline: none;
+}
+
+/* The handle, and the strip of glass around it that a finger can take hold of. */
+.lqc-sheet-grip {
+  display: flex;
+  justify-content: center;
+  margin: 0 -16px;
+  padding: 10px 0 8px;
+  cursor: grab;
+}
+.lq-stage .lqc-sheet-grip {
+  touch-action: none;
+}
+.lqc-sheet-slot[data-drag] .lqc-sheet-grip {
+  cursor: grabbing;
+}
+.lqc-sheet-handle {
+  width: 36px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgb(255 255 255 / 0.5);
+}
+
+.lqc-sheet-title {
+  margin: 2px 32px 0 0;
+  font: 700 16px / 1.25 var(--font-sans, -apple-system, system-ui, sans-serif);
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+.lqc-sheet-description {
+  margin: 8px 0 0;
+  font: 600 13px / 1.5 var(--font-sans, -apple-system, system-ui, sans-serif);
+  color: #fff;
+}
+
+.lqc-sheet-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.lqc-sheet-action {
+  --lq-press-scale: 0.97;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  appearance: none;
+  border: 0;
+  border-radius: var(--lq-inner-r, 12px);
+  background: rgb(255 255 255 / 0.14);
+  color: #fff;
+  font: 700 13px / 1 var(--font-sans, -apple-system, system-ui, sans-serif);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--lq-ease),
+    scale 140ms var(--lq-ease);
+}
+.lqc-sheet-action[data-primary] {
+  background: rgb(255 255 255 / 0.92);
+  color: #14161a;
+  text-shadow: none;
+}
+@media (hover: hover) {
+  .lqc-sheet-action:hover {
+    background-color: rgb(255 255 255 / 0.22);
+  }
+  .lqc-sheet-action[data-primary]:hover {
+    background-color: #fff;
+  }
+}
+.lqc-sheet-action:focus-visible,
+.lqc-sheet-close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.85);
+}
+
+.lqc-sheet-close {
+  --lq-press-scale: 0.88;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  appearance: none;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.14);
+  color: #fff;
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--lq-ease),
+    scale 140ms var(--lq-ease);
+}
+.lqc-sheet-close svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.5;
+}
+@media (hover: hover) {
+  .lqc-sheet-close:hover {
+    background-color: rgb(255 255 255 / 0.24);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The sheet is up or down. A drag still carries it, because the drag is
+     the control; nothing eases. */
+  .lqc-sheet-scrim,
+  .lqc-sheet-slot,
+  .lqc-sheet-trigger,
+  .lqc-sheet-action,
+  .lqc-sheet-close {
+    transition: none !important;
+  }
+}
